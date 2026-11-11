@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
 
-from app.services import baidu_asr_client, vivo_asr_client
+from app.services import ai_gateway, baidu_asr_client, vivo_asr_client
 
 
 def _clean_env(name: str, default: str = "") -> str:
@@ -30,10 +30,12 @@ def _ffmpeg_exe() -> str:
 
 
 def status() -> Dict[str, Any]:
+    ark = _clean_env("ARK_ASR_ENABLED", "0") == "1" and bool(_clean_env("ARK_API_KEY") and _clean_env("ARK_MODEL"))
     vivo = vivo_asr_client.configured()
     baidu = baidu_asr_client.configured()
     return {
-        "active_provider": "vivo_asr" if vivo else ("baidu_asr" if baidu else "local"),
+        "active_provider": "ark_asr" if ark else ("vivo_asr" if vivo else ("baidu_asr" if baidu else "local")),
+        "ark_configured": ark,
         "vivo_configured": vivo,
         "baidu_configured": baidu,
         "ffmpeg_found": ffmpeg_found(),
@@ -102,6 +104,12 @@ async def speech_to_text(audio_path: str, filename: str = "", dialect: bool = Fa
     )
     if not source.exists() or file_size <= 0:
         return _friendly("没有收到有效录音，请重新说一遍，或改用文字输入。", errors=["audio_file_empty"])
+
+    if state.get("ark_configured"):
+        result = await ai_gateway.transcribe_ark_audio(source.read_bytes(), filename or source.name, dialect=dialect)
+        if result.get("ok") and result.get("text"):
+            return result
+        errors.append("ark_asr:" + str(result.get("error_summary") or "failed"))
 
     if not state["ffmpeg_found"]:
         return _friendly("语音转码工具未安装，请先安装 ffmpeg，或改用文字输入。", errors=["ffmpeg_not_found"])

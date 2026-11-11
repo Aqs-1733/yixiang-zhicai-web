@@ -2,6 +2,20 @@
 
 日期：2026-11-11；时区：Asia/Shanghai。项目已本地部署，不是公网发布。**尚未达到所有细分功能1:1验收。**
 
+## 2026-11-11 增量接入：Seed 2.1 Lite（当前状态）
+
+当前运行模型为 `doubao-seed-2-1-lite-260915`，私人服务仍为 http://127.0.0.1:8000/site/ 。截图中的 Key 与原本机 Key 一致，仅在本地后端使用；没有复制到安全源码或前端。旧版模型关闭的结果保留为历史基线，已由本节的新实测结果更新。
+
+- 真实直连：文字、多轮上下文、图片、音频转写 **4/4通过**，全部HTTP200；直连这4次共1549 Token，无联网搜索工具调用。
+- 独立数据库的真实后端验收 **4/4通过**：问答provider=ark、图像provider=ark、录音provider=ark_asr，fallback均为false；集成状态确认Ark ASR启用。
+- Edge浏览器实际操作 **3/3通过**：输入发送、麦克风录制上传、理财图片文件选择/识别；麦克风测试使用合成音频设备，不是实际用户麦克风。
+- 原结构/静态基础检查 **23/23通过**，新增适配器离线单元测试 **10/10通过**。上述新增检查合计 **44/44**；下方359/360为此前完整部署的历史统计，并非本次全部重跑。
+- `ARK_MODEL`与`LLM_MODEL`切换新版本；`ARK_THINKING_MODE=disabled`控制交互输出预算；私人配置`ARK_ASR_ENABLED=1`。公共.env.example保持ASR默认0，需用户自行配置后启用。
+- ASR现优先Ark，失败保留原vivo/百度降级链路；TTS仍用已验证的百度。模型HTTP成功但正文为空/返回错误对象时不再算作有效回答。
+- 课程MP4仍缺失，聚合资讯/金融、银行正式数据与微信支付等原有缺口没有因本次切换被标记为通过。
+- 本轮截图：`seed21_text_connected.png`、`seed21_audio_connected.png`、`seed21_image_connected.png`，位于原本地截图目录，均被Git忽略。
+- 本轮证据：`D:\Projects\YixiangZhicai_Execution_20261111\seed21_integration`。原私密配置有完整哈希与本地备份；回滚仅在另一份副本中测试。
+
 ## 环境、目录与输入
 
 - 私人运行：`D:\Projects\YixiangZhicai_Local`

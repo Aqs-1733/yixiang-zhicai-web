@@ -116,28 +116,32 @@ def _chat_url(base_url: str, request_id: str = "") -> str:
 
 
 def _extract_content(data: Dict[str, Any]) -> str:
-    try:
-        return str(data["choices"][0]["message"]["content"]).strip()
-    except Exception:
-        pass
-    for path in [
-        ("data", "content"),
-        ("data", "answer"),
-        ("data", "text"),
-        ("result", "content"),
-        ("result", "answer"),
-        ("answer",),
-        ("content",),
-    ]:
+    choices = data.get("choices") if isinstance(data, dict) else None
+    if isinstance(choices, list) and choices:
+        message = choices[0].get("message") or {}
+        content = message.get("content")
+        if isinstance(content, str):
+            return content.strip()
+        if isinstance(content, list):
+            return "".join(str(item.get("text") or "") for item in content if isinstance(item, dict)).strip()
+        return ""
+    for path in [("data", "content"), ("data", "answer"), ("data", "text"), ("result", "content"), ("result", "answer"), ("answer",), ("content",)]:
         cur: Any = data
         for key in path:
             if not isinstance(cur, dict) or key not in cur:
                 cur = None
                 break
             cur = cur[key]
-        if cur not in [None, ""]:
-            return str(cur).strip()
-    return json.dumps(data, ensure_ascii=False)
+        if isinstance(cur, str) and cur.strip():
+            return cur.strip()
+    return ""
+
+
+def _apply_ark_options(payload: Dict[str, Any], provider: Dict[str, str]) -> None:
+    # Short interactive replies should not spend their output budget on hidden reasoning.
+    if provider.get("name") == "ark" and str(provider.get("model", "")).startswith("doubao-seed-"):
+        mode = _clean_env("ARK_THINKING_MODE", "disabled")
+        payload["thinking"] = {"type": mode if mode in {"enabled", "disabled"} else "disabled"}
 
 
 def _vivo_headers(provider: Dict[str, str], body: str, uri: str = "", query: Optional[Dict[str, str]] = None) -> Dict[str, str]:
@@ -312,6 +316,7 @@ async def chat_text(messages: List[Dict[str, str]], scene: str = "assistant_chat
             "top_p": 0.9,
             "max_tokens": 1200,
         }
+        _apply_ark_options(payload, provider)
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         query = {"requestId": request_id} if request_id and _clean_env("BLUELM_REQUEST_ID_QUERY", "requestId") else {}
         parsed = urlparse(url)
@@ -320,6 +325,8 @@ async def chat_text(messages: List[Dict[str, str]], scene: str = "assistant_chat
                 res = await client.post(url, headers=_headers(provider, body, uri=parsed.path, query=query), content=body)
                 res.raise_for_status()
                 content = _extract_content(res.json())
+                if not content:
+                    raise ValueError("EmptyModelResponse")
             latency = int((time.time() - started) * 1000)
             _log(provider["name"], provider["model"], scene, prompt, content, True, "", latency, user_id)
             _runtime_log(provider["name"], False, latency)
@@ -364,6 +371,7 @@ async def chat_vision(prompt: str, image_bytes: bytes, mime_type: str = "image/j
             "temperature": 0.2,
             "max_tokens": 1500,
         }
+        _apply_ark_options(payload, provider)
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         query = {"requestId": request_id} if request_id and _clean_env("BLUELM_REQUEST_ID_QUERY", "requestId") else {}
         parsed = urlparse(url)
@@ -372,6 +380,8 @@ async def chat_vision(prompt: str, image_bytes: bytes, mime_type: str = "image/j
                 res = await client.post(url, headers=_headers(provider, body, uri=parsed.path, query=query), content=body)
                 res.raise_for_status()
                 content = _extract_content(res.json())
+                if not content:
+                    raise ValueError("EmptyModelResponse")
             latency = int((time.time() - started) * 1000)
             _log(provider["name"], provider["model"], scene, prompt, content, True, "", latency, user_id)
             _runtime_log(provider["name"], False, latency)
@@ -398,6 +408,40 @@ async def chat_vision(prompt: str, image_bytes: bytes, mime_type: str = "image/j
         "errors": errors,
         "hint": "图片已保存；云端视觉暂不可用时，请补充截图文字，小享仍可做风险核验。",
     }
+
+
+async def transcribe_ark_audio(audio_bytes: bytes, filename: str = "audio.wav", dialect: bool = False) -> Dict[str, Any]:
+    started = time.time()
+    provider = provider_configs()["ark"]
+    if not audio_bytes or not provider.get("api_key") or not provider.get("model"):
+        return {"ok": False, "provider": "ark_asr", "fallback": True, "error_summary": "NotConfiguredOrEmptyAudio"}
+    fmt = Path(filename or "audio.wav").suffix.lower().lstrip(".") or "wav"
+    payload: Dict[str, Any] = {
+        "model": provider["model"],
+        "messages": [{"role": "user", "content": [
+            {"type": "text", "text": "请只转写这段录音中的原话，不回答问题，不添加解释；听不清时返回空字符串。"},
+            {"type": "input_audio", "input_audio": {"data": base64.b64encode(audio_bytes).decode("ascii"), "format": fmt}},
+        ]}],
+        "max_tokens": 512,
+        "temperature": 0.1,
+    }
+    _apply_ark_options(payload, provider)
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    try:
+        async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
+            response = await client.post(_chat_url(provider["base_url"]), headers=_headers(provider, body), content=body.encode("utf-8"))
+            response.raise_for_status()
+            text = _extract_content(response.json()).strip().strip('"').strip()
+        if not text:
+            raise ValueError("EmptyTranscription")
+        elapsed = int((time.time() - started) * 1000)
+        _runtime_log("ark_asr", False, elapsed)
+        return {"ok": True, "success": True, "text": text, "provider": "ark_asr", "model": provider["model"], "fallback": False, "dialect": dialect, "latency_ms": elapsed}
+    except Exception as exc:
+        # Do not return URLs, response bodies or credential material to the browser/log.
+        elapsed = int((time.time() - started) * 1000)
+        _runtime_log("ark_asr", True, elapsed, type(exc).__name__)
+        return {"ok": False, "success": False, "text": "", "provider": "ark_asr", "fallback": True, "error_summary": type(exc).__name__}
 
 
 def _baidu_token() -> str:

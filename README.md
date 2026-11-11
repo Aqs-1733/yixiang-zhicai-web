@@ -48,7 +48,7 @@ SQLite 路径为 `backend/app/data/yixiang.db`；`DB_PATH=app/data/yixiang.db` �
 
 | 服务 | 配置字段 | 本轮实测 |
 |---|---|---|
-| 豆包/方舟 | ARK_API_KEY、ARK_BASE_URL、ARK_MODEL | 当前配置端点关闭，需在方舟控制台启用有效端点/模型 |
+| 豆包/方舟 | ARK_API_KEY、ARK_BASE_URL、ARK_MODEL | Seed 2.1 Lite文字、图片、音频真实联网及浏览器接入通过 |
 | vivo 蓝心 | BLUELM_BASE_URL、BLUELM_ENDPOINT_PATH、BLUELM_TEXT_MODEL、授权模式及对应凭证 | 当前 URL 返回404；需核对控制台对应产品的接口与授权方式 |
 | 百度语音 | BAIDU_API_KEY、BAIDU_SECRET_KEY | OAuth、TTS、ASR及后端上传链路成功 |
 | 聚合资讯 | JUHE_BULLETIN_KEY、JUHE_BULLETIN_URL | 10001：请求 Key 错误，重新获取对应资讯产品 Key |
@@ -61,7 +61,7 @@ SQLite 路径为 `backend/app/data/yixiang.db`；`DB_PATH=app/data/yixiang.db` �
 
 ## 验收与复现
 
-本轮自动功能检查 359/360 通过；唯一失败为交接包缺失课程 MP4，`/media/daily_lesson.mp4` 返回404。第三方烟雾测试独立计数，不计入本地功能通过数。文字聊天可用的本地兜底不代表云模型成功。图片识别中的本地 OCR 成功不代表云视觉成功。
+初轮自动功能检查 359/360 通过；唯一失败为交接包缺失课程 MP4，`/media/daily_lesson.mp4` 返回404。第三方烟雾测试独立计数，不计入本地功能通过数。新增Seed 2.1 Lite接入44/44检查通过，当前文字/图片/ASR已真实走Ark，播报保留百度TTS；旧的兜底记录不代表云模型成功。图片识别中的本地 OCR 成功不代表云视觉成功。
 
 ```powershell
 .\.venv\Scripts\python.exe 验证工程.py
@@ -97,3 +97,7 @@ D:\Projects\YixiangZhicai_Local\.venv\Scripts\python.exe tests\local_acceptance\
 ```
 
 私人运行副本和安全源码副本严格分离；没有将网站发布到公网托管服务。尚未完整验收所有页面的每个细分按钮、移动实机、物理麦克风、方言识别和全站对比度；完整边界见验收报告。
+
+## 当前Ark接入设置
+
+使用 `doubao-seed-2-1-lite-260915`，`ARK_THINKING_MODE=disabled`。本机私人配置启用 `ARK_ASR_ENABLED=1`；公共模板默认0，填写自己的ARK_API_KEY/模型后可自行启用。语音识别失败保留原有降级链路，TTS继续由百度提供。所有真实集成测试使用独立DB和合成媒体；原始凭证、录音和截图不提交。新增离线回归命令：`python tests/local_acceptance/test_seed21_adapters.py`。

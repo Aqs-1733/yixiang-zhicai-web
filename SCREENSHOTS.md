@@ -2,7 +2,7 @@
 
 目录：`D:\Projects\YixiangZhicai_Web\tests\local_acceptance`
 
-共98张。1440/768/390为请求的三档CSS像素宽度；均由真实Edge浏览器生成，未修图。合成验收账号与空白生产登录页，无密钥截图。截图保留本地，被Git忽略。
+共101张。1440/768/390为请求的三档CSS像素宽度；均由真实Edge浏览器生成，未修图。合成验收账号与空白生产登录页，无密钥截图。截图保留本地，被Git忽略。
 
 - `1440_01_assistant_assistant.png`
 - `1440_02_child_alerts_alerts.png`
@@ -102,3 +102,9 @@
 - `login_child.png`
 - `login_elder.png`
 - `production_login.png`
+
+## Seed 2.1 Lite接入补测
+
+- `seed21_text_connected.png`
+- `seed21_audio_connected.png`
+- `seed21_image_connected.png`
