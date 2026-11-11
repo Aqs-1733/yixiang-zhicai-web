@@ -26,16 +26,17 @@
       <view class="home-news-head">
         <view class="home-news-head-left">
           <view class="home-news-icon">📰</view>
-          <text class="home-news-title">今日资讯</text>
-          <view class="home-news-badge">实时</view>
+          <text class="home-news-title">政策与资讯</text>
+          <view class="home-news-badge">{{newsStatus}}</view>
         </view>
         <view class="home-news-refresh" bindtap="refreshNews">🔄</view>
       </view>
-      <view wx:if="{{!articles.length}}" class="home-news-empty">{{newsMessage || '暂无实时新闻'}}</view>
+      <view wx:if="{{!articles.length}}" class="home-news-empty">{{newsMessage || '暂未取得官方资讯'}}</view>
       <view wx:for="{{articles}}" wx:key="id" class="home-news-item" bindtap="openNews" data-index="{{index}}">
         <view class="home-news-num">{{index + 1}}</view>
         <view class="home-news-content">
           <view class="home-news-name">{{item.title}}</view>
+          <view class="home-news-meta">{{item.sourceText}} · {{item.timeText}}</view>
         </view>
       </view>
     </view>
@@ -58,6 +59,7 @@
           </view>
           <view class="lesson-video-shell">
             <view class="lesson-video-toolbar">
+              <button class="lesson-source-button" catchtap="showLessonSource">课程来源</button>
               <view class="lesson-current-title">{{lesson.video_title || lesson.title || '今日理财课堂'}}</view>
               <button class="lesson-picker-open" hover-class="none" catchtap="openLessonPicker">选集 {{lessonInfo.currentIndex}}/{{lessonInfo.totalCount}}</button>
             </view>

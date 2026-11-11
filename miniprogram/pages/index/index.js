@@ -338,7 +338,9 @@ Page({
       video_tip: '每日更新理财知识视频，帮助您更好地管理财富。'
     },
     articles: [],
-    newsMessage: '正在加载实时新闻',
+    newsMessage: '正在获取官方资讯',
+    newsStatus:'正在核对',
+    newsFetchedAt:'',
     weatherCard: {
       loading: true,
       city: DEFAULT_CITY,
@@ -426,6 +428,7 @@ Page({
       url: '/lesson/today'
     }).then(res => {
       const remoteOptions = (res.video_options || []).map((item, idx) => ({
+        ...item,
         id: item.id || idx + 1,
         title: item.title || `课程${idx + 1}`,
         summary: '理财课堂 · 视频学习',
@@ -484,22 +487,25 @@ Page({
     })
 
     const cachedArticles = wx.getStorageSync('home_articles') || []
-    if (this._newsLoaded) {
-      this.setData({ articles: cachedArticles, newsMessage: cachedArticles.length ? '' : '暂无实时新闻' })
+    if (this._newsLoaded && Date.now()-new Date(wx.getStorageSync('home_news_fetched')||0).getTime()<600000) {
+      this.setData({ articles: cachedArticles, newsStatus:'已缓存', newsFetchedAt:wx.getStorageSync('home_news_fetched')||'', newsMessage: cachedArticles.length ? '' : '暂无已核实资讯' })
     } else {
       this._newsLoaded = true
       app.request({ url: '/market/daily' }).then(res => {
         const rawItems = res && res.success !== false ? (res.items || []) : []
         const articles = decorateArticles(rawItems.slice(0, 4))
         wx.setStorageSync('home_articles', articles)
+        wx.setStorageSync('home_news_fetched',res.fetched_at||'')
         this.setData({
           articles,
-          newsMessage: articles.length ? '' : (res.message || '暂无实时新闻')
+          newsStatus:articles.length?(res.stale?'缓存资讯':'来源已核对'):'暂未取得',
+          newsFetchedAt:res.fetched_at||'',
+          newsMessage: articles.length ? '' : (res.message || '暂未取得官方资讯')
         })
       }).catch(() => {
         this.setData({
           articles: cachedArticles,
-          newsMessage: cachedArticles.length ? '' : '暂无实时新闻'
+          newsStatus:'离线缓存', newsMessage: cachedArticles.length ? '网络暂时不可用，显示上次资讯' : '暂未取得官方资讯'
         })
       })
     }
@@ -656,6 +662,11 @@ Page({
     this.closeLessonPicker()
   },
 
+  showLessonSource() {
+    const item=this.data.lessonList[this.data.lessonInfo.currentIndex-1]||{}
+    wx.showModal({title:'课程来源',content:[item.title,item.source||'原始课程来源',item.license||'原创课程',item.source_url||'',item.license_url||''].filter(Boolean).join('\n'),showCancel:false})
+  },
+
   openLessonPicker() {
     this.setData({ showLessonPicker: true })
   },
@@ -680,9 +691,12 @@ Page({
       const rawItems = res && res.success !== false ? (res.items || []) : []
       const articles = decorateArticles(rawItems.slice(0, 4))
       wx.setStorageSync('home_articles', articles)
+        wx.setStorageSync('home_news_fetched',res.fetched_at||'')
       this.setData({
         articles,
-        newsMessage: articles.length ? '' : (res.message || '暂无实时新闻')
+        newsStatus:articles.length?(res.stale?'缓存资讯':'来源已核对'):'暂未取得',
+        newsFetchedAt:res.fetched_at||'',
+        newsMessage: articles.length ? '' : (res.message || '暂未取得官方资讯')
       })
       wx.showToast({ title: `已更新${articles.length}条资讯`, icon: 'success', duration: 1500 })
     }).catch(() => {

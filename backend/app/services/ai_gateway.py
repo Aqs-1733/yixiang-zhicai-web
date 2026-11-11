@@ -90,15 +90,17 @@ def status() -> Dict[str, Any]:
     configured = {name: bool(name == "local" or any(p["name"] == name for p in configured_providers())) for name in PROVIDER_ORDER}
     baidu_asr = bool(_clean_env("BAIDU_API_KEY") and _clean_env("BAIDU_SECRET_KEY"))
     vivo = configs.get("vivo_bluelm", {})
+    vision=[p["name"] for p in configured_providers() if p["name"] in {"ark","openai","vivo_bluelm"} or "vl" in p.get("model","").lower()]
     return {
         "provider_order": PROVIDER_ORDER,
         "configured": configured,
         "configured_providers": [p["name"] for p in configured_providers()] or ["local"],
         "local_fallback": not STRICT_LLM,
-        "vision_configured": bool(vivo.get("base_url") and vivo.get("vision_model") and (vivo.get("api_key") or (vivo.get("app_id") and vivo.get("app_key")))),
+        "vision_configured": bool(vision),
+        "vision_providers": vision,
         "asr_configured": baidu_asr,
         "tts_configured": baidu_asr,
-        "ocr_configured": bool(vivo.get("base_url") and vivo.get("vision_model")),
+        "ocr_configured": bool(vision),
         "lbs_configured": bool(_clean_env("TENCENT_MAP_KEY") or _clean_env("QQ_MAP_KEY") or _clean_env("MAP_API_KEY")),
         "finance_data_configured": bool(_clean_env("JUHE_FINANCE_KEY") or _clean_env("BANK_API_KEY") or _clean_env("PRODUCT_FEED_URL")),
     }

@@ -29,7 +29,7 @@ with sync_playwright() as pw:
  try:
   page.evaluate('()=>{window.__nativeCanPlay=HTMLMediaElement.prototype.canPlayType;HTMLMediaElement.prototype.canPlayType=function(t){return t==="application/vnd.apple.mpegurl"?"":window.__nativeCanPlay.call(this,t)}}');page.locator('.lesson-picker-open').click();page.wait_for_timeout(150)
   # First remote original episode follows the local fallback in the original picker.
-  candidates=page.locator('[data-index="1"]').filter(has_text='投资方式')
+  candidates=page.locator('.lesson-picker-item').filter(has_text='投资方式的种类及区别（一）')
   if not candidates.count():candidates=page.locator('.lesson-picker-item').nth(1)
   candidates.first.click();page.wait_for_timeout(200);video=page.locator('#homeLessonVideo');video.evaluate('v=>{v.muted=true;return v.play()}')
   page.wait_for_function('document.querySelector("#homeLessonVideo")?.currentTime>1',timeout=40000)

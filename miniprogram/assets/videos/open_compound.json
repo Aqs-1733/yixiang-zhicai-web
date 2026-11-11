@@ -1,0 +1,42 @@
+{
+  "title": "开放课堂：看懂复利，不迷信收益",
+  "kind": "open_educational_derivative",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source_url": "https://en.wikibooks.org/wiki/Principles_of_Finance/Section_1/Chapter_2/Time_Value_of_Money/Compounding_and_FV",
+  "attribution": "Wikibooks contributors; adapted Chinese narration, new 3 percent worked example and layout by 颐享智财",
+  "updated_at": "2026-11-12",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "content_origin": "Chinese adaptation of the compounding concept; new worked example. All visuals original; no downloaded Commons media.",
+  "slides": [
+    {
+      "n": "01",
+      "title": "复利不是魔法",
+      "label": "开放课堂 · 看懂计算",
+      "body": "利息加入本金，再参与计息\n先弄清假设，再看结果",
+      "speech": "这一课，我们一起弄清复利。复利就是把利息加入本金，再参与下一次计算。这个计算方法不是收益承诺。"
+    },
+    {
+      "n": "02",
+      "title": "用小数字算一算",
+      "label": "假设年利率固定为百分之三",
+      "body": "1000元，一年后是1030元\n两年后是1060.90元",
+      "speech": "假设本金一千元，年利率固定百分之三，按年计息，不考虑费用。一年后是一千零三十元。第二年把利息也加入计算，两年后是一千零六十点九零元。"
+    },
+    {
+      "n": "03",
+      "title": "计算背后有条件",
+      "label": "数学模型，不是产品承诺",
+      "body": "本金 ×（1＋年利率）的年数次方\n实际产品还有波动、费用与赎回条件",
+      "speech": "这个公式假设利率固定，利息再投入。实际理财产品可能亏损，也可能收取费用，不要把计算结果当成产品承诺。"
+    },
+    {
+      "n": "04",
+      "title": "先看风险，再算收益",
+      "label": "开放课程 · CC BY-SA 4.0",
+      "body": "资料：Wikibooks《金融原理》\n中文讲解与新算例：颐享智财",
+      "speech": "学会公式是为了看懂说明，不是为了追逐高收益。遇到稳赚不赔、催促转账的说法，先停下来核实。这一课参考维基教科书金融原理，按知识共享署名相同方式共享四点零协议开放。"
+    }
+  ],
+  "duration_seconds": 73.49
+}

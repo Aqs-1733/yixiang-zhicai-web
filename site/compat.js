@@ -100,6 +100,7 @@ function bindEvents(origin,el,owner,scope){
   callBinding(b,el,owner,e);
  },{passive:b.type==='touchmove'?false:undefined})}
  if(bindings.some(x=>x.type==='touchmove'))el.style.touchAction='none';
+ const tap=bindings.find(x=>x.type==='tap');if(tap&&(el.tagName!=='SPAN'||el.dataset.term)){el.dataset.yxAction=tap.handler;if(!['BUTTON','INPUT','TEXTAREA','SELECT','A'].includes(el.tagName)){el.setAttribute('role',el.tagName==='SPAN'?'link':'button');el.tabIndex=0;el.addEventListener('keydown',e=>{if(e.target===el&&['Enter',' '].includes(e.key)){e.preventDefault();el.click()}})}}
 }
 for(const [event,type] of [['pointermove','touchmove'],['pointerup','touchend'],['pointercancel','touchcancel']])document.addEventListener(event,e=>{
  const g=activeGesture;if(!g||g.id!==e.pointerId)return;
@@ -360,9 +361,9 @@ const wx={
  getRecorderManager:()=>recorderManager,
  createInnerAudioContext:()=>{const audio=new Audio();return {set src(x){audio.src=assetUrl(x)},get src(){return audio.src},set obeyMuteSwitch(x){},set autoplay(x){audio.autoplay=x},play:()=>audio.play().catch(()=>{}),pause:()=>audio.pause(),stop:()=>{audio.pause();audio.currentTime=0},destroy:()=>audio.pause(),onError:fn=>audio.addEventListener('error',fn),onEnded:fn=>audio.addEventListener('ended',fn),onPlay:fn=>audio.addEventListener('play',fn),onStop:fn=>audio.addEventListener('pause',fn)}},
  async getSetting({success,fail}){const authSetting={};for(const [key,name] of [['scope.record','microphone'],['scope.userLocation','geolocation']]){try{const result=await navigator.permissions.query({name});if(result.state!=='prompt')authSetting[key]=result.state==='granted'}catch{}}success?.({authSetting})},authorize:({scope,success,fail})=>{if(scope==='scope.record')navigator.mediaDevices?.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());success?.()}).catch(fail);else success?.()},openSetting:({success})=>{toast('请使用浏览器地址栏的权限设置');success?.({authSetting:{}})},
- getLocation:({success,fail})=>{if(!navigator.geolocation)return fail?.({errMsg:'当前浏览器不支持定位'});navigator.geolocation.getCurrentPosition(p=>success?.({latitude:p.coords.latitude,longitude:p.coords.longitude}),e=>fail?.({errMsg:e.message}),{enableHighAccuracy:true,timeout:10000})},
+ getLocation:opts=>window.YXMaps.locate(opts),
  chooseLocation:opts=>window.YXMaps.choose(opts),
- openLocation:({latitude,longitude,name})=>window.open('https://www.openstreetmap.org/?mlat='+latitude+'&mlon='+longitude+'#map=16/'+latitude+'/'+longitude,'_blank','noopener'),
+ openLocation:opts=>window.YXMaps.navigate(opts),
  navigateToMiniProgram:()=>dialog({title:'网页模式说明',content:'此操作需要在微信小程序中打开，浏览器版保留入口但无法调用微信跳转。',showCancel:false}),
  login:({fail})=>fail?.({errMsg:'微信小程序免密授权仅在微信内可用，请使用手机号和密码登录网页。'}),
  createVideoContext:(id)=>({play:()=>document.getElementById(id)?.play(),pause:()=>document.getElementById(id)?.pause(),seek:time=>{const el=document.getElementById(id);if(el)el.currentTime=time}}),

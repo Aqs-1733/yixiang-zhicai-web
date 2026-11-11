@@ -7,12 +7,12 @@
     <view class="news-title {{globalFontPageClass}}">{{article.title || '养老理财资讯'}}</view>
 
     <view wx:if="{{article.source || article.date || article.created_at}}" class="news-meta {{globalFontPageClass}}">
-      {{article.source || '小享整理'}} · {{article.date || article.created_at || '今日'}}
+      {{article.source || '来源未提供'}} · {{article.date || article.created_at || '发布日期未提供'}}
     </view>
 
     <view class="news-body">
       <view wx:if="{{articleLoading}}" class="news-loading">
-        <view class="news-loading-text {{globalFontPageClass}}">正在加载完整文章...</view>
+        <view class="news-loading-text {{globalFontPageClass}}">正在核对资讯来源…</view>
       </view>
       <view wx:for="{{article.paragraphs}}" wx:key="text" class="news-paragraph {{globalFontPageClass}}">
         <text
@@ -27,6 +27,7 @@
     </view>
 
     <view class="news-actions">
+      <button wx:if="{{article.url}}" class="{{globalFontPageClass}}" hover-class="none" bindtap="openOriginal">查看原文 ↗</button>
       <button class="{{globalFontPageClass}}" hover-class="none" bindtap="readArticle">语音朗读</button>
       <button class="{{globalFontPageClass}}" hover-class="none" bindtap="askXiang">问小享</button>
     </view>

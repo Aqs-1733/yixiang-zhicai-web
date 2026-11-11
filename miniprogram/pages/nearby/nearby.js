@@ -68,7 +68,8 @@ function mapPlace(item, index, category, currentLocation) {
   const latitude = Number(loc.lat || item.latitude || item.lat)
   const longitude = Number(loc.lng || item.longitude || item.lng)
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
-  const distance = item._distance || item.distance || distanceMeters(currentLocation, { latitude, longitude })
+  const supplied = Number(item.distance_meters ?? item._distance)
+  const distance = Number.isFinite(supplied) && supplied >= 0 ? supplied : distanceMeters(currentLocation, { latitude, longitude })
   return {
     id: String(item.id || `${category.key}_${index}_${latitude}_${longitude}`),
     markerId: index + 2,
@@ -77,7 +78,7 @@ function mapPlace(item, index, category, currentLocation) {
     phone: item.tel || item.phone || '',
     location: { lat: latitude, lng: longitude },
     category: category.label,
-    distanceText: distanceText(distance),
+    distanceText: '直线' + distanceText(distance),
     distanceValue: Number(distance || 0),
     source: item.source || 'backend_lbs',
     note: item.source === 'local_fallback'
@@ -245,7 +246,7 @@ Page({
   },
 
   useDefaultLocation(message) {
-    this.applyLocation(DEFAULT_LOCATION, message || '已使用默认城市位置查找附近服务。', 'default')
+    this.applyLocation(DEFAULT_LOCATION, '尚未取得您的位置。当前展示默认城市查询中心，请搜索地址或选择位置。', 'default')
   },
 
   locateByIp(message) {
@@ -423,11 +424,11 @@ Page({
       id: 1,
       latitude: Number(currentLocation.latitude),
       longitude: Number(currentLocation.longitude),
-      title: '当前位置',
+      title: this.data.locationSource === 'getLocation' ? '当前位置' : '查询中心（非实时定位）',
       width: USER_MARKER_SIZE,
       height: USER_MARKER_SIZE,
       callout: {
-        content: '当前位置',
+        content: this.data.locationSource === 'getLocation' ? '当前位置' : '查询中心',
         display: 'ALWAYS',
         padding: 8,
         borderRadius: 8,

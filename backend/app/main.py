@@ -177,6 +177,12 @@ def daily_lesson_video_file() -> FileResponse:
 
 
 def build_lesson_video_title(video_file: Path) -> str:
+    metadata=video_file.with_suffix(".json")
+    if metadata.is_file():
+        try:
+            title=json.loads(metadata.read_text(encoding="utf-8")).get("title")
+            if title:return str(title)
+        except Exception:pass
     if video_file.stem == "daily_lesson":
         return "理财基础：先看懂，再决定"
     return re.sub(r"[_-]+", " ", video_file.stem).strip() or "视频课程"
@@ -219,6 +225,12 @@ def build_local_lesson_video_options(base_url: str) -> List[Dict[str, str]]:
     ]
 
     local = [{"id": video.stem, "title": build_lesson_video_title(video), "url": base_url + "/media/lesson-videos/" + quote(video.name)} for video in get_local_lesson_video_files()]
+    for item in local:
+        try:metadata=json.loads((LOCAL_LESSON_VIDEO_DIR / (item["id"]+".json")).read_text(encoding="utf-8"))
+        except Exception:metadata={}
+        item.update({k:metadata.get(k,"") for k in ("license","license_url","source_url","attribution","updated_at")})
+        item["source"]=metadata.get("attribution") or "颐享智财原创课程"
+    for item in remote:item.update(source="国家老年大学 · 外部课程",license="未标注开放授权，仅保留原来源播放链接",source_url="https://www.lndx.edu.cn/")
     return local + remote
 
 
@@ -1679,33 +1691,9 @@ def local_risk_education_news(limit: int = 8, reason: str = "") -> Dict[str, Any
     }
 
 
-def fetch_real_market_news(limit: int = 8) -> Dict[str, Any]:
-    if not (JUHE_BULLETIN_URL and JUHE_BULLETIN_KEY):
-        return local_risk_education_news(limit, "missing_api_key")
-    try:
-        with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.get(
-                JUHE_BULLETIN_URL,
-                params={"key": JUHE_BULLETIN_KEY, "num": limit, "page": 1},
-            )
-            r.raise_for_status()
-            payload = response_json_with_encoding(r)
-        items = []
-        for idx, raw in enumerate(_extract_items(payload)[:limit], start=1):
-            item = normalize_news_item(raw, idx)
-            if item["title"]:
-                items.append(item)
-        if not items:
-            return local_risk_education_news(limit, str(payload.get("reason") or payload.get("error_code") or "empty"))
-        return {
-            "success": True,
-            "message": "ok",
-            "items": items,
-            "source": "juhe_bulletin",
-            "real_time": True,
-        }
-    except Exception as e:
-        return local_risk_education_news(limit, str(e))
+def fetch_real_market_news(limit: int = 8, force: bool = False) -> Dict[str, Any]:
+    from app.services.live_news import get_news
+    return get_news(limit,force)
 
 
 def public_http_url(value: str) -> bool:
@@ -1732,43 +1720,10 @@ def public_http_url(value: str) -> bool:
 
 @app.get("/news/article-content")
 def news_article_content(url: str = Query(default="")) -> Dict[str, Any]:
-    target = unquote(str(url or "").strip())
-    if not public_http_url(target):
-        raise HTTPException(400, detail="新闻链接无效或不是公网地址")
-    try:
-        with httpx.Client(
-            timeout=DATA_API_TIMEOUT,
-            follow_redirects=True,
-            headers={"User-Agent": "Mozilla/5.0 YixiangZhicai/3.0"},
-        ) as client:
-            response = client.get(target)
-            response.raise_for_status()
-        content_type = response.headers.get("content-type", "").lower()
-        if "html" not in content_type and "text" not in content_type:
-            return {"ok": False, "title": "", "paragraphs": [], "message": "该新闻链接没有可读取的文字正文"}
-        html_text = response.text[:2_000_000]
-        title_match = re.search(r"<title[^>]*>(.*?)</title>", html_text, re.I | re.S)
-        title = unescape(re.sub(r"<[^>]+>", " ", title_match.group(1))).strip() if title_match else ""
-        paragraphs = []
-        for block in re.findall(r"<p\b[^>]*>(.*?)</p>", html_text, re.I | re.S):
-            clean = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", block, flags=re.I | re.S)
-            clean = unescape(re.sub(r"<[^>]+>", " ", clean))
-            clean = re.sub(r"\s+", " ", clean).strip()
-            if len(clean) >= 12 and clean not in paragraphs:
-                paragraphs.append(clean[:1000])
-            if len(paragraphs) >= 30:
-                break
-        return {
-            "ok": bool(paragraphs),
-            "title": title[:200],
-            "paragraphs": paragraphs,
-            "source_url": str(response.url),
-            "message": "" if paragraphs else "该网页没有提取到可读正文",
-        }
-    except HTTPException:
-        raise
-    except Exception:
-        return {"ok": False, "title": "", "paragraphs": [], "message": "新闻正文暂时读取失败"}
+    from app.services.live_news import find_article
+    article=find_article(url=unquote(url))
+    if not article:raise HTTPException(400,detail="仅支持资讯列表中已核验的来源链接")
+    return {"ok":True,"title":article['title'],"source":article['source'],"date":article['time'],"paragraphs":[article['summary']],"url":article['url'],"content_kind":"publisher_headline"}
 
 
 def normalize_product(raw: Dict[str, Any], source: str, idx: int) -> Dict[str, Any]:
@@ -5402,21 +5357,22 @@ def lbs_nearby(
     type: str = Query(default="bank"),
     city: str = Query(default="天津"),
     keyword: str = Query(default=""),
-    latitude: float = Query(default=39.120),
-    longitude: float = Query(default=117.200),
+    latitude: float = Query(default=39.120,ge=-85,le=85),
+    longitude: float = Query(default=117.200,ge=-180,le=180),
+    radius: int = Query(default=3000,ge=100,le=30000),
     user=Depends(current_user),
 ) -> Dict[str, Any]:
     label, default_keyword = lbs_type_label(type)
     query_keyword = (keyword or default_keyword).strip()
     if not TENCENT_MAP_KEY:
-        return fallback_nearby_baidu(type, query_keyword, label, latitude, longitude)
+        return local_nearby_fallback(type, query_keyword, label, latitude, longitude,"地图服务暂时不可用，请手动选点或稍后重试")
     try:
         with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
             r = client.get(
                 "https://apis.map.qq.com/ws/place/v1/search",
                 params={
                     "keyword": query_keyword,
-                    "boundary": f"nearby({latitude},{longitude},3000)",
+                    "boundary": f"nearby({latitude},{longitude},{radius})",
                     "page_size": 10,
                     "key": TENCENT_MAP_KEY,
                 },
@@ -5424,7 +5380,7 @@ def lbs_nearby(
             r.raise_for_status()
             payload = r.json()
         if int(payload.get("status", -1)) != 0:
-            fallback = fallback_nearby_baidu(type, query_keyword, label, latitude, longitude)
+            fallback = local_nearby_fallback(type, query_keyword, label, latitude, longitude,"地图服务暂时不可用，请手动选点或稍后重试")
             fallback["debug_message"] = payload.get("message") or "Tencent map place search failed"
             return fallback
         items = []
@@ -5439,15 +5395,18 @@ def lbs_nearby(
                 "keyword": query_keyword,
                 "address": item.get("address") or "",
                 "phone": tel,
+                "distance_meters":float(distance) if distance not in [None, ""] else None,
+                "coordinate_system":"gcj02",
+                "source":"tencent_map",
                 "distance": f"约{int(distance)}米" if distance not in [None, ""] else "",
                 "latitude": float(loc.get("lat") or latitude),
                 "longitude": float(loc.get("lng") or longitude),
                 "note": "出发前可先电话确认营业时间和是否办理对应业务。" if tel else "暂无电话，可先打开地图查看详情。",
             })
     except Exception as e:
-        fallback = fallback_nearby_baidu(type, query_keyword, label, latitude, longitude)
+        fallback = local_nearby_fallback(type, query_keyword, label, latitude, longitude,"地图服务暂时不可用，请手动选点或稍后重试")
         fallback["debug_message"] = "Tencent map place search failed"
-        fallback["tencent_error"] = str(e)
+        fallback["tencent_error"] = type(e).__name__
         return fallback
     return {
         "success": True,
@@ -5539,12 +5498,7 @@ def lbs_reverse_geocode(latitude: float = Query(default=39.120), longitude: floa
 @app.get("/lbs/ip-location")
 def lbs_ip_location(user=Depends(current_user)) -> Dict[str, Any]:
     if not TENCENT_MAP_KEY:
-        return {
-            "success": True,
-            "address": "天津市",
-            "location": {"lat": 39.0851, "lng": 117.1994, "latitude": 39.0851, "longitude": 117.1994},
-            "source": "local_ip_fallback",
-        }
+        return {"success": False, "address":"", "location":{}, "source":"unavailable", "message":"暂未取得所在城市，请手动搜索地址"}
     try:
         with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
             r = client.get("https://apis.map.qq.com/ws/location/v1/ip", params={"key": TENCENT_MAP_KEY})
@@ -5562,14 +5516,8 @@ def lbs_ip_location(user=Depends(current_user)) -> Dict[str, Any]:
             "location": {"lat": lat, "lng": lng, "latitude": lat, "longitude": lng},
             "source": "tencent_map",
         }
-    except Exception as e:
-        return {
-            "success": True,
-            "address": "天津市",
-            "location": {"lat": 39.0851, "lng": 117.1994, "latitude": 39.0851, "longitude": 117.1994},
-            "source": "local_ip_fallback",
-            "debug_message": str(e)[:120],
-        }
+    except Exception:
+        return {"success": False, "address":"", "location":{}, "source":"unavailable", "message":"暂未取得所在城市，请手动搜索地址"}
 
 
 @app.post("/payments/ledger-record")
@@ -5722,9 +5670,9 @@ def juhe_bulletin() -> Dict[str, Any]:
         return {"ok": False, "items": [], "reason": str(e)}
 
 
-def market_daily() -> Dict[str, Any]:
+def market_daily(force: bool = False) -> Dict[str, Any]:
     """获取每日财经资讯。只返回真实 API 数据；失败时返回明确错误。"""
-    data = fetch_real_market_news(limit=8)
+    data = fetch_real_market_news(limit=8, force=force)
     data["disclaimer"] = "资讯仅供风险教育和市场了解，不构成投资建议。"
     return data
 
@@ -7515,8 +7463,8 @@ async def content_generate_anti_fraud_video(data: ContentGenerateIn, user=Depend
 # ------------------------- market / risk text -------------------------
 
 @app.get("/market/daily")
-def market_daily() -> Dict[str, Any]:
-    data = fetch_real_market_news(limit=8)
+def market_daily(force: bool = False) -> Dict[str, Any]:
+    data = fetch_real_market_news(limit=8, force=force)
     data["disclaimer"] = "资讯仅供风险教育和市场了解，不构成投资建议。"
     return data
 
@@ -7538,19 +7486,7 @@ def weather_suggestion(weather: str, temperature: Any = "") -> str:
 
 
 def fallback_weather(city: str = "天津") -> Dict[str, Any]:
-    return {
-        "ok": True,
-        "success": True,
-        "city": city or "天津",
-        "weather": "晴",
-        "temperature": "26℃",
-        "temp": "26℃",
-        "wind": "微风",
-        "humidity": "60%",
-        "update_time": now_iso()[:16].replace("T", " "),
-        "suggestion": "天气适合外出，注意补水，老人出门前记得带好手机和证件。",
-        "source": "fallback",
-    }
+    return {"ok":False,"success":False,"city":city,"weather":"暂未取得天气","temperature":"","temp":"","wind":"","humidity":"","update_time":"","suggestion":"请以当地气象服务的实际预报为准。","source":"unavailable","message":"天气服务暂未返回真实数据"}
 
 
 def open_meteo_weather(city: str, latitude: float, longitude: float) -> Dict[str, Any]:
@@ -7701,7 +7637,8 @@ def integrations_status() -> Dict[str, Any]:
         },
         "vision": {
             "configured": bool(ai_status.get("vision_configured")),
-            "provider": "vivo_bluelm",
+            "provider": next(iter(ai_status.get("vision_providers",[])),"not_configured"),
+            "providers": ai_status.get("vision_providers",[]),
             "fallback": "empty_result_with_error_message",
             "scenes": ["finance_product", "ledger_wechat", "general_image"],
         },
@@ -7725,7 +7662,8 @@ def integrations_status() -> Dict[str, Any]:
             "local_configured": True,
             "fallback": "真实本地OCR；识别不到时提示重新上传，不生成默认内容",
         },
-        "lbs": {"configured": bool(ai_status.get("lbs_configured")), "fallback": "local_common_places"},
+        "lbs": {"configured": bool(ai_status.get("lbs_configured")), "coordinate_system":"gcj02", "route_provider":"tencent_directions", "fallback":"manual_address_selection_no_fabricated_route"},
+        "news":{"source":"public_official_feeds","sources":["中国政府网","中国人民银行"],"refresh_interval_seconds":600,"fallback":"cached_headlines_with_original_dates_or_empty"},
         "juhe": {
             "finance_configured": bool(JUHE_FINANCE_URL and JUHE_FINANCE_KEY),
             "bulletin_configured": bool(JUHE_BULLETIN_URL and JUHE_BULLETIN_KEY),
@@ -7778,3 +7716,14 @@ if WEB_SITE_DIR.is_dir():
 def lbs_static_map(latitude: float = Query(ge=-85, le=85), longitude: float = Query(ge=-180, le=180), zoom: int = Query(default=14, ge=4, le=18), width: int = Query(default=640, ge=50, le=1000), height: int = Query(default=360, ge=50, le=800), user=Depends(current_user)):
     from app.map_adapter import static_map
     return static_map(latitude, longitude, zoom, width, height)
+
+
+@app.get("/lbs/convert-coordinates")
+def convert_coordinates(latitude: float = Query(ge=-85,le=85), longitude: float = Query(ge=-180,le=180), user=Depends(current_user)):
+    from app.services.geo_gateway import convert
+    return convert(latitude,longitude)
+
+@app.get("/lbs/route")
+def walking_route(start_latitude: float = Query(ge=-85,le=85), start_longitude: float = Query(ge=-180,le=180), latitude: float = Query(ge=-85,le=85), longitude: float = Query(ge=-180,le=180), user=Depends(current_user)):
+    from app.services.geo_gateway import walking
+    return walking(start_latitude,start_longitude,latitude,longitude)

@@ -21,6 +21,7 @@ function decorateArticle(item) {
   return {
     ...article,
     title,
+    date:article.published_at||article.date||article.time||article.created_at||'发布日期未提供',
     summary,
     content,
     titleSegments: termHelper.buildTermSegments(title),
@@ -120,10 +121,17 @@ Page({
     getApp().readText(`资讯：${article.title}。${article.summary || article.content}`)
   },
 
+  openOriginal() {
+    const url=this.data.article.url||this.data.article.link||''
+    if(!/^https?:\/\//.test(url))return
+    if(typeof window!=='undefined')window.open(url,'_blank','noopener,noreferrer')
+    else wx.setClipboardData({data:url})
+  },
+
   askXiang() {
     const article = this.data.article
     wx.navigateTo({
-      url: `/pages/assistant/assistant?ask=${encodeURIComponent(`请用适合长辈理解的话，解释这条资讯和我的养老资金有什么关系：${article.title}。${article.summary || article.content}`)}`
+      url: `/pages/assistant/assistant?ask=${encodeURIComponent(`请依据这条官方资讯的标题和出处解释，未核对正文的细节请明确说明，不要补写政策条件：${article.title}。发布：${article.date}；来源：${article.source}；原文：${article.url||''}。${article.summary || article.content}`)}`
     })
   },
 
