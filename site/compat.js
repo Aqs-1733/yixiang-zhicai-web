@@ -29,7 +29,7 @@ const pages=[
 const pageName=Object.fromEntries(pages.map(([p,n])=>[p,n]));
 const authPaths=new Set(['pages/login/login','pages/register/register','pages/forgot-password/forgot-password','pages/security-question/security-question']);
 const childPaths=new Set(pages.filter(([p])=>p.startsWith('pages/child/')).map(x=>x[0]));
-const activeList = (p)=> childPaths.has(p) ? pages.filter(([x])=>childPaths.has(x) || x==='pages/assistant/assistant'||x==='pages/family/family'||x==='pages/family-group-chat/family-group-chat'||x==='pages/family-messages/family-messages') : pages.filter(([x])=>!childPaths.has(x)&&!authPaths.has(x));
+const activeList = (p)=> childPaths.has(p)||storageGet('role')==='child' ? pages.filter(([x])=>childPaths.has(x) || x==='pages/assistant/assistant'||x==='pages/family/family'||x==='pages/family-group-chat/family-group-chat'||x==='pages/family-messages/family-messages') : pages.filter(([x])=>!childPaths.has(x)&&!authPaths.has(x));
 function storageGet(k){try{const v=localStorage.getItem(storePrefix+k); return v===null ? '': JSON.parse(v)}catch{return ''}}
 function storageSet(k,v){try{localStorage.setItem(storePrefix+k,JSON.stringify(v))}catch(e){console.warn('Local storage',e)}}
 function normalizeUrl(s){let p=String(s||'').replace(/^\//,'');return p.replace(/\.js$/,'')}
@@ -49,32 +49,68 @@ function createInstance(cfg,isComponent=false){const instance={data:structuredCl
  for(const [k,v] of Object.entries(cfg)){if(typeof v==='function')instance[k]=v.bind(instance)}
  for(const [k,v] of Object.entries(cfg.methods||{}))if(typeof v==='function')instance[k]=v.bind(instance);
  return instance;}
-function goto(href,kind='navigate'){const [raw,q='']=String(href).split('?');const path=normalizeUrl(raw);if(!pageName[path]){toast('尚未定义页面：'+path);return}
- const params=Object.fromEntries(new URLSearchParams(q));if(page){try{page.instance.onHide?.()}catch(e){console.warn(e)}if(kind==='navigate')stack.push(page);else{page.instance.onUnload?.(); for(const comp of page.instance._components.values())try{comp.__config?.lifetimes?.detached?.call(comp)}catch(e){console.warn(e)} if(kind==='relaunch')stack=[];}}
+// Browser entries retain the original Page instance, including form/component state.
+let routeSerial=0, routeEntry=null, activeGesture=null;
+const routeEntries=new Map();
+function snapshotRoute(){if(routeEntry&&page)routeEntries.set(routeEntry,{page,stack:[...stack]})}
+function unloadPage(p){if(!p)return;try{p.instance.onUnload?.()}catch(e){console.warn(e)}for(const comp of p.instance._components.values())try{comp.__config?.lifetimes?.detached?.call(comp)}catch(e){console.warn(e)}}
+function goto(href,kind='navigate'){
+ const [raw,q='']=String(href).split('?'),path=normalizeUrl(raw);
+ if(!pageName[path]){toast('尚未定义页面：'+path);return}
+ const params=Object.fromEntries(new URLSearchParams(q));snapshotRoute();activeGesture=null;
+ if(page){try{page.instance.onHide?.()}catch(e){console.warn(e)}if(kind==='navigate')stack.push(page);else unloadPage(page)}
+ if(kind==='relaunch'){for(const old of stack)unloadPage(old);stack=[];routeEntries.clear()}
  const prev=page;page=null;activePath=path;activeParameters=params;
  if(!pageDefs.has(path))loadModule(path+'.js');const cfg=pageDefs.get(path);
  if(!cfg){recordError('页面不存在:'+path);return}
- const instance=createInstance(cfg);page={path,params,instance,oldPage:prev};
- history.replaceState({},'',`#/${path}${q?'?'+q:''}`);
+ const instance=createInstance(cfg);instance.route=path;instance.options=params;
+ page={path,params,instance,oldPage:prev};routeEntry=++routeSerial;
+ const hash=`#/${path}${q?'?'+q:''}`;
+ history[kind==='navigate'?'pushState':'replaceState']({yxEntry:routeEntry},'',hash);snapshotRoute();
  document.title=(pageName[path]||'颐享智财')+' · 颐享智财';
- updateShell();refreshImmediate();try{instance.onLoad?.(params);instance.onShow?.()}catch(e){console.error('Page initialization failed:',path,e);recordError(path+' 初始化:'+e.message)}refresh();
+ updateShell();refreshImmediate();try{instance.onLoad?.(params);if(page?.instance===instance)instance.onShow?.()}catch(e){console.error('Page initialization failed:',path,e);recordError(path+' 初始化:'+e.message)}refresh();
  $('#main-scroll')?.scrollTo(0,0);
 }
-function back(delta=1){if(stack.length){page?.instance?.onUnload?.();for(const comp of (page?.instance?._components?.values()||[]))try{comp.__config?.lifetimes?.detached?.call(comp)}catch(e){}const prev=stack.pop();page=prev;activePath=prev.path;activeParameters=prev.params;updateShell();refreshImmediate();try{page.instance.onShow?.()}catch(e){recordError(e.message)}refresh()}else goto('pages/index/index','redirect')}
-function eventPayload(node,type,original){const dataset={};for(const [k,v] of Object.entries(node.dataset||{}))if(k!=='yxKey')dataset[k]=v;
- let value=original?.target?.value;if(type==='change'&&(node.tagName==='INPUT'&&node.type==='checkbox'))value=!!node.checked;
- if(type==='change'&&node.tagName==='SELECT')value=String(node.value);
- return {type,timeStamp:Date.now(),detail:{value,source:'web',...original?.detail},target:{dataset},currentTarget:{dataset},changedTouches:original?.changedTouches||[],touches:original?.touches||[],preventDefault(){original?.preventDefault?.()},stopPropagation(){original?.stopPropagation?.()}};}
-const nativeEvents={tap:'click',input:'input',change:'change',confirm:'keydown',longpress:'contextmenu',touchstart:'pointerdown',touchend:'pointerup',touchcancel:'pointercancel',touchmove:'pointermove',markertap:'click',scroll:'scroll',error:'error'};
-function bindEvents(origin,el,owner,scope){for(const attr of [...origin.attributes]){let m=attr.name.match(/^(bind|catch)(?::)?(tap|input|change|confirm|longpress|touchstart|touchend|touchcancel|touchmove|markertap|scroll|error)$/);if(!m)continue;
-  const handler=attr.value,ename=nativeEvents[m[2]]||m[2];if(!owner?.[handler]){if(handler&&handler!=='true')console.debug('Missing handler',handler);continue}
-  el.addEventListener(ename,e=>{if(m[2]==='confirm'&&e.key!=='Enter')return;if(m[2]==='longpress'){e.preventDefault()}if(m[1]==='catch')e.stopPropagation();try{owner[handler](eventPayload(el,m[2]==='input'?'input':m[2]==='change'?'change':m[2],e))}catch(ex){console.error(ex);recordError((page?.path||'')+':'+handler+' '+ex.message)}},{passive:m[2]==='touchmove'?false:undefined});
- }
+function back(delta=1){if(stack.length)history.go(-Math.min(Math.max(1,Number(delta)||1),stack.length));else goto(storageGet('role')==='child'?'pages/child/index/index':'pages/index/index','redirect')}
+function restoreBrowserRoute(){
+ const target=location.hash.replace(/^#\//,'');if(!target||!pageName[target.split('?')[0]])return;
+ if(!storageGet('token')&&!authPaths.has(target.split('?')[0])){goto('pages/login/login','relaunch');return}
+ if(history.state?.yxEntry===routeEntry&&target===activePath+(Object.keys(activeParameters).length?'?'+new URLSearchParams(activeParameters):''))return;
+ const saved=routeEntries.get(history.state?.yxEntry);snapshotRoute();activeGesture=null;
+ if(saved){try{page?.instance.onHide?.()}catch(e){}page=saved.page;stack=[...saved.stack];routeEntry=history.state.yxEntry;activePath=page.path;activeParameters=page.params;document.title=(pageName[page.path]||'颐享智财')+' · 颐享智财';updateShell();refreshImmediate();page.instance.onShow?.();refresh()}
+ else goto(target,'history');
 }
+addEventListener('popstate',restoreBrowserRoute);addEventListener('hashchange',restoreBrowserRoute);
+function eventPayload(node,type,original){
+ const dataset={};for(const [k,v] of Object.entries(node.dataset||{}))if(k!=='yxKey')dataset[k]=v;
+ let value=original?.target?.value;if(type==='change'&&node.tagName==='INPUT'&&node.type==='checkbox')value=!!node.checked;
+ if(type==='change'&&node.tagName==='SELECT')value=String(node.value);
+ const detail={value,source:'web',...(typeof original?.detail==='object'?original.detail:{})};
+ if(node.tagName==='VIDEO')Object.assign(detail,{currentTime:node.currentTime||0,duration:Number.isFinite(node.duration)?node.duration:0,width:node.videoWidth,height:node.videoHeight,fullScreen:document.fullscreenElement===node});
+ const touch=original&&'clientX' in original?{identifier:original.pointerId||0,clientX:original.clientX,clientY:original.clientY,pageX:original.pageX,pageY:original.pageY}:null;
+ return {type,timeStamp:Date.now(),detail,markerId:detail.markerId,target:{dataset},currentTarget:{dataset},changedTouches:original?.changedTouches||(touch?[touch]:[]),touches:original?.touches||(touch&&!['touchend','touchcancel'].includes(type)?[touch]:[]),preventDefault(){original?.preventDefault?.()},stopPropagation(){original?.stopPropagation?.()}};
+}
+const nativeEvents={tap:'click',input:'input',change:'change',blur:'blur',focus:'focus',confirm:'keydown',longpress:'contextmenu',touchstart:'pointerdown',touchend:'pointerup',touchcancel:'pointercancel',touchmove:'pointermove',markertap:'markertap',scroll:'scroll',error:'error',chooseavatar:'chooseavatar',play:'play',pause:'pause',ended:'ended',timeupdate:'timeupdate',fullscreenchange:'fullscreenchange',loadedmetadata:'loadedmetadata'};
+function callBinding(binding,node,owner,e){if(binding.type==='blur'&&node.__yxMoving)return;if(binding.type==='confirm'&&e.key!=='Enter')return;if(binding.type==='longpress')e.preventDefault();if(binding.catch)e.stopPropagation();try{owner[binding.handler](eventPayload(node,binding.type,e))}catch(ex){console.error(ex);recordError((page?.path||'')+':'+binding.handler+' '+ex.message)}}
+function bindEvents(origin,el,owner,scope){
+ const bindings=[];for(const attr of [...origin.attributes]){const m=attr.name.match(/^(bind|catch)(?::)?([a-z]+)$/);if(m&&nativeEvents[m[2]]){const handler=asText(interpolated(attr.value,scope));if(typeof owner?.[handler]==='function')bindings.push({type:m[2],handler,catch:m[1]==='catch'})}}
+ for(const b of bindings){el.addEventListener(nativeEvents[b.type],e=>{
+  if(['touchmove','touchend','touchcancel'].includes(b.type)&&activeGesture?.id===e.pointerId)return;
+  if(b.type==='touchstart'){activeGesture={id:e.pointerId,node:el,owner,bindings};if(bindings.some(x=>x.type==='touchmove'))el.style.touchAction='none'}
+  callBinding(b,el,owner,e);
+ },{passive:b.type==='touchmove'?false:undefined})}
+ if(bindings.some(x=>x.type==='touchmove'))el.style.touchAction='none';
+}
+for(const [event,type] of [['pointermove','touchmove'],['pointerup','touchend'],['pointercancel','touchcancel']])document.addEventListener(event,e=>{
+ const g=activeGesture;if(!g||g.id!==e.pointerId)return;
+ for(const b of g.bindings.filter(x=>x.type===type))callBinding(b,g.node,g.owner,e);
+ if(type!=='touchmove')activeGesture=null;
+},{passive:false});
+function wxBoolean(v){return v!==false&&v!==null&&v!==undefined&&v!==0&&v!=='false'&&v!=='0'}
 const exprCache=new Map();
 function evalExpr(raw,scope){const str=String(raw||'').replace(/^\s*\{\{/,'').replace(/\}\}\s*$/,'').trim();if(!str)return '';
  try{let fn=exprCache.get(str);if(!fn){fn=new Function('$ctx','with($ctx){return ('+str+')}');exprCache.set(str,fn)}return fn(scope)}catch(e){return undefined;}}
-function interpolated(input,scope){const s=String(input??'');if(/^\s*\{\{[\s\S]*\}\}\s*$/.test(s))return evalExpr(s,scope);
+function interpolated(input,scope){const s=String(input??'');if(/^\s*\{\{[\s\S]*\}\}\s*$/.test(s)&&s.indexOf('}}')===s.lastIndexOf('}}'))return evalExpr(s,scope);
  return s.replace(/\{\{([\s\S]*?)\}\}/g,(_,ex)=>{let v=evalExpr(ex,scope);return v===undefined||v===null?'':typeof v==='object'?JSON.stringify(v):String(v)})}
 function asText(s){return s===undefined||s===null?'':String(s)}
 function condition(node,scope){return !!evalExpr(node.getAttribute('wx:if'),scope)}
@@ -96,8 +132,9 @@ function renderOne(node,into,owner,scope,key){let tag=node.tagName.toLowerCase()
  if(tag.includes('-')&&!['scroll-view','rich-text','swiper-item','movable-area','movable-view'].includes(tag)&&componentDefs.has('components/'+tag+'/'+tag)||tag==='voice-input'||tag==='term-popups'||tag==='child-bottom-nav'||tag==='family-message-modal'||tag==='family-care-modal'){
   renderComponent(node,into,owner,scope,key,tag);return;
  }
- const convert={'view':'div','text':'span','scroll-view':'div','image':'img','picker':'select','switch':'input','radio':'input','radio-group':'div','checkbox':'input','checkbox-group':'div','rich-text':'div','map':'div','swiper':'div','swiper-item':'div','icon':'span','navigator':'a','block':'div'};
- const el=document.createElement(convert[tag]||tag);el.setAttribute('data-yx-key',key);
+ const convert={'view':'div','text':'span','scroll-view':'div','image':'img','picker':'select','switch':'button','radio':'input','radio-group':'div','checkbox':'input','checkbox-group':'div','rich-text':'div','map':'div','swiper':'div','swiper-item':'div','icon':'span','navigator':'a','block':'div'};
+ const pickerMode=tag==='picker'?asText(interpolated(node.getAttribute('mode')||'selector',scope)):'';
+ const el=document.createElement(tag==='picker'&&['time','date'].includes(pickerMode)?'input':convert[tag]||tag);el.setAttribute('data-yx-key',key);
  if(tag==='view'||tag==='scroll-view')el.classList.add('yx-view');
  if(tag==='text')el.classList.add('yx-text');
  if(tag==='scroll-view')el.classList.add('yx-scroll');
@@ -105,7 +142,8 @@ function renderOne(node,into,owner,scope,key){let tag=node.tagName.toLowerCase()
  for(const a of [...node.attributes]){
   const attr=a.name; if(attr.startsWith('wx:')||attr.startsWith('bind')||attr.startsWith('catch')||['hover-class','placeholder-class','scroll-y','scroll-x','show-scrollbar','enhanced','mode','range','range-key','selector','checked','value','password','type','maxlength'].includes(attr))continue;
   let val=interpolated(a.value,scope);if(val===undefined||val===null)continue;
-  if(attr==='class')el.className+=' '+String(val);else if(attr==='style')el.setAttribute('style',String(val));
+  if(attr==='class')el.className+=' '+String(val);else if(attr==='style')el.setAttribute('style',String(val).replace(/(-?(?:\d*\.)?\d+)rpx\b/g,'calc($1 * var(--yx-rpx))'));
+  else if(['disabled','hidden','controls','autoplay','loop','muted','multiple','required','readonly'].includes(attr)){const enabled=wxBoolean(val);if(enabled)el.setAttribute(attr,'');else el.removeAttribute(attr);if(attr==='muted')el.muted=enabled;}
   else if(attr.startsWith('data-'))el.setAttribute(attr,asText(val));
   else if(attr==='src'&&tag==='image')el.src=assetUrl(String(val));
   else if(attr==='src')el.setAttribute(attr,assetUrl(String(val)));
@@ -113,32 +151,42 @@ function renderOne(node,into,owner,scope,key){let tag=node.tagName.toLowerCase()
   else if(attr==='url'&&tag==='navigator')el.href='#/'+String(val).replace(/^\//,'');
   else if(/^[a-z\-]+$/.test(attr))el.setAttribute(attr,asText(val));
  }
+ if(el.matches('.term-popup-card,.guide-dialog'))for(const prop of ['left','top'])if(el.style[prop])el.style.setProperty(prop,el.style[prop],'important');
  if(tag==='image'){if(!el.getAttribute('src'))el.src=assetUrl(asText(interpolated(node.getAttribute('src'),scope)));el.loading='lazy';el.alt=node.getAttribute('alt')||'';}
  if(tag==='input'||tag==='textarea'){
   if(tag==='input'){const t=node.getAttribute('type')||'';el.type=node.getAttribute('password')==='true'?'password':t==='number'?'tel':t==='digit'?'number':'text';const max=node.getAttribute('maxlength');if(max!==null&&Number(max)>0)el.maxLength=Number(max);}
   const val=interpolated(node.getAttribute('value')||'',scope);if(val!==undefined&&val!==null)el.value=String(val);
-  el.placeholder=String(node.getAttribute('placeholder')||'');
+  el.placeholder=asText(interpolated(node.getAttribute('placeholder')||'',scope));
  }
- if(tag==='switch'||tag==='checkbox'||tag==='radio'){
-  el.type=tag==='switch'||tag==='checkbox'?'checkbox':'radio';el.className+=' yx-'+tag;el.checked=!!interpolated(node.getAttribute('checked')||'false',scope);el.value=asText(interpolated(node.getAttribute('value')||'',scope));
+ if(tag==='switch'){
+  el.type='button';el.className+=' yx-switch';el.setAttribute('role','switch');
+  const checked=node.hasAttribute('checked')&&wxBoolean(interpolated(node.getAttribute('checked'),scope));
+  el.setAttribute('aria-checked',String(checked));el.setAttribute('aria-label',asText(interpolated(node.getAttribute('aria-label')||'',scope))||node.parentElement?.textContent?.replace(/\{\{.*?\}\}/g,'').trim().slice(0,60)||'开关');
+  el.style.setProperty('--switch-color',asText(interpolated(node.getAttribute('color')||'#f2b632',scope)));
+  const track=document.createElement('span');track.className='yx-switch-track';const thumb=document.createElement('span');thumb.className='yx-switch-thumb';track.append(thumb);el.append(track);
+  el.addEventListener('click',()=>{const value=el.getAttribute('aria-checked')!=='true';el.setAttribute('aria-checked',String(value));el.dispatchEvent(new CustomEvent('change',{detail:{value}}))});
+ }
+ if(tag==='checkbox'||tag==='radio'){
+  el.type=tag==='checkbox'?'checkbox':'radio';el.className+=' yx-'+tag;el.checked=node.hasAttribute('checked')&&wxBoolean(interpolated(node.getAttribute('checked'),scope));el.value=asText(interpolated(node.getAttribute('value')||'',scope));
  }
  if(tag==='picker'){
-  const mode=node.getAttribute('mode')||'selector';el.className+=' yx-picker';const label=node.textContent?.trim()?.slice(0,25)||'请选择';
-  if(mode==='time'||mode==='date'){const input=document.createElement('input');input.type=mode;input.value=asText(interpolated(node.getAttribute('value')||'',scope));input.className='yx-native-date';input.addEventListener('change',e=>{const h=node.getAttribute('bindchange');owner?.[h]?.({detail:{value:e.target.value},currentTarget:{dataset:Object.fromEntries([...node.attributes].filter(a=>a.name.startsWith('data-')).map(a=>[a.name.slice(5),asText(interpolated(a.value,scope))]))}})});into.append(input);return}
-  const arr=interpolated(node.getAttribute('range')||'',scope);if(Array.isArray(arr)){const rangeKey=node.getAttribute('range-key');arr.forEach((v,j)=>{let op=document.createElement('option');op.value=String(j);op.textContent=asText(rangeKey?v[rangeKey]:v);el.append(op)});el.value=String(interpolated(node.getAttribute('value')||'0',scope)||0)}
-  else{const op=document.createElement('option');op.textContent=label;op.value='';el.append(op)}
+  el.className+=' yx-picker';const val=interpolated(node.getAttribute('value')||'0',scope);
+  if(['time','date'].includes(pickerMode)){el.type=pickerMode;el.value=asText(val);el.className+=' yx-native-date';for(const [a,b]of [['start','min'],['end','max']])if(node.hasAttribute(a))el.setAttribute(b,asText(interpolated(node.getAttribute(a),scope)))}
+  else{const arr=interpolated(node.getAttribute('range')||'',scope);if(Array.isArray(arr)){const rangeKey=node.getAttribute('range-key');arr.forEach((v,j)=>{const op=document.createElement('option');op.value=String(j);op.textContent=asText(rangeKey?v[rangeKey]:v);el.append(op)});el.value=String(val||0)}else{const op=document.createElement('option');op.textContent=asText(interpolated(node.textContent,scope)).trim()||'请选择';op.value='';el.append(op)}}
  }
  if(tag==='rich-text'){const rich=interpolated(node.getAttribute('nodes')||'',scope);el.textContent=Array.isArray(rich)?rich.map(x=>x.text||'').join(''):asText(rich)}
  if(tag==='map'){
-  const lat=interpolated(node.getAttribute('latitude')||'39.9042',scope);const lng=interpolated(node.getAttribute('longitude')||'116.4074',scope);
-  el.innerHTML='<div class="yx-map-tiles"><span>📍</span><strong>附近地点地图</strong><small>点击查看地图与路线</small></div>';
-  el.addEventListener('click',()=>window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=14/${lat}/${lng}`,'_blank','noopener'));
+  const options={};for(const a of ['latitude','longitude','scale','markers'])options[a]=interpolated(node.getAttribute(a)||'',scope);
+  // Reuse a map across setData; do not refetch tiles or lose a user's pan position.
+  el.__yxMapOptions=options;
  }
- if(tag==='button'){el.type='button';}
- if(tag==='video'){el.controls=true;el.playsInline=true;}
+ if(tag==='button'){el.type='button';if(node.getAttribute('open-type')?.toLowerCase()==='chooseavatar')el.addEventListener('click',()=>chooser({count:1,mediaType:['image'],success:r=>{if(r.tempFilePaths?.[0])el.dispatchEvent(new CustomEvent('chooseavatar',{detail:{avatarUrl:r.tempFilePaths[0]}}))}}));}
+ if(tag==='video'){if(!node.hasAttribute('controls'))el.controls=true;el.playsInline=true;el.preload='metadata';}
  if(tag==='scroll-view'){el.style.overflowY=node.hasAttribute('scroll-y')?'auto':'';el.style.overflowX=node.hasAttribute('scroll-x')?'auto':'';}
  bindEvents(node,el,owner,scope);
  if(tag!=='map'&&tag!=='image'&&tag!=='input'&&tag!=='switch'&&tag!=='checkbox'&&tag!=='radio'&&tag!=='rich-text'&&tag!=='picker')transformChildren(node,el,owner,scope,key);
+ if(tag==='radio-group'){el.setAttribute('role','radiogroup');for(const radio of el.querySelectorAll('input[type=radio]'))radio.name='yx-radio-'+key}
+ if(tag==='scroll-view'&&node.hasAttribute('scroll-into-view')){const id=asText(interpolated(node.getAttribute('scroll-into-view'),scope));if(id)queueMicrotask(()=>el.querySelector('[id="'+CSS.escape(id)+'"]')?.scrollIntoView({block:'nearest'}))}
  if(tag==='navigator')el.addEventListener('click',e=>{e.preventDefault();goto(el.getAttribute('href')?.replace('#/','')||'pages/index/index')});
  into.append(el);
 }
@@ -172,16 +220,35 @@ function assetUrl(v){if(!v)return '';if(window.__yx_asset_data&&window.__yx_asse
 function refresh(){if(updatePending)return;updatePending=true;queueMicrotask(()=>{updatePending=false;refreshImmediate()})}
 function parsedTemplate(s){return new DOMParser().parseFromString(String(s).replace(/<([A-Za-z][\w-]*)([^<>]*?)\s*\/>/g, (_,name,attrs)=>['input','img','br','hr'].includes(name.toLowerCase())?`<${name}${attrs}>`:`<${name}${attrs}></${name}>`),'text/html')}
 function refreshImmediate(){const dest=$('#yx-render');if(!dest||!page)return;
+ const sameOwner=dest.__yxOwner===page.instance;dest.dataset.route=page.path;
  const focus=document.activeElement;const focusKey=dest.contains(focus)?focus?.getAttribute('data-yx-key'):null;const cursor=focusKey&&['INPUT','TEXTAREA'].includes(focus?.tagName)?[focus.selectionStart,focus.selectionEnd]:null;
  const scrolls=[...dest.querySelectorAll('.yx-scroll')].map(el=>[el.getAttribute('data-yx-key'),el.scrollTop,el.scrollLeft]).filter(x=>x[1]||x[2]);
  const source=window.__yx_templates?.[page.path];if(!source){recordError('页面模板缺失：'+page.path);return}
  const doc=parsedTemplate(source);const frag=document.createDocumentFragment();const scope=Object.create(null);Object.assign(scope,page.instance.data);scope.$page=page.instance;
  try{transformChildren(doc.body,frag,page.instance,scope,page.path)}catch(e){console.error('WXML rendering failed',e);recordError('渲染失败：'+e.message)}
- dest.replaceChildren(frag);
+ // setData must not destroy a playing native video and restart it at zero.
+ for(const fresh of (sameOwner?[...frag.querySelectorAll('video')]:[])){const old=[...dest.querySelectorAll('video')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey&&v.getAttribute('src')===fresh.getAttribute('src'));if(old)fresh.replaceWith(old)}
+ for(const fresh of (sameOwner?[...frag.querySelectorAll('.yx-map')]:[])){const old=[...dest.querySelectorAll('.yx-map')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey);if(old&&JSON.stringify(old.__yxMapOptions)===JSON.stringify(fresh.__yxMapOptions))fresh.replaceWith(old)}
+ for(const old of dest.querySelectorAll('.yx-map'))if(!frag.contains(old))old.__yxMap?.destroy();
+ // Keep native form controls mounted: removing a focused field fires a spurious blur/save.
+ for(const fresh of (sameOwner?[...frag.querySelectorAll('input,textarea,select')]:[])){
+  const old=[...dest.querySelectorAll('input,textarea,select')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey&&v.tagName===fresh.tagName&&v.type===fresh.type);
+  if(!old)continue;
+  for(const attr of [...old.attributes])if(!fresh.hasAttribute(attr.name))old.removeAttribute(attr.name);
+  for(const attr of [...fresh.attributes])if(old.getAttribute(attr.name)!==attr.value)old.setAttribute(attr.name,attr.value);
+  const nextValue=fresh.value;if(old.tagName==='SELECT')old.replaceChildren(...fresh.childNodes);
+  if(old.value!==nextValue)old.value=nextValue;
+  if('checked' in old)old.checked=fresh.checked;
+  old.__yxMoving=true;fresh.replaceWith(old);
+ }
+ dest.replaceChildren(frag);dest.__yxOwner=page.instance;
+ for(const el of dest.querySelectorAll('input,textarea,select'))el.__yxMoving=false;
+ for(const host of dest.querySelectorAll('.yx-map'))if(!host.__yxMap)host.__yxMap=window.YXMaps?.mount(host,host.__yxMapOptions);
+
  for(const [key,y,x] of scrolls){const el=[...dest.querySelectorAll('.yx-scroll')].find(x=>x.getAttribute('data-yx-key')===key);if(el){el.scrollTop=y;el.scrollLeft=x}}
- if(focusKey){const match=[...dest.querySelectorAll('input,textarea,select')].find(x=>x.getAttribute('data-yx-key')===focusKey);if(match){match.focus({preventScroll:true});if(cursor){try{match.setSelectionRange(...cursor)}catch{}}}}
+ if(focusKey){const match=[...dest.querySelectorAll('input,textarea,select,button')].find(x=>x.getAttribute('data-yx-key')===focusKey);if(match){match.focus({preventScroll:true});if(cursor){try{match.setSelectionRange(...cursor)}catch{}}}}
  $('#page-subtitle').textContent=pageName[page.path]||'颐享智财';
- document.documentElement.dataset.role=childPaths.has(activePath)?'child':'elder';
+ document.documentElement.dataset.role=childPaths.has(activePath)||storageGet('role')==='child'?'child':'elder';
 }
 function updateShell(){const auth=authPaths.has(activePath);const role=childPaths.has(activePath)||storageGet('role')==='child'?'child':'elder';document.body.classList.toggle('is-auth',auth);
  $('#role-label').textContent=role==='child'?'子女关怀端':'长辈安心端';
@@ -279,19 +346,41 @@ const wx={
  createInnerAudioContext:()=>{const audio=new Audio();return {set src(x){audio.src=assetUrl(x)},get src(){return audio.src},set obeyMuteSwitch(x){},set autoplay(x){audio.autoplay=x},play:()=>audio.play().catch(()=>{}),pause:()=>audio.pause(),stop:()=>{audio.pause();audio.currentTime=0},destroy:()=>audio.pause(),onError:fn=>audio.addEventListener('error',fn),onEnded:fn=>audio.addEventListener('ended',fn),onPlay:fn=>audio.addEventListener('play',fn),onStop:fn=>audio.addEventListener('pause',fn)}},
  async getSetting({success,fail}){const authSetting={};for(const [key,name] of [['scope.record','microphone'],['scope.userLocation','geolocation']]){try{const result=await navigator.permissions.query({name});if(result.state!=='prompt')authSetting[key]=result.state==='granted'}catch{}}success?.({authSetting})},authorize:({scope,success,fail})=>{if(scope==='scope.record')navigator.mediaDevices?.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());success?.()}).catch(fail);else success?.()},openSetting:({success})=>{toast('请使用浏览器地址栏的权限设置');success?.({authSetting:{}})},
  getLocation:({success,fail})=>{if(!navigator.geolocation)return fail?.({errMsg:'当前浏览器不支持定位'});navigator.geolocation.getCurrentPosition(p=>success?.({latitude:p.coords.latitude,longitude:p.coords.longitude}),e=>fail?.({errMsg:e.message}),{enableHighAccuracy:true,timeout:10000})},
- chooseLocation:({success,fail})=>{toast('网页请使用地址输入或地图定位功能，无法直接调用微信地图选点。');fail?.({errMsg:'请使用网页附近服务的手动地址搜索。'})},
+ chooseLocation:opts=>window.YXMaps.choose(opts),
  openLocation:({latitude,longitude,name})=>window.open('https://www.openstreetmap.org/?mlat='+latitude+'&mlon='+longitude+'#map=16/'+latitude+'/'+longitude,'_blank','noopener'),
  navigateToMiniProgram:()=>dialog({title:'网页模式说明',content:'此操作需要在微信小程序中打开，浏览器版保留入口但无法调用微信跳转。',showCancel:false}),
  login:({fail})=>fail?.({errMsg:'微信小程序免密授权仅在微信内可用，请使用手机号和密码登录网页。'}),
  createVideoContext:(id)=>({play:()=>document.getElementById(id)?.play(),pause:()=>document.getElementById(id)?.pause(),seek:time=>{const el=document.getElementById(id);if(el)el.currentTime=time}}),
- addPhoneCalendar:({title,startTime,success})=>{const msg=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title||'提醒'}\nDTSTART:${String(startTime||'').replace(/[-: ]/g,'').slice(0,15)}\nEND:VEVENT\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([msg],{type:'text/calendar'}));a.download='颐享智财提醒.ics';a.click();success?.()},
+ addPhoneCalendar:({title,startTime,description='',alarm=false,alarmOffset=0,success,fail})=>{try{
+ const date=typeof startTime==='number'?new Date(startTime*(startTime<1e12?1000:1)):new Date(startTime);if(!Number.isFinite(date.getTime()))throw Error('提醒时间无效');
+ const stamp=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+ const esc=s=>String(s||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/[,;]/g,'\\$&');
+ const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Yixiang//Medication//ZH','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+crypto.randomUUID()+'@yixiang.local','DTSTAMP:'+stamp(new Date()),'DTSTART:'+stamp(date),'DTEND:'+stamp(new Date(date.getTime()+600000)),'SUMMARY:'+esc(title||'提醒'),'DESCRIPTION:'+esc(description)];
+ if(/^吃药/.test(title||''))lines.push('RRULE:FREQ=DAILY');if(alarm)lines.push('BEGIN:VALARM','TRIGGER:-PT'+Math.max(0,Number(alarmOffset)||0)+'M','ACTION:DISPLAY','DESCRIPTION:'+esc(title||'提醒'),'END:VALARM');lines.push('END:VEVENT','END:VCALENDAR');
+ const url=URL.createObjectURL(new Blob([lines.join('\r\n')+'\r\n'],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='颐享智财提醒.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);success?.({errMsg:'addPhoneCalendar:ok'})
+ }catch(e){fail?.({errMsg:e.message})}},
  getFileSystemManager:()=>({readFile:({filePath,encoding,success,fail})=>{const file=fileMap.get(filePath);if(!file){fail?.({errMsg:'找不到文件'});return}file.arrayBuffer().then(buf=>{const binary=new Uint8Array(buf);let s='';for(let i=0;i<binary.length;i+=8192)s+=String.fromCharCode(...binary.subarray(i,i+8192));success?.({data:encoding==='base64'?btoa(s):buf})}).catch(fail)}})
 };
 window.wx=wx;
-function switchRole(){storageSet('token','');storageSet('user',null);goto('pages/login/login','relaunch');toast('请在登录页选择长辈或子女账号登录')}
-function firstVisit(){const hp=location.hash.replace(/^#\//,'');if(hp&&pageName[hp.split('?')[0]])return hp;
+function clearSession(){for(const key of ['token','user','profile','rememberLoginUntil','wechatPasswordFreeUntil'])wx.removeStorageSync(key);Object.assign(appDef.globalData,{token:'',user:null,profile:null})}
+function switchRole(){clearSession();goto('pages/login/login','relaunch');toast('请在登录页选择长辈或子女账号登录')}
+function firstVisit(){const hp=location.hash.replace(/^#\//,'');if(hp&&pageName[hp.split('?')[0]]&&(storageGet('token')||authPaths.has(hp.split('?')[0])))return hp;
  if(storageGet('token'))return storageGet('role')==='child'?'pages/child/index/index':'pages/index/index';return 'pages/login/login'}
-window.YX={goto,back,pages,getPage:()=>page?.instance,route:()=>activePath,errors:()=>JSON.parse(sessionStorage.getItem('yx_errors')||'[]'),navigate:goto};
+function auditBindings(){const missing=[],unsupported=[];let declarations=0,pagesCount=0,componentsCount=0;for(const path of Object.keys(window.__yx_templates||{}))if(!pageDefs.has(path)&&!componentDefs.has(path))loadModule(path+'.js');
+ for(const [path,source] of Object.entries(window.__yx_templates||{})){
+  if(!pageDefs.has(path)&&!componentDefs.has(path))loadModule(path+'.js');
+  const cfg=pageDefs.get(path)||componentDefs.get(path);if(!cfg)continue;
+  if(path.startsWith('pages/'))pagesCount++;else componentsCount++;
+  const handlers={...cfg,...cfg.methods},doc=parsedTemplate(source);
+  for(const el of doc.querySelectorAll('*'))for(const a of el.attributes){const match=a.name.match(/^(bind|catch)(?::)?([a-z]+)$/);if(!match)continue;declarations++;
+   const names=a.value.includes('{{')?[...a.value.matchAll(/['"]([A-Za-z_$][\w$]*)['"]/g)].map(m=>m[1]):[a.value];
+   for(const name of names)if(typeof handlers[name]!=='function')missing.push({path,event:match[2],handler:name});
+   if(!nativeEvents[match[2]]&&!componentDefs.has('components/'+el.tagName.toLowerCase()+'/'+el.tagName.toLowerCase()))unsupported.push({path,event:match[2],tag:el.tagName});
+  }
+ }
+ return {pages:pagesCount,components:componentsCount,declarations,missing,unsupported};
+}
+window.YX={goto,back,pages,auditBindings,getPage:()=>page?.instance,route:()=>activePath,errors:()=>JSON.parse(sessionStorage.getItem('yx_errors')||'[]'),navigate:goto};
 function bootstrap(){loadModule('app.js');appDef.globalData.baseUrl=location.origin;try{appDef.onLaunch?.()}catch(e){recordError('App.onLaunch '+e.message)}
  // Avoid mini-program hard-coded HTTPS host when running locally; keep data under same-origin API.
  appDef.globalData.baseUrl=location.origin;
@@ -300,7 +389,7 @@ function bootstrap(){loadModule('app.js');appDef.globalData.baseUrl=location.ori
  $('#nav-mobile-toggle').onclick=()=>document.body.classList.toggle('nav-open');
  $('#nav-scrim').onclick=()=>document.body.classList.remove('nav-open');
  $('#roleswitch').onclick=switchRole;
- $('#logout-top').onclick=()=>{storageSet('token','');storageSet('user',null);goto('pages/login/login','relaunch')};
+ $('#logout-top').onclick=()=>{clearSession();goto('pages/login/login','relaunch')};
  $('#font-change').onclick=()=>{const f=appDef.cycleGlobalFontSize?.();const mode=f?.mode||'normal';document.documentElement.dataset.font=mode;toast('已切换为 '+(f?.label||'标准字'));refresh()};
  $('#site-search').addEventListener('input',e=>{const key=e.target.value.trim();for(const b of $('#main-nav').querySelectorAll('button'))b.hidden=!!key&&!b.textContent.includes(key)});
  goto(firstVisit(),'relaunch');}

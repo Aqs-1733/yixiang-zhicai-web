@@ -7769,3 +7769,9 @@ from fastapi.staticfiles import StaticFiles
 WEB_SITE_DIR = PROJECT_DIR / "site"
 if WEB_SITE_DIR.is_dir():
     app.mount("/site", StaticFiles(directory=str(WEB_SITE_DIR), html=True), name="yixiang_site")
+
+
+@app.get("/lbs/static-map")
+def lbs_static_map(latitude: float = Query(ge=-85, le=85), longitude: float = Query(ge=-180, le=180), zoom: int = Query(default=14, ge=4, le=18), width: int = Query(default=640, ge=50, le=1000), height: int = Query(default=360, ge=50, le=800), user=Depends(current_user)):
+    from app.map_adapter import static_map
+    return static_map(latitude, longitude, zoom, width, height)

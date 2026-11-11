@@ -2,6 +2,7 @@
   <image class="page-bg" src="/assets/ui/finance_bg.jpg" mode="widthFix" />
   <view class="layer finance-layer">
     <button class="abs back round-back-btn" hover-class="none" bindtap="goBack">‹</button>
+    <button class="abs read-hot" bindtap="readPage">朗读</button>
 
     <view class="abs products">
       <view class="finance-mode-tabs">

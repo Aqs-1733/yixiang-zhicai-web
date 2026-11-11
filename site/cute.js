@@ -24,7 +24,7 @@
     const logo = document.querySelector('.identity-logo');
     if(logo) logo.innerHTML='<img src="assets/cute/mascot.webp" alt="小享" />';
     const side=document.querySelector('.side-deco');
-    if(side) side.innerHTML='<strong>每天都有<br>小享陪伴您 ♡</strong><img class="cute-side-mascot" src="assets/cute/mascot.webp" alt="" aria-hidden="true"/>';
+    if(side) side.innerHTML='<img class="cute-side-mascot" src="assets/cute/mascot.webp" alt="" aria-hidden="true"/>';
     const art=document.querySelector('.login-graphic img');
     if(art){art.src='assets/cute/elderly.webp';art.alt='卡通爷爷奶奶微笑相伴';}
     const main=document.getElementById('yx-render');
