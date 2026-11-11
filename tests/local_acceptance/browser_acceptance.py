@@ -33,6 +33,7 @@ with sync_playwright() as p:
    shot(page,'login_'+F[actor]['user']['role'])
    page.get_by_text('进入颐享智财',exact=True).click();page.wait_for_timeout(450)
    record(actor+'登录后导航',page.evaluate('YX.route()')==('pages/child/index/index' if actor=='子女' else 'pages/index/index'))
+   if page.locator('#dialog-overlay').is_visible() and page.locator('#dialog-title').inner_text()=='家人发来新消息':page.locator('#dialog-okay').click()
    page.locator('#logout-top').click();record(actor+'退出登录',not page.evaluate('wx.getStorageSync("token")') and page.evaluate('YX.route()')=='pages/login/login')
   except Exception as e:record(actor+'浏览器登录流程',False,error=type(e).__name__)
  ctx.close()

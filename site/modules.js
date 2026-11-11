@@ -7627,6 +7627,7 @@ Page({
         lesson: remoteLesson,
         lessonTitleSegments: termHelper.buildTermSegments(remoteLesson.title || ''),
         lessonList: remoteOptions.length ? remoteOptions : this.data.lessonList,
+        lessonInfo: remoteOptions.length ? { currentIndex: Math.max(0, remoteOptions.findIndex(item => item.video_url === remoteLesson.video_url)) + 1, totalCount: remoteOptions.length } : this.data.lessonInfo,
         homeLessonVideoBroken: false
       })
     }).catch(() => {
@@ -13035,12 +13036,13 @@ Page({
         wx.setStorageSync('profile', profile)
         wx.setStorageSync('user', user)
       }
-      const wechatBound = await this.bindWechatAfterRegistration(phone, this.data.password, role)
+      const isWeb = typeof window !== 'undefined'
+      const wechatBound = isWeb ? false : await this.bindWechatAfterRegistration(phone, this.data.password, role)
       wx.showModal({
         title: '注册成功',
         content: this.data.setSecurityQuestion
           ? '接下来设置一个密保问题，忘记密码时可以用它找回。'
-          : (wechatBound ? '微信已绑定。请返回登录页，可使用手机号或微信登录。' : '请返回登录页使用手机号密码登录；微信绑定可在登录时继续完成。'),
+          : (isWeb ? '请使用手机号和密码登录。' : (wechatBound ? '微信已绑定。请返回登录页，可使用手机号或微信登录。' : '请返回登录页使用手机号密码登录；微信绑定可在登录时继续完成。')),
         showCancel: false,
         confirmText: this.data.setSecurityQuestion ? '设置密保' : '去登录',
         success: () => {

@@ -178,7 +178,7 @@ def daily_lesson_video_file() -> FileResponse:
 
 def build_lesson_video_title(video_file: Path) -> str:
     if video_file.stem == "daily_lesson":
-        return "每日理财知识视频"
+        return "理财基础：先看懂，再决定"
     return re.sub(r"[_-]+", " ", video_file.stem).strip() or "视频课程"
 
 
@@ -207,7 +207,7 @@ def get_local_lesson_video_files() -> List[Path]:
 
 
 def build_local_lesson_video_options(base_url: str) -> List[Dict[str, str]]:
-    return [
+    remote = [
         {"id": "投资方式的种类及区别（一）", "title": "投资方式的种类及区别（一）", "url": "https://resource.lndx.edu.cn/media/c936c606792da54629b9d925181d26d3/play/760e34622d985d8ba4f2e6c7bbfea422.m3u8"},
         {"id": "投资方式的种类及区别（二）", "title": "投资方式的种类及区别（二）", "url": "https://resource.lndx.edu.cn/media/44ebd9c760715a869fc6ca4a4771f635/play/93614a77272373765040e5077d597f2f.m3u8"},
         {"id": "投资方式的种类及区别（三）", "title": "投资方式的种类及区别（三）", "url": "https://resource.lndx.edu.cn/media/280da38b97ae1dd0d72a0c404c525781/play/8edd2344885ada7fad1633f612e6d8c8.m3u8"},
@@ -217,6 +217,9 @@ def build_local_lesson_video_options(base_url: str) -> List[Dict[str, str]]:
         {"id": "如何选择适合的投资方式", "title": "如何选择适合的投资方式", "url": "https://resource.lndx.edu.cn/media/35edadf4cff7c4875fa120a176949f39/play/31a60b0de05686c6313d4fe0083d6790.m3u8"},
         {"id": "个人所得税", "title": "个人所得税", "url": "https://resource.lndx.edu.cn/media/c893ead36014fd48004e87c0aa53be6e/play/7bae48bab6e844b9360cb420fdd2b105.m3u8"}
     ]
+
+    local = [{"id": video.stem, "title": build_lesson_video_title(video), "url": base_url + "/media/lesson-videos/" + quote(video.name)} for video in get_local_lesson_video_files()]
+    return local + remote
 
 
 @app.api_route("/media/lesson-videos/{filename:path}", methods=["GET", "HEAD"])
@@ -7386,7 +7389,7 @@ def lesson_today(request: Request, user=Depends(current_user)) -> Dict[str, Any]
         "content": "正规理财不会承诺“稳赚不赔”。如果有人说收益很高、又让您马上转账，先不要操作。\n\n看产品时记住三句话：一看发行机构是否正规，二看风险等级，三看钱什么时候能取出来。",
         "video_title": lesson_video_title,
         "video_url": lesson_video_url,
-        "video_poster": DAILY_LESSON_VIDEO_POSTER,
+        "video_poster": DAILY_LESSON_VIDEO_POSTER or "/site/assets/videos/daily_lesson_poster.png",
         "video_tip": "可在下方切换视频课程；若播放失败，则自动显示文字课程。",
         "video_options": video_options
     }

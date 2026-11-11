@@ -2,6 +2,13 @@
 
 微信小程序迁移的完整 Web 项目：FastAPI + SQLite + 原页面兼容运行层。保留 **30 个业务页面、5 个原组件**及暖黄、薄荷绿、橙色适老化视觉；没有用简化网站替换原项目。
 
+## 当前版本 · 2026-11-12
+
+- 本机新版入口：`http://127.0.0.1:8004/site/`。
+- 保留奶油/橙/浅绿配色，八类任务区块与操作动效；网页不做微信登录。
+- 8 个原在线 HLS 课程 + 1 个原创本地基础课，均经过真实播放检查。
+- 本轮：接口 130/130、UI 201/201；详见 [功能恢复与视觉记录](docs/PREMIUM_RESTORE_20261112.md)。
+
 ## 结构
 
 - `backend/app/main.py`：账户、画像、理财、账本、持仓、家庭协同、健康和生活服务。
@@ -25,13 +32,13 @@ Copy-Item backend\.env.example backend\.env
 .\启动网站.bat
 ```
 
-网站 `http://127.0.0.1:8000/site/`；文档 `/docs`；本地状态 `/healthz`；配置状态 `/integrations/status`。后两项只反映服务/配置状态，不证明外部 API 已成功。
+网站 `http://127.0.0.1:8004/site/`；文档 `/docs`；本地状态 `/healthz`；配置状态 `/integrations/status`。后两项只反映服务/配置状态，不证明外部 API 已成功。
 
 手动启动：
 
 ```powershell
 Set-Location backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8004 --no-access-log
 ```
 
 SQLite 路径为 `backend/app/data/yixiang.db`；`DB_PATH=app/data/yixiang.db` 相对于 backend 解析。首次初始化会建立表和演示内容。演示账户仅供本机测试；正式部署前更换默认密码、JWT_SECRET 与各服务凭证。

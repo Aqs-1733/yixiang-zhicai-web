@@ -35,11 +35,11 @@ if not exist "backend\.env" (
     )
 )
 echo.
-echo [启动] 网站地址: http://127.0.0.1:8000/site/
-echo [接口] API 文档: http://127.0.0.1:8000/docs
+echo [启动] 网站地址: http://127.0.0.1:8004/site/
+echo [接口] API 文档: http://127.0.0.1:8004/docs
 echo [提示] 关闭本窗口即停止本地网站。
-start "" /min cmd /c "timeout /t 4 /nobreak >nul && start http://127.0.0.1:8000/site/"
+start "" /min cmd /c "timeout /t 4 /nobreak >nul && start http://127.0.0.1:8004/site/"
 cd backend
 set PYTHONPATH=%CD%
-"%~dp0.venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+"%~dp0.venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8004
 pause

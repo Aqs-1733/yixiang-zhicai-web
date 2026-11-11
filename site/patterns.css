@@ -1,0 +1,175 @@
+/* Warm editorial block system: one palette, distinct templates for each task. */
+:root{--pattern-paper:#fffdf8;--pattern-cream:#fff4df;--pattern-peach:#ffeadb;--pattern-sage:#e8f1e5;--pattern-orange:#f69049;--pattern-ink:#423f32;--pattern-muted:#766e5b;--pattern-line:#ece6da;--pattern-radius:26px;--pattern-ease:cubic-bezier(.22,1,.36,1)}
+html,body,.site-layout,.content-column{background:#fbfaf5!important;color:var(--pattern-ink)!important}
+.content-column{background-image:radial-gradient(ellipse at 95% 0,#fff0d655,transparent 38%),radial-gradient(ellipse at 5% 80%,#e5efdf66,transparent 35%)!important}
+.side-nav{width:254px!important;background:#fffdf9!important;border-right:1px solid #eee9df!important;padding:24px 16px!important}
+.identity{padding:1px 10px 20px!important}.identity strong{color:#bc6632!important;font-size:23px!important;letter-spacing:-.5px}
+.side-deco{height:113px!important;margin:3px 0 18px!important;background:linear-gradient(135deg,#fff0d4,#fff7e8)!important;border:1px solid #f5e6cb;border-radius:24px!important}
+.side-deco .cute-side-mascot{width:126px!important;height:126px!important;right:48px!important;bottom:-10px!important;animation:none!important}
+.nav-search{border-radius:15px!important;background:#f9f6ef!important;min-height:46px!important;border:1px solid #efe9de!important}
+.nav-section{font-size:13px!important;color:#938875!important;letter-spacing:.5px;margin:22px 14px 8px!important}
+.nav-list .nav-item{position:relative;min-height:50px!important;border-radius:15px!important;padding:12px 14px!important;color:#6c705f!important;font-size:17px!important;font-weight:650!important;margin:3px 0!important;transition:background .22s,color .22s,translate .22s!important}
+.nav-list .nav-item.active{color:#8c542b!important;background:#ffefd4!important;box-shadow:inset 3px 0 #efa24c!important}
+.nav-list .nav-item:hover{background:#f4f1e7!important;translate:2px 0}.nav-list .nav-item.active .nav-icon{color:#d27d35!important}
+.top-head{height:80px!important;background:#fffdf9ed!important;border-bottom:1px solid #ece8de!important;box-shadow:none!important;backdrop-filter:blur(12px)!important}
+.breadcrumbs strong{color:#494d3d!important;font-weight:800!important;font-size:25px!important;letter-spacing:-.7px}
+.circle-tool,.role-pill{min-height:46px!important;border-radius:14px!important;box-shadow:none!important;border-color:#eee6d8!important}
+.role-pill{background:#fff1df!important;color:#a86735!important}.page-frame{max-width:1500px!important;padding:28px clamp(18px,3vw,48px) 36px!important}
+#yx-render{font-size:calc(17px * var(--font-s))!important;line-height:1.65;color:var(--pattern-ink)!important}
+#yx-render>*,#yx-render.motion-page-enter{animation:none!important;filter:none!important}
+#yx-render .motion-pending{opacity:1!important;transform:none!important}
+#yx-render :is(.section-title,.common-func-title,.family-title,.nearby-title,.panel-title){font-weight:800!important;letter-spacing:-.6px}
+#yx-render :is(input,textarea,select){font-size:calc(17px * var(--font-s))!important;line-height:1.6!important;border-radius:15px!important;color:#514c3e!important;caret-color:#d7803f}
+#yx-render :is(input,textarea,select):focus{outline:3px solid #f5bd7655!important;border-color:#e7a660!important;box-shadow:0 0 0 1px #f1b877!important}
+#yx-render button{font-size:calc(17px * var(--font-s));transition:background .2s,box-shadow .25s,border-color .2s,translate .2s!important}
+#yx-render button:not(.yx-switch):not(.yx-map-marker):not(.panel-close):not(.round-close-btn){min-height:46px}
+#yx-render button:active:not(:disabled){translate:0 1px}#yx-render button:focus-visible,#yx-render [role=button]:focus-visible{outline:3px solid #cf8347!important;outline-offset:4px}
+#yx-render button:disabled{cursor:default;opacity:.5}
+#yx-render :is(.btn-primary,.action-btn-add,.submit-btn,.login-btn,.send-btn-v2){background:linear-gradient(115deg,#ffa45f,#f68d47)!important;border-color:#f59a55!important;color:#63361c!important;box-shadow:0 7px 18px -11px #db773a99!important}
+#yx-render :is(.card,.data-card,.analysis-card,.family-bind-profile-card,.top-card,.lesson-card,.common-func-panel,.track-card,.recognize-card,.health-life-card,.child-card,.family-dashboard-card,.guard-card){border:1px solid var(--pattern-line)!important;border-radius:var(--pattern-radius)!important;background:var(--pattern-paper)!important;box-shadow:0 10px 30px -25px #5c543c66!important}
+#yx-render :is(.section-title,.lesson-title,.common-func-title){font-size:calc(24px * var(--font-s))!important;color:#514b3a!important}
+#yx-render .round-back-btn,#yx-render .round-close-btn{background:#fffaf0!important;border:1px solid #eedfc9!important;color:#a76c3d!important;border-radius:16px!important;box-shadow:none!important;width:48px!important;height:48px!important;min-height:48px!important}
+/* 01 · Cover + editorial bento */
+#yx-render[data-route="pages/index/index"] .greet-hello{min-height:278px!important;margin:0 0 24px!important;padding:47px 40px 93px!important;border:1px solid #f3e5c8!important;border-radius:30px!important;font-size:clamp(35px,3.6vw,52px)!important;line-height:1.3!important;background-color:#fff3d8!important;background-image:linear-gradient(95deg,#fff3d8 4%,#fff3d8ed 37%,#fff3d822 78%),url('assets/cute/elderly.webp')!important;background-position:center,right 0 center!important;background-size:cover,auto 135%!important;box-shadow:none!important}
+#yx-render[data-route="pages/index/index"] .greet-hello::before{content:none!important}
+#yx-render .cute-hero-actions{left:40px!important;bottom:32px!important}.cute-hero-actions button{min-height:48px!important}
+#yx-render .home-scroll-inner{display:grid!important;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr) minmax(270px,.95fr)!important;gap:22px!important;align-items:start!important}
+#yx-render .home-grid,#yx-render .home-grid-left,#yx-render .home-grid-right{display:contents!important}
+#yx-render .home-weather-card{grid-column:1/3!important;grid-row:1!important;min-height:174px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:28px 32px!important;border:1px solid #efe0b9!important;border-radius:25px!important;background:linear-gradient(115deg,#fff0c4,#fff7df)!important;box-shadow:none!important}
+#yx-render .home-weather-card::after{right:38%!important;top:40px!important;width:48px!important;height:48px!important;animation:pattern-sun 7s ease-in-out infinite!important}
+#yx-render .home-weather-temp{font-size:47px!important;color:#cb8537!important;font-variant-numeric:tabular-nums}.home-weather-city{font-size:26px!important}
+#yx-render .home-news-card{grid-column:3!important;grid-row:1/3!important;max-height:690px!important;min-height:330px!important;padding:27px 24px!important;border:1px solid var(--pattern-line)!important;border-radius:25px!important;background:#fffdfa!important;overflow:auto!important}
+#yx-render .home-news-head{margin:0 0 14px!important}.home-news-badge{border-radius:8px!important}
+#yx-render .home-news-item{padding:17px 0!important;gap:13px!important;border-color:#eee8dc!important}
+#yx-render .home-news-name{font-size:17px!important;line-height:1.7!important;font-weight:650!important}
+#yx-render .home-news-num{width:52px!important;min-width:52px!important;height:58px!important;border-radius:13px!important;font-size:18px!important;align-items:center!important;justify-content:center!important;padding:0!important}
+#yx-render .lesson-card{grid-column:1/3!important;grid-row:2!important;padding:26px!important;border-radius:25px!important}
+#yx-render .lesson-video-shell{margin-top:16px!important;border-radius:18px!important;background:#f6efdf!important;overflow:hidden!important}
+#yx-render .lesson-video-toolbar{display:flex!important;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px!important;background:#f7f3e9!important}
+#yx-render .lesson-current-title{font-size:16px!important;line-height:1.5!important;flex:1;min-width:0}
+#yx-render .lesson-video-stage,#yx-render .lesson-video{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:16/9!important;object-fit:contain!important;border-radius:0!important}
+#yx-render .common-func-panel{grid-column:1/-1!important;grid-row:3!important;padding:28px!important}
+#yx-render .common-func-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:14px!important}
+#yx-render .common-func-item:nth-child(n){position:relative;min-height:146px!important;padding:20px!important;border-radius:20px!important;align-items:flex-start!important;overflow:hidden!important;border:1px solid #e6e9da!important;background:#eef3e6!important}
+#yx-render .common-func-item:nth-child(2){background:#fff0d9!important;border-color:#f1dfc1!important}
+#yx-render .common-func-item:nth-child(3){background:#ffece1!important;border-color:#f2dcce!important}
+#yx-render .common-func-item:nth-child(4){background:#edf2e5!important}
+#yx-render .common-func-item:nth-child(5){background:#fff4da!important;border-color:#eee0bb!important}
+#yx-render .common-func-item::after{display:block!important;content:'↗'!important;position:absolute!important;inset:auto 17px 14px auto!important;width:22px!important;height:22px!important;font:24px/1 sans-serif!important;background:none!important;color:#9b875f!important;transform:none!important;opacity:.65;pointer-events:none}
+#yx-render .common-func-item .quick-icon{width:48px!important;height:48px!important;min-width:48px!important;border-radius:14px!important;background:#fff9!important}
+#yx-render .common-func-item-label{font-size:18px!important;font-weight:800!important;max-width:85%}
+#yx-render .home-message-mini{grid-column:1/-1!important;grid-row:4!important;padding:22px 26px!important;background:#f4f1e5!important;border-radius:22px!important;border:1px solid #e8e0cf!important}
+/* 02 · Finance workbench */
+#yx-render[data-route="pages/finance/finance"] .finance-layer{display:grid!important;grid-template-columns:48px 1fr auto;gap:18px 12px!important}
+#yx-render[data-route="pages/finance/finance"] .read-hot{grid-column:3!important;grid-row:1!important;min-width:86px!important;margin:0!important;border-radius:14px!important;background:#fff3d8!important;border:1px solid #e9d5af!important;color:#8e602c!important}
+#yx-render[data-route="pages/finance/finance"] .products{grid-column:1/-1!important;width:100%!important;display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(240px,.8fr);gap:22px!important;margin:0!important;padding:0!important}
+#yx-render .finance-mode-tabs{grid-column:1/-1!important;display:flex;justify-content:flex-start;gap:6px!important;padding:6px!important;border:1px solid #e9e1d2!important;background:#f4efe4!important;border-radius:17px!important;margin:0!important}
+#yx-render .finance-mode-tabs button{min-width:120px!important;padding:12px 22px!important;font-weight:750!important;border-radius:12px!important}
+#yx-render .recognize-card{grid-column:1!important;padding:28px!important;margin:0!important;background:linear-gradient(155deg,#fffdf8,#fff9ec)!important;align-self:start}
+#yx-render .product-input{width:100%!important;min-height:150px!important;padding:18px!important;margin:18px 0!important;background:#fff!important;border:1px solid #e9dfcd!important;resize:vertical;box-sizing:border-box}
+#yx-render .recognize-card>.actions{display:grid!important;grid-template-columns:1fr 1fr;gap:12px!important}
+#yx-render .track-card{grid-column:2!important;margin:0!important;padding:26px!important;align-self:start;background:#eef3e8!important;border-color:#dfe7d4!important}
+#yx-render .track-item{background:#fffefa!important;border:1px solid #e0e4d3!important;border-radius:17px!important;padding:17px!important;margin:14px 0 0!important}
+#yx-render .track-title{font-size:18px!important;font-weight:750!important}.track-hint{font-size:16px!important}
+#yx-render .advice-card,#yx-render .products>.card:not(.recognize-card):not(.track-card){grid-column:1/-1!important}
+#yx-render .analysis-box{margin-top:24px!important;padding-top:22px!important;border-top:1px solid #ede1cc!important}
+#yx-render .analysis-product-card,#yx-render .recognized-ledger-card{border-radius:20px!important;border:1px solid #e8dfcc!important;background:#fffdfa!important;padding:22px!important;margin-top:16px!important}
+#yx-render .analysis-field{background:#f7f4eb!important;border-radius:12px!important;padding:14px!important}.analysis-field-label{font-size:15px!important}.analysis-field-value{font-size:18px!important}
+/* 03 · Ledger / numerical dashboard */
+#yx-render[data-route="pages/money/money"] .money-layer{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:18px!important}
+#yx-render[data-route="pages/money/money"] .money-layer>.back{grid-column:1/-1!important}.summary-mask{display:none!important}
+#yx-render[data-route="pages/money/money"] .m-summary{padding:26px!important;margin:0!important;min-height:152px!important;border:1px solid #e7dfc9!important;border-radius:24px!important;overflow:hidden;display:flex!important;flex-direction:column-reverse!important;align-items:flex-start!important;justify-content:space-between!important;position:relative!important;background:#fff2d5!important}
+#yx-render[data-route="pages/money/money"] .m-summary.s2{background:#ffeadc!important;border-color:#efdaca!important}
+#yx-render[data-route="pages/money/money"] .m-summary.s3{background:#eaf1e2!important;border-color:#dde5d0!important}
+#yx-render .summary-amount{font-size:clamp(30px,3.5vw,43px)!important;line-height:1.25!important;color:#684d2b!important;letter-spacing:-1px;font-weight:800!important;font-variant-numeric:tabular-nums}
+#yx-render .summary-label{font-size:18px!important;color:#7c6b50!important;font-weight:650!important}
+#yx-render .action-toolbar,#yx-render .money-layer>.records{grid-column:1/-1!important;width:100%!important;margin:0!important}
+#yx-render .action-toolbar{display:flex!important;gap:12px!important;padding:8px 0!important}.action-toolbar .action-btn{min-height:54px!important;padding:12px 25px!important;border-radius:16px!important}
+#yx-render .ledger-scope-card{padding:17px!important;margin-bottom:18px!important;background:#fffdfa!important}
+#yx-render .ledger-scope-tabs,#yx-render .money-mode-tabs{padding:5px!important;background:#f3eee2!important;border-radius:15px!important;gap:5px!important;width:fit-content;max-width:100%;margin:0 0 18px!important}
+#yx-render .ledger-scope-tabs button,#yx-render .money-mode-tabs button{padding:11px 22px!important;border-radius:11px!important;min-width:114px!important}
+#yx-render .totals-card{padding:26px!important;background:#fffdfa!important}.totals-grid{gap:14px!important}
+#yx-render .total-item{background:#f8f5eb!important;border-radius:18px!important;border:1px solid #eee5d2!important;padding:20px!important}.total-label{font-size:18px!important}.total-row{font-size:17px!important}.total-balance{font-weight:750!important;font-size:18px!important}
+#yx-render .record-line{border:1px solid #ebe3d3!important;background:#fffefa!important;border-radius:19px!important;margin:12px 0!important;padding:20px!important;gap:16px!important}
+#yx-render .record-title{font-weight:750!important;font-size:18px!important}.record-amount{font-weight:750!important;font-size:24px!important;line-height:1.3!important;font-variant-numeric:tabular-nums}.record-date,.record-meta{font-size:15px!important;color:#8a806b!important}
+#yx-render .record-actions button{border-radius:11px!important;min-height:44px!important;padding:8px 15px!important}
+/* 04 · Family mosaic */
+#yx-render .family-quick-grid{gap:18px!important;margin-bottom:24px!important}
+#yx-render .quick-card{min-height:165px!important;border-radius:25px!important;padding:26px!important;position:relative;overflow:hidden;border:1px solid #e1e6d4!important;text-align:left!important;box-shadow:none!important}
+#yx-render .quick-card>span{font-size:24px!important;font-weight:800!important;display:block!important}.quick-card>div{font-size:17px!important;line-height:1.7!important;max-width:85%}
+#yx-render .quick-card::after{content:'↗';position:absolute;right:23px;bottom:22px;font-size:32px;opacity:.35;pointer-events:none}
+#yx-render .quick-card.green{background:#e8f0df!important}.quick-card.orange{background:#ffe8d7!important}.quick-card.cream{background:#fff0cc!important}.quick-card.soft-green{background:#edf2e7!important}
+#yx-render .family-card{padding:26px!important;border:1px solid #e9e2d1!important;border-radius:24px!important;background:#fffdf7!important;margin-bottom:20px!important}
+#yx-render .access-item{border-radius:16px!important;min-height:100px!important;padding:18px!important}.access-item>span{font-size:18px!important;font-weight:750!important}
+#yx-render .family-member-card,#yx-render .elder-card{border-radius:23px!important;border:1px solid #e4dfcf!important;padding:24px!important;background:#fffdf7!important}
+/* 05 · Wellness cards + gentle timeline */
+#yx-render .health-title{font-size:32px!important;color:#56513a!important;margin:16px 0 24px!important}
+#yx-render .metrics{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px!important;margin-bottom:22px!important}
+#yx-render .metric{border:1px solid #e2e5d2!important;border-radius:23px!important;background:#edf3e3!important;padding:24px!important;min-height:128px!important}
+#yx-render .metric:nth-child(2){background:#fff0da!important;border-color:#f0dfc7!important}.metric:nth-child(3){background:#ffebe0!important;border-color:#efdbcf!important}
+#yx-render .metric-val{font-size:32px!important;color:#616c45!important;font-weight:800!important}.metric-label{font-size:17px!important}
+#yx-render .health-life-card{padding:27px!important;margin-bottom:20px!important}.health-life-actions{display:flex;gap:10px;flex-wrap:wrap}.health-life-actions button{padding:10px 18px!important;border-radius:13px!important}
+#yx-render .med-item{border:1px solid #e5dfcf!important;border-radius:21px!important;padding:22px!important;background:#fffef9!important;margin:14px 0!important;border-left:4px solid #c7d6ad!important}
+#yx-render .med-name{font-size:21px!important;font-weight:800!important}.med-time{font-size:24px!important;font-variant-numeric:tabular-nums;color:#ba813b!important}.med-dose{font-size:17px!important}
+/* 06 · Profile / identity sheet */
+#yx-render .top-card{display:flex!important;align-items:center!important;gap:25px!important;padding:30px!important;background:linear-gradient(115deg,#fff0d2,#fff8e9)!important;border-color:#ecdfbf!important}
+#yx-render .avatar-ring{width:102px!important;height:102px!important;flex:none;border:5px solid #fffc!important;box-shadow:0 3px 15px #a58d5e1a!important;border-radius:28px!important}.avatar-btn,.avatar-img{border-radius:23px!important}
+#yx-render .nick-input{font-size:29px!important;font-weight:800!important;background:transparent!important;border:0!important;min-height:50px!important;padding:0 3px!important}
+#yx-render .data-row{padding:19px 3px!important;border-bottom:1px solid #eee7da!important;gap:20px!important}.data-label{font-size:18px!important}.data-value{font-size:18px!important;font-weight:700!important;color:#8b693b!important}
+#yx-render .analysis-card,#yx-render .data-card,#yx-render .family-bind-profile-card{padding:28px!important}.risk-score{background:#f3e8c8!important;border-radius:50%!important}
+/* 07 · Service directory and map */
+#yx-render .nearby-entry-card{border:1px solid #e2e6d4!important;background:#edf2e3!important;border-radius:24px!important;padding:26px!important;margin-bottom:20px!important}
+#yx-render .phone-item{padding:23px!important}.phone-name{font-size:20px!important;font-weight:750!important}.phone-number{font-size:24px!important;color:#a36c36!important;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+#yx-render .phone-actions button{min-width:50px!important;padding:10px 16px!important;border-radius:13px!important}
+#yx-render .location-card{padding:25px!important;border:1px solid #eee1ca!important;border-radius:25px!important;background:#fff9ed!important}.location-address{font-size:19px!important;font-weight:650!important}
+#yx-render .nearby-map{border-radius:24px!important;border:1px solid #dedfcf!important;margin:20px 0!important;overflow:hidden!important;min-height:340px!important}
+#yx-render .place-card{padding:22px!important;border:1px solid #e9e2d4!important;border-radius:21px!important;background:#fffef9!important;margin-bottom:14px!important}
+/* 08 · Dialogs, conversation, forms */
+#yx-render :is(.chat-bubble,.bubble,.history-content){border-radius:20px!important;line-height:1.85!important;font-size:calc(18px * var(--font-s))!important}
+#yx-render .chat-row.assistant .chat-bubble{background:#fff9e9!important;border:1px solid #efe3c9!important}.chat-row.mine .chat-bubble{background:#eaf1df!important}
+#yx-render .ask-input-v2{font-size:18px!important;min-height:50px!important}.group-input-bar{box-shadow:0 10px 40px #71613a1c!important;border-color:#e9dec7!important}
+#yx-render :is(.add-panel,.edit-panel,.detail-panel,.lesson-picker-panel,.message-dialog,.history-panel,.child-permission-panel){border-radius:28px!important;border:1px solid #e8ddc9!important;background:#fffcf5!important;box-shadow:0 24px 90px #50402533!important}
+#yx-render :is(.panel-header,.detail-head,.edit-title){border-bottom-color:#ece0cb!important}.panel-title,.detail-title{font-size:26px!important}
+#yx-render .category-item{border-radius:16px!important;background:#fffdf7!important;border-color:#eadfcb!important}.category-item.category-selected{background:#fff0cc!important;border-color:#e8bc69!important}
+#yx-render .term-popup-card{background:#fffdf5!important;border:1px solid #e6d4af!important;border-radius:24px!important;box-shadow:0 18px 60px #6550272b!important}.term-popup-content{font-size:18px!important;line-height:1.8!important}.term-popup-title{font-size:21px!important}
+#yx-render .option{background:#fffdf7!important;border:1px solid #e7decc!important;border-radius:20px!important;padding:20px!important;margin:14px 0!important;min-height:80px!important}.option.active{background:#fff0d0!important;border-color:#e4b45f!important}.option-label{font-size:19px!important}
+.is-auth .login-art{background:linear-gradient(145deg,#fff0d3,#fff6e5 65%,#edf4e5)!important}.is-auth .login-art h1{font-size:clamp(40px,4.5vw,66px)!important;letter-spacing:-1px!important}
+.is-auth .page-frame{padding:40px clamp(28px,4.3vw,70px)!important}.is-auth #yx-render .login-card,.is-auth #yx-render .register-card{background:transparent!important;border:0!important;box-shadow:none!important;padding:18px 0!important}
+.is-auth #yx-render .login-title{font-size:42px!important;letter-spacing:-1px!important}.is-auth #yx-render .login-action-row{display:block!important}.is-auth #yx-render .login-action-row .login-btn{width:100%!important;min-height:56px!important;border-radius:16px!important}
+.is-auth #yx-render .wechat-btn{display:none!important}.is-auth #yx-render input{min-height:61px!important;padding:16px 19px!important;border-radius:17px!important}
+.is-auth #yx-render .remember-row{margin:19px 0!important;gap:9px!important}.is-auth #yx-render .remember-row>div{font-size:17px!important}
+/* State-driven visual motion, never a hidden-content prerequisite. */
+#yx-render [data-pattern]{transition:box-shadow .3s var(--pattern-ease),border-color .3s!important}
+@media(hover:hover) and (pointer:fine){#yx-render [data-pattern-interactive]:hover{translate:0 -4px;box-shadow:0 16px 32px -23px #78653d66!important;border-color:#d8c9a9!important}#yx-render .common-func-item:hover .quick-icon{rotate:-5deg;scale:1.06;transition:rotate .35s,scale .35s}}
+#yx-render [data-pattern-tabs]{position:relative;isolation:isolate}.pattern-active-indicator{position:absolute;pointer-events:none;z-index:0;top:5px;bottom:5px;border-radius:12px;background:#fffdf8;box-shadow:0 3px 9px #896f3912}
+#yx-render [data-pattern-tabs]>button{position:relative;z-index:1;background:transparent!important;box-shadow:none!important;border-color:transparent!important}
+#yx-render [data-pattern-tabs]>button.active{background:transparent!important;color:#995c2b!important;font-weight:800!important}
+.pattern-ripple{position:absolute;pointer-events:none;z-index:0;border-radius:50%;background:#fff9;transform:translate(-50%,-50%);width:20px;height:20px}
+#yx-render .voice-fab{animation:none!important}#yx-render .voice-fab-recording{animation:pattern-record 1.2s ease-in-out infinite!important}
+#loading-overlay .loader{border-color:#f7dfbf!important;border-top-color:#eb9852!important}#toast.show{animation:pattern-toast .3s var(--pattern-ease)}
+@keyframes pattern-sun{50%{box-shadow:0 0 0 14px #f8c36524,0 0 0 24px #f8c36510;scale:1.04}}
+@keyframes pattern-record{50%{box-shadow:0 0 0 12px #f4b47733}}
+@keyframes pattern-toast{from{translate:0 -10px;opacity:0}to{translate:0 0;opacity:1}}
+@media(max-width:1150px){#yx-render .home-scroll-inner{grid-template-columns:1fr 1fr!important}#yx-render .home-news-card{grid-column:2!important;grid-row:1/3!important}#yx-render .home-weather-card{grid-column:1!important}#yx-render .lesson-card{grid-column:1!important}#yx-render .home-weather-card::after{display:none!important}#yx-render .common-func-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#yx-render[data-route="pages/finance/finance"] .products{grid-template-columns:1fr!important}#yx-render .recognize-card,#yx-render .track-card{grid-column:1!important}}
+@media(max-width:860px){.side-nav{max-width:280px!important;width:80vw!important}.page-frame{padding:22px!important}.top-head{height:72px!important}.breadcrumbs strong{font-size:21px!important}#yx-render .greet-hello{min-height:245px!important;padding:35px 30px 90px!important}.cute-hero-actions{left:30px!important}#yx-render .home-scroll-inner{gap:16px!important}#yx-render .common-func-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#yx-render .family-quick-grid{gap:14px!important}#yx-render .metric{padding:20px!important}.is-auth .page-frame{width:100%!important;max-width:520px!important;padding:36px 25px!important;margin:auto!important}.is-auth #yx-render .login-title{font-size:38px!important}}
+@media(max-width:600px){.page-frame{padding:18px 17px 26px!important}#yx-render{font-size:17px!important}.top-actions .role-pill{font-size:13px!important}.breadcrumbs strong{font-size:19px!important}#yx-render[data-route="pages/index/index"] .greet-hello{min-height:224px!important;padding:29px 24px 86px!important;font-size:32px!important;background-position:center,right -50px center!important;background-size:cover,auto 110%!important}#yx-render .cute-hero-actions{left:24px!important;bottom:24px!important;gap:8px!important}#yx-render .cute-hero-actions button{font-size:15px!important;padding:10px 13px!important}#yx-render .home-scroll-inner{grid-template-columns:1fr!important}#yx-render .home-weather-card{grid-column:1!important;grid-row:1!important;min-height:145px!important;padding:23px!important}#yx-render .home-news-card{grid-column:1!important;grid-row:3!important;min-height:0!important;max-height:460px!important;padding:23px!important}#yx-render .lesson-card{grid-column:1!important;grid-row:2!important;padding:21px!important}#yx-render .common-func-panel{grid-row:4!important;padding:22px!important}#yx-render .home-message-mini{grid-row:5!important}#yx-render .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}#yx-render .common-func-item:nth-child(n){min-height:135px!important;padding:17px!important}#yx-render .common-func-item-label{font-size:17px!important}#yx-render[data-route="pages/money/money"] .money-layer{gap:11px!important}#yx-render[data-route="pages/money/money"] .m-summary{padding:15px 10px!important;min-height:126px!important;border-radius:19px!important}#yx-render .summary-amount{font-size:25px!important;max-width:100%;overflow-wrap:anywhere}#yx-render .summary-label{font-size:14px!important;line-height:1.6!important}#yx-render .action-toolbar{flex-wrap:wrap!important;gap:8px!important}#yx-render .action-toolbar .action-btn{flex:1;padding:11px!important;font-size:15px!important;white-space:nowrap}#yx-render .record-line{flex-wrap:wrap;padding:17px!important}#yx-render .record-actions{margin-left:auto}#yx-render .recognize-card,#yx-render .track-card{padding:23px!important}#yx-render .metrics{gap:9px!important}#yx-render .metric{padding:15px 10px!important;min-height:105px!important;border-radius:19px!important}#yx-render .metric-val{font-size:24px!important}.metric-label{font-size:14px!important}#yx-render .top-card{padding:23px!important;gap:16px!important}#yx-render .avatar-ring{width:80px!important;height:80px!important}#yx-render .nick-input{font-size:24px!important}#yx-render .data-row{gap:12px!important}.data-label,.data-value{font-size:16px!important}#yx-render .quick-card{min-height:150px!important;padding:20px!important}#yx-render .quick-card>span{font-size:22px!important}#yx-render .quick-card>div{font-size:15px!important}#yx-render .phone-row{flex-wrap:wrap;gap:13px!important}.phone-actions{margin-left:auto}#yx-render .phone-actions button{padding:9px 13px!important}#yx-render .lesson-current-title{font-size:15px!important}.is-auth .page-frame{padding:30px 24px!important}.is-auth #yx-render .login-title{font-size:36px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}#yx-render *,#yx-render *::before,#yx-render *::after,.side-nav *,#toast{animation:none!important;transition:none!important}#yx-render [data-pattern-interactive]:hover{translate:none!important}#yx-render .quick-icon{rotate:none!important;scale:1!important}}
+
+:root{--yx-panel-offset:calc(254px + clamp(18px,3vw,48px));--yx-panel-top:80px}
+@media(max-width:860px){:root{--yx-panel-offset:0px;--yx-panel-top:72px}}
+
+#yx-render .pattern-hero-heading{position:relative;z-index:1;max-width:72%}#yx-render .pattern-greeting{display:block;font-size:23px;line-height:1.4;color:#9a7849;margin-bottom:8px;font-weight:650}#yx-render .pattern-name{display:block;font-size:clamp(35px,3.6vw,50px);line-height:1.3;max-width:100%;overflow-wrap:anywhere;letter-spacing:-1px}
+#yx-render .totals-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important;width:100%!important}#yx-render .total-item-wide{grid-column:auto!important}
+#yx-render .health-life-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important;margin:18px 0!important}
+#yx-render .health-life-actions>button{display:flex!important;align-items:center;justify-content:flex-start;gap:13px;min-height:94px!important;border:1px solid #dce6ce!important;border-radius:18px!important;padding:18px!important;background:#eef4e3!important;color:#60713f!important;font-size:18px!important;font-weight:750;box-shadow:none!important;text-align:left!important}
+#yx-render .health-life-actions>button:nth-child(2){background:#fff1d3!important;border-color:#efdfb7!important;color:#a77d33!important}#yx-render .health-life-actions>button:nth-child(3){background:#ffebe0!important;border-color:#efdbcd!important;color:#ae7250!important}
+.pattern-function-icon{display:flex;align-items:center;justify-content:center;flex:none;width:42px;height:42px;background:#fff9;border-radius:13px}.pattern-function-icon svg{width:25px;height:25px}
+#yx-render .advice-speak-btn{min-height:44px!important;padding:9px 16px!important;font-size:16px!important;background:#fff1ce!important;border:1px solid #eddaaa!important;border-radius:13px!important}
+#yx-render .health-life-empty{font-size:16px!important;color:#8b806c!important;font-weight:400!important}.health-journal-item{padding:20px!important;margin:14px 0!important;border-left:3px solid #d4b16a!important;border-radius:0 17px 17px 0!important;background:#f8f4e9!important}
+#yx-render[data-route="pages/health/health"] .advice-card{padding:25px!important;background:#fff9eb!important;border-color:#eddfbf!important}
+#yx-render[data-route="pages/health/health"] .section-title{margin:22px 0 12px!important}#yx-render .add-med{min-height:54px!important;width:100%!important;border:1px dashed #bccba6!important;border-radius:18px!important;background:#eef4e7!important;color:#627b45!important;font-size:18px!important;padding:16px!important}
+@media(max-width:1150px){#yx-render .health-life-actions{grid-template-columns:1fr!important}#yx-render .health-life-actions>button{min-height:74px!important}#yx-render .totals-grid{grid-template-columns:1fr 1fr!important}#yx-render .total-item-wide{grid-column:1/-1!important}}
+@media(max-width:600px){#yx-render .pattern-hero-heading{max-width:95%}#yx-render .pattern-greeting{font-size:18px;margin-bottom:6px}#yx-render .pattern-name{font-size:29px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}#yx-render .totals-grid{grid-template-columns:1fr!important}#yx-render .total-item-wide{grid-column:auto!important}#yx-render .health-life-actions>button{min-height:75px!important;padding:15px!important}#yx-render .advice-header{gap:12px!important;align-items:center}#yx-render .advice-speak-btn{font-size:14px!important;padding:7px 11px!important}}
+
+#yx-render .health-life-actions>button:last-child{grid-column:auto!important}
+#yx-render[data-route="pages/health/health"] .health-layer>.tip{display:none!important}

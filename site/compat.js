@@ -57,7 +57,7 @@ function unloadPage(p){if(!p)return;try{p.instance.onUnload?.()}catch(e){console
 function goto(href,kind='navigate'){
  const [raw,q='']=String(href).split('?'),path=normalizeUrl(raw);
  if(!pageName[path]){toast('尚未定义页面：'+path);return}
- const params=Object.fromEntries(new URLSearchParams(q));snapshotRoute();activeGesture=null;
+ const params=Object.fromEntries(new URLSearchParams(q));snapshotRoute();activeGesture=null;recorderManager.stop();
  if(page){try{page.instance.onHide?.()}catch(e){console.warn(e)}if(kind==='navigate')stack.push(page);else unloadPage(page)}
  if(kind==='relaunch'){for(const old of stack)unloadPage(old);stack=[];routeEntries.clear()}
  const prev=page;page=null;activePath=path;activeParameters=params;
@@ -146,12 +146,13 @@ function renderOne(node,into,owner,scope,key){let tag=node.tagName.toLowerCase()
   else if(['disabled','hidden','controls','autoplay','loop','muted','multiple','required','readonly'].includes(attr)){const enabled=wxBoolean(val);if(enabled)el.setAttribute(attr,'');else el.removeAttribute(attr);if(attr==='muted')el.muted=enabled;}
   else if(attr.startsWith('data-'))el.setAttribute(attr,asText(val));
   else if(attr==='src'&&tag==='image')el.src=assetUrl(String(val));
+  else if(attr==='src'&&tag==='video'){const src=assetUrl(String(val));el.dataset.yxSource=src;if(!/\.m3u8(?:[?#]|$)/i.test(src)||el.canPlayType('application/vnd.apple.mpegurl'))el.src=src;}
   else if(attr==='src')el.setAttribute(attr,assetUrl(String(val)));
   else if(attr==='id')el.id=asText(val);
   else if(attr==='url'&&tag==='navigator')el.href='#/'+String(val).replace(/^\//,'');
   else if(/^[a-z\-]+$/.test(attr))el.setAttribute(attr,asText(val));
  }
- if(el.matches('.term-popup-card,.guide-dialog'))for(const prop of ['left','top'])if(el.style[prop])el.style.setProperty(prop,el.style[prop],'important');
+ if(el.matches('.term-popup-card,.guide-dialog'))for(const prop of ['left','top'])if(el.style[prop])el.style.setProperty(prop,`calc(${el.style[prop]} + var(${prop==='left'?'--yx-panel-offset':'--yx-panel-top'},0px))`,'important');
  if(tag==='image'){if(!el.getAttribute('src'))el.src=assetUrl(asText(interpolated(node.getAttribute('src'),scope)));el.loading='lazy';el.alt=node.getAttribute('alt')||'';}
  if(tag==='input'||tag==='textarea'){
   if(tag==='input'){const t=node.getAttribute('type')||'';el.type=node.getAttribute('password')==='true'?'password':t==='number'?'tel':t==='digit'?'number':'text';const max=node.getAttribute('maxlength');if(max!==null&&Number(max)>0)el.maxLength=Number(max);}
@@ -181,7 +182,7 @@ function renderOne(node,into,owner,scope,key){let tag=node.tagName.toLowerCase()
   el.__yxMapOptions=options;
  }
  if(tag==='button'){el.type='button';if(node.getAttribute('open-type')?.toLowerCase()==='chooseavatar')el.addEventListener('click',()=>chooser({count:1,mediaType:['image'],success:r=>{if(r.tempFilePaths?.[0])el.dispatchEvent(new CustomEvent('chooseavatar',{detail:{avatarUrl:r.tempFilePaths[0]}}))}}));}
- if(tag==='video'){if(!node.hasAttribute('controls'))el.controls=true;el.playsInline=true;el.preload='metadata';}
+ if(tag==='video'){if(!node.hasAttribute('controls'))el.controls=true;el.playsInline=true;el.preload='metadata';const poster=interpolated(node.getAttribute('poster')||'',scope)||(el.id==='homeLessonVideo'?owner?.data?.lesson?.video_poster:'');if(poster)el.poster=assetUrl(poster);}
  if(tag==='scroll-view'){el.style.overflowY=node.hasAttribute('scroll-y')?'auto':'';el.style.overflowX=node.hasAttribute('scroll-x')?'auto':'';}
  bindEvents(node,el,owner,scope);
  if(tag!=='map'&&tag!=='image'&&tag!=='input'&&tag!=='switch'&&tag!=='checkbox'&&tag!=='radio'&&tag!=='rich-text'&&tag!=='picker')transformChildren(node,el,owner,scope,key);
@@ -227,7 +228,7 @@ function refreshImmediate(){const dest=$('#yx-render');if(!dest||!page)return;
  const doc=parsedTemplate(source);const frag=document.createDocumentFragment();const scope=Object.create(null);Object.assign(scope,page.instance.data);scope.$page=page.instance;
  try{transformChildren(doc.body,frag,page.instance,scope,page.path)}catch(e){console.error('WXML rendering failed',e);recordError('渲染失败：'+e.message)}
  // setData must not destroy a playing native video and restart it at zero.
- for(const fresh of (sameOwner?[...frag.querySelectorAll('video')]:[])){const old=[...dest.querySelectorAll('video')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey&&v.getAttribute('src')===fresh.getAttribute('src'));if(old)fresh.replaceWith(old)}
+ for(const fresh of (sameOwner?[...frag.querySelectorAll('video')]:[])){const old=[...dest.querySelectorAll('video')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey&&(v.dataset.yxSource||v.getAttribute('src'))===(fresh.dataset.yxSource||fresh.getAttribute('src')));if(old)fresh.replaceWith(old)}
  for(const fresh of (sameOwner?[...frag.querySelectorAll('.yx-map')]:[])){const old=[...dest.querySelectorAll('.yx-map')].find(v=>v.dataset.yxKey===fresh.dataset.yxKey);if(old&&JSON.stringify(old.__yxMapOptions)===JSON.stringify(fresh.__yxMapOptions))fresh.replaceWith(old)}
  for(const old of dest.querySelectorAll('.yx-map'))if(!frag.contains(old))old.__yxMap?.destroy();
  // Keep native form controls mounted: removing a focused field fires a spurious blur/save.
@@ -241,7 +242,9 @@ function refreshImmediate(){const dest=$('#yx-render');if(!dest||!page)return;
   if('checked' in old)old.checked=fresh.checked;
   old.__yxMoving=true;fresh.replaceWith(old);
  }
+ for(const old of dest.querySelectorAll('video'))window.YXMedia?.destroy(old);
  dest.replaceChildren(frag);dest.__yxOwner=page.instance;
+ for(const video of dest.querySelectorAll('video')){window.YXMedia?.mount(video);if(!video.poster)video.poster='assets/illustrations/classroom.svg'}
  for(const el of dest.querySelectorAll('input,textarea,select'))el.__yxMoving=false;
  for(const host of dest.querySelectorAll('.yx-map'))if(!host.__yxMap)host.__yxMap=window.YXMaps?.mount(host,host.__yxMapOptions);
 
@@ -319,10 +322,22 @@ function chooser(opts={}){const input=document.createElement('input');input.type
 let recorderListeners={start:[],stop:[],error:[]};
 async function toWav(blob){const buf=await blob.arrayBuffer();const ctx=new (window.AudioContext||window.webkitAudioContext)();try{const decoded=await ctx.decodeAudioData(buf.slice(0));const rate=16000;const outLen=Math.ceil(decoded.duration*rate);const wav=new ArrayBuffer(44+outLen*2);const view=new DataView(wav);const str=(p,s)=>{for(let i=0;i<s.length;i++)view.setUint8(p+i,s.charCodeAt(i))};str(0,'RIFF');view.setUint32(4,36+outLen*2,true);str(8,'WAVE');str(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,rate,true);view.setUint32(28,rate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);str(36,'data');view.setUint32(40,outLen*2,true);for(let i=0;i<outLen;i++){const sample=decoded.getChannelData(0)[Math.min(decoded.length-1,Math.floor(i*decoded.sampleRate/rate))]||0;view.setInt16(44+i*2,Math.max(-1,Math.min(1,sample))*32767,true)}return new Blob([wav],{type:'audio/wav'})}finally{ctx.close()}}
 const recorderManager={__listenersReady:false,onStart(fn){recorderListeners.start.push(fn)},onStop(fn){recorderListeners.stop.push(fn)},onError(fn){recorderListeners.error.push(fn)},
- async start({duration=30000}={}){try{if(!navigator.mediaDevices?.getUserMedia)throw Error('需要 localhost 或 HTTPS 才能使用麦克风');voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});voiceRecorder=new MediaRecorder(voiceStream);let chunks=[];voiceRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
- voiceRecorder.onstop=async()=>{try{let blob=new Blob(chunks,{type:voiceRecorder.mimeType||'audio/webm'});try{blob=await toWav(blob)}catch(e){console.warn('WAV conversion',e)}const key=URL.createObjectURL(blob);fileMap.set(key,new File([blob],blob.type.includes('wav')?'voice.wav':'voice.webm',{type:blob.type}));recorderListeners.stop.forEach(fn=>fn({tempFilePath:key,duration:Date.now()-recorderManager._started}))}catch(e){recorderListeners.error.forEach(fn=>fn({errMsg:e.message}))}finally{voiceStream?.getTracks().forEach(t=>t.stop())}};
- voiceRecorder.start();recorderManager._started=Date.now();recorderListeners.start.forEach(fn=>fn());clearTimeout(recorderManager._timer);recorderManager._timer=setTimeout(()=>recorderManager.stop(),duration)}catch(e){recorderListeners.error.forEach(fn=>fn({errMsg:e.message}));toast('麦克风不可用：'+e.message)}},
- stop(){clearTimeout(this._timer);if(voiceRecorder?.state==='recording')voiceRecorder.stop()}
+ async start({duration=30000}={}){
+  if(this._pending||voiceRecorder?.state==='recording')return;
+  const generation=(this._generation||0)+1;this._generation=generation;this._pending=true;this._stopRequested=false;
+  try{
+   if(!navigator.mediaDevices?.getUserMedia)throw Error('需要 localhost 或 HTTPS 才能使用麦克风');
+   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+   if(this._generation!==generation||this._stopRequested){stream.getTracks().forEach(t=>t.stop());return}
+   voiceStream=stream;const recorder=new MediaRecorder(stream);voiceRecorder=recorder;let chunks=[];
+   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+   recorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());try{let blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});try{blob=await toWav(blob)}catch(e){console.warn('WAV conversion',e)}const key=URL.createObjectURL(blob);fileMap.set(key,new File([blob],blob.type.includes('wav')?'voice.wav':'voice.webm',{type:blob.type}));recorderListeners.stop.forEach(fn=>fn({tempFilePath:key,duration:Date.now()-this._started}))}catch(e){recorderListeners.error.forEach(fn=>fn({errMsg:e.message}))}finally{if(voiceRecorder===recorder)voiceRecorder=null}};
+   recorder.onerror=e=>{stream.getTracks().forEach(t=>t.stop());recorderListeners.error.forEach(fn=>fn({errMsg:e.error?.message||'录音失败'}))};
+   recorder.start();this._started=Date.now();recorderListeners.start.forEach(fn=>fn());clearTimeout(this._timer);this._timer=setTimeout(()=>this.stop(),duration);
+  }catch(e){recorderListeners.error.forEach(fn=>fn({errMsg:e.message}));toast('麦克风不可用：'+e.message)}finally{if(this._generation===generation)this._pending=false}
+ },
+ stop(){clearTimeout(this._timer);this._stopRequested=true;if(voiceRecorder?.state==='recording')voiceRecorder.stop()}
+
 };
 function getReqURL(url,data,method){if(/^https?:\/\//.test(url)&&url.includes('yixiangzhicai.com'))url=window.location.origin+new URL(url).pathname+new URL(url).search;
  if((method||'GET').toUpperCase()==='GET'&&data&&typeof data==='object'&&Object.keys(data).length){let u=new URL(url,location.href);for(const [k,v]of Object.entries(data))if(v!==undefined&&v!==null)u.searchParams.set(k,String(v));return u.toString()}return url}
@@ -362,6 +377,7 @@ const wx={
  getFileSystemManager:()=>({readFile:({filePath,encoding,success,fail})=>{const file=fileMap.get(filePath);if(!file){fail?.({errMsg:'找不到文件'});return}file.arrayBuffer().then(buf=>{const binary=new Uint8Array(buf);let s='';for(let i=0;i<binary.length;i+=8192)s+=String.fromCharCode(...binary.subarray(i,i+8192));success?.({data:encoding==='base64'?btoa(s):buf})}).catch(fail)}})
 };
 window.wx=wx;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)recorderManager.stop()});
 function clearSession(){for(const key of ['token','user','profile','rememberLoginUntil','wechatPasswordFreeUntil'])wx.removeStorageSync(key);Object.assign(appDef.globalData,{token:'',user:null,profile:null})}
 function switchRole(){clearSession();goto('pages/login/login','relaunch');toast('请在登录页选择长辈或子女账号登录')}
 function firstVisit(){const hp=location.hash.replace(/^#\//,'');if(hp&&pageName[hp.split('?')[0]]&&(storageGet('token')||authPaths.has(hp.split('?')[0])))return hp;

@@ -1,0 +1,37 @@
+{
+  "title": "理财基础：先看懂，再决定",
+  "kind": "original_offline_fallback",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "content_origin": "Original narration based on the supplied mini-program lesson text, not a copy of the remote courses.",
+  "slides": [
+    {
+      "n": "01",
+      "title": "先看懂，再决定",
+      "label": "颐享智财 · 每日一课",
+      "body": "看机构、看风险、看期限",
+      "speech": "欢迎来到颐享智财每日一课。看理财产品时，记住三个检查点：一看机构，二看风险，三看期限。"
+    },
+    {
+      "n": "02",
+      "title": "先看发行机构",
+      "label": "第一个检查点",
+      "body": "查清产品由谁发行\n通过正规渠道核实信息",
+      "speech": "第一，看清楚产品由谁发行，通过正规渠道核实机构和产品信息。陌生人催您转账时，先停下来，不要着急操作。"
+    },
+    {
+      "n": "03",
+      "title": "看清风险和期限",
+      "label": "第二、三个检查点",
+      "body": "风险等级是什么？\n钱什么时候可以取出来？",
+      "speech": "第二，看风险等级。第三，看钱什么时候可以取出来。不要只盯着收益数字，也要看清风险、费用和赎回条件。"
+    },
+    {
+      "n": "04",
+      "title": "慢一点，问清楚",
+      "label": "把这三个问题记下来",
+      "body": "谁发行？有什么风险？何时能取？\n看清楚，再作决定。",
+      "speech": "如果有人同时承诺高收益、稳赚不赔，又让您马上转账，先不要操作。记住：谁发行，有什么风险，何时能取。看清楚，再作决定。"
+    }
+  ],
+  "duration_seconds": 65.42
+}

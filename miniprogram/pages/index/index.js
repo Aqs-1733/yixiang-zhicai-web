@@ -438,6 +438,7 @@ Page({
         lesson: remoteLesson,
         lessonTitleSegments: termHelper.buildTermSegments(remoteLesson.title || ''),
         lessonList: remoteOptions.length ? remoteOptions : this.data.lessonList,
+        lessonInfo: remoteOptions.length ? { currentIndex: Math.max(0, remoteOptions.findIndex(item => item.video_url === remoteLesson.video_url)) + 1, totalCount: remoteOptions.length } : this.data.lessonInfo,
         homeLessonVideoBroken: false
       })
     }).catch(() => {
