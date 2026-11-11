@@ -1,0 +1,74 @@
+<view class="login-page {{globalFontPageClass}}">
+  <scroll-view class="login-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <view class="login-canvas {{globalFontPageClass}}">
+      <image class="page-bg login-bg" src="/assets/ui/login_bg.jpg" mode="widthFix" />
+
+      <view class="layer login-layer">
+    <view class="abs login-panel">
+      <view class="role-switch">
+        <button
+          class="role-btn {{role === 'elder' ? 'active' : ''}}"
+          hover-class="none"
+          bindtap="chooseRole"
+          data-role="elder"
+        >长辈端</button>
+        <button
+          class="role-btn {{role === 'child' ? 'active' : ''}}"
+          hover-class="none"
+          bindtap="chooseRole"
+          data-role="child"
+        >子女端</button>
+      </view>
+
+      <view class="field phone">
+        <input
+          class="input-text"
+          placeholder="请输入手机号"
+          placeholder-class="input-placeholder"
+          value="{{phone}}"
+          bindinput="onInput"
+          data-k="phone"
+          type="number"
+          maxlength="11"
+        />
+      </view>
+
+      <view class="field pass">
+        <input
+          class="input-text"
+          placeholder="请输入密码"
+          placeholder-class="input-placeholder"
+          value="{{password}}"
+          bindinput="onInput"
+          data-k="password"
+          password="true"
+        />
+      </view>
+
+      <view class="remember-row">
+        <switch checked="{{rememberWeek}}" bindchange="onRememberChange" color="#f2b632" />
+        <view>七天内免登录</view>
+      </view>
+
+      <view class="login-action-row">
+        <button class="btn-primary login-btn" bindtap="login">手机号登录</button>
+        <button class="btn-soft wechat-btn" bindtap="wechatLogin">微信登录</button>
+      </view>
+
+      <button class="link-btn" bindtap="goRegister">注册新账号</button>
+      <button class="link-btn forgot-link" bindtap="goForgotPassword">忘记密码</button>
+    </view>
+      </view>
+  </view>
+  </scroll-view>
+
+  <view wx:if="{{showLoginSuccess && successUser}}" class="login-success-mask">
+    <view class="login-success-card">
+      <image class="success-avatar" src="{{successUser.avatarDisplay}}" mode="aspectFill" />
+      <view class="success-title">登录成功</view>
+      <view class="success-name">{{successUser.nickname}}</view>
+      <view class="success-role">{{successUser.roleLabel}}</view>
+      <button class="success-enter" hover-class="none" bindtap="continueAfterSuccess">进入颐享智财</button>
+    </view>
+  </view>
+</view>

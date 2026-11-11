@@ -1,0 +1,16 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">帮我给爸妈解释</view>
+  <textarea class="input" value="{{text}}" bindinput="onInput" placeholder="粘贴产品说明、截图文字或可疑话术"></textarea>
+  <button class="primary" bindtap="generate">生成白话说明</button>
+  <view wx:if="{{message}}" class="card">
+    <view class="name">建议话术</view>
+    <view class="sub">{{message}}</view>
+    <button class="soft" bindtap="read">朗读</button>
+  </view>
+</view>
+<child-bottom-nav active="family" />
+

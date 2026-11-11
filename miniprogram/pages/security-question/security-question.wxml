@@ -1,0 +1,12 @@
+<view class="security-page {{globalFontPageClass}}">
+  <button class="round-back" hover-class="none" bindtap="back">‹</button>
+  <view class="security-card">
+    <view class="page-title">设置密保问题</view>
+    <view class="page-desc">忘记密码时，回答这个问题即可重设密码。答案不会明文保存。</view>
+    <view class="question-box">{{question}}</view>
+    <button class="refresh-btn" hover-class="none" bindtap="refreshQuestion">换一个问题</button>
+    <input class="answer-input" value="{{answer}}" bindinput="onAnswer" placeholder="请输入您容易记住的答案" placeholder-class="input-ph" />
+    <button class="primary-btn" hover-class="none" loading="{{submitting}}" bindtap="submit">保存密保问题</button>
+    <button wx:if="{{registration}}" class="skip-btn" hover-class="none" bindtap="skip">暂不设置，返回登录</button>
+  </view>
+</view>

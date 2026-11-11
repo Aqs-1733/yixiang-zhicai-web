@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "child-bottom-nav": "/components/child-bottom-nav/child-bottom-nav"
+  }
+}

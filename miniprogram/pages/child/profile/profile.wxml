@@ -1,0 +1,25 @@
+<view class="profile-page {{globalFontPageClass}}">
+  <image class="profile-bg" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
+  <view class="round-back" bindtap="goBack">‹</view>
+  <view class="profile-title">我的</view>
+  <view class="profile-card">
+    <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" hover-class="none">
+      <image class="avatar" src="{{avatar}}" mode="aspectFill" />
+    </button>
+    <view class="avatar-tip">点击头像可更换</view>
+    <input class="nickname" type="nickname" value="{{nickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" />
+    <view class="account-row"><text>手机号</text><text>{{phone || '未填写'}}</text></view>
+    <view class="account-row"><text>账号身份</text><text>子女端</text></view>
+    <button class="save-button" hover-class="none" bindtap="saveProfile">保存资料</button>
+  </view>
+  <view class="profile-card family-binding-card">
+    <view class="binding-title">{{familyMembers.length ? '新建绑定' : '家庭绑定'}}</view>
+    <view class="binding-desc">输入长辈提供的一次性绑定码，连接新的家庭。</view>
+    <button class="save-button bind-button" hover-class="none" bindtap="goBind">输入绑定码</button>
+    <view wx:if="{{familyMembers.length}}" class="bound-member-list">
+      <view wx:for="{{familyMembers}}" wx:key="id" class="bound-member"><text>{{item.name}}</text><text>{{item.relation || '长辈'}}</text></view>
+    </view>
+  </view>
+  <button class="logout-button" hover-class="none" bindtap="logout">退出登录</button>
+  <child-bottom-nav active="profile" />
+</view>

@@ -1,0 +1,21 @@
+.child-bottom-nav{
+  position:fixed!important;
+  left:24rpx;
+  right:24rpx;
+  bottom:24rpx!important;
+  height:112rpx;
+  border-radius:58rpx 58rpx 0 0;
+  background:rgba(255,255,255,.96);
+  border:2rpx solid #f1d597;
+  box-shadow:0 10rpx 28rpx rgba(171,116,26,.14);
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  z-index:900!important;
+  box-sizing:border-box;
+}.child-nav-item{position:relative;width:170rpx;height:88rpx;border-radius:44rpx;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#836327;font-size:25rpx;font-weight:800}.child-nav-item.active{background:linear-gradient(180deg,#ffd86b,#ffc340);color:#593a0d}.child-nav-icon{font-size:36rpx;line-height:1;margin-bottom:4rpx}.nav-badge{position:absolute;right:20rpx;top:2rpx;min-width:32rpx;height:32rpx;line-height:32rpx;padding:0 7rpx;border-radius:17rpx;background:#df4d3f;color:#fff;font-size:19rpx;text-align:center;font-weight:900;box-sizing:border-box}.font-global-large .child-nav-item{font-size:28rpx}.font-global-xlarge.child-bottom-nav{height:130rpx}.font-global-xlarge .child-nav-item{width:180rpx;height:100rpx;font-size:30rpx}.font-global-xlarge .child-nav-icon{font-size:42rpx}
+:host{display:block;height:150rpx}
+.font-global-large .child-nav-item { font-size: 30rpx; }
+.font-global-large .child-nav-icon { font-size: 38rpx; }
+.font-global-xlarge .child-nav-item { font-size: 35rpx; }
+.font-global-xlarge .child-nav-icon { font-size: 44rpx; }

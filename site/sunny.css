@@ -1,0 +1,197 @@
+/* 颐享智财 · 暖心多彩 V5
+   参考 Astra Elderly Home / Blocksy Smile Dent 的信息层级和留白。
+   保留小程序原业务 DOM、监听事件和 FastAPI 数据接口。
+   基础色：麦穗黄、珊瑚橙、鼠尾草绿；白底减轻视觉负担。
+*/
+:root {
+  --ink: #374237; --ink-soft:#586452; --sub:#727a6f;
+  --orange:#f38b47; --orange-dark:#c9622c; --yellow:#f5c564;
+  --mint:#e7f1e2; --mint-dark:#50886b; --peach:#fff1e3;
+  --cream:#faf9f4; --paper:#fffefd; --line:#e9e9e2;
+  --shadow:0 12px 35px rgba(71,68,44,.065),0 2px 8px rgba(61,63,45,.03);
+  --radius:24px; --ease:cubic-bezier(.2,.8,.2,1)
+}
+html,body{background:#faf9f4!important;color:var(--ink)!important;font-family:'PingFang SC','Microsoft Yahei',system-ui,sans-serif!important}
+.site-layout,.content-column{background:#faf9f4!important}
+.content-column{background-image:radial-gradient(ellipse at 96% 2%,rgba(249,208,134,.16),transparent 42%),radial-gradient(ellipse at 3% 80%,rgba(185,212,174,.15),transparent 45%)!important}
+.side-nav{background:#fffefb!important;width:252px!important;min-width:252px!important;border-right:1px solid #eaece4!important;padding:23px 15px 22px!important}
+.identity{padding:4px 8px 16px!important;gap:10px!important}
+.identity-logo{background:#fff0de!important;border-radius:17px!important;box-shadow:none!important;width:52px!important;height:52px!important}
+.identity-logo img{width:48px!important;height:48px!important;object-fit:contain!important}
+.identity strong{font-size:25px!important;font-weight:850!important;letter-spacing:-.7px!important;color:#b85f28!important}
+.identity small,.side-end,.side-badge,.top-tagline,.breadcrumbs>span,.breadcrumbs:not(:has(strong)){display:none!important}
+.side-deco{background:linear-gradient(112deg,#fff4d7,#ffe9cf 83%)!important;border-radius:19px!important;padding:21px!important;min-height:116px!important;margin:3px 0 20px!important;overflow:hidden!important}
+.side-deco strong{font-size:19px!important;line-height:1.6!important;color:#ad652f!important;letter-spacing:.1px!important}
+.side-deco .cute-side-mascot{right:-9px!important;bottom:-15px!important;width:110px!important;height:110px!important;filter:drop-shadow(0 5px 9px #b7744826)!important}
+.nav-search{background:#f5f6f1!important;border:1px solid #ebeee7!important;border-radius:14px!important;margin:0 0 13px!important;min-height:49px!important}
+.nav-search input{font-size:16px!important;color:#596657!important}
+.nav-list{gap:3px!important}
+.side-nav .nav-section{font-size:13px!important;letter-spacing:.1px!important;color:#899181!important;padding:15px 12px 6px!important}
+.side-nav .nav-item{font-size:17px!important;font-weight:690!important;color:#596655!important;min-height:52px!important;margin:0!important;border-radius:14px!important;padding:12px 13px!important}
+.side-nav .nav-item.active{background:linear-gradient(102deg,#fff0da,#fff3e8)!important;color:#aa5b2b!important;border:0!important;box-shadow:inset 4px 0 0 #f4a35d!important}
+.side-nav .nav-item:hover{background:#f7f8ef!important;color:#53735c!important;transform:translateX(2px)!important}
+.side-nav .nav-item.active .nav-icon{color:#ce792f!important}
+.side-nav .nav-item .nav-icon{color:#709873!important}
+.top-head{height:77px!important;background:rgba(255,254,251,.91)!important;border-bottom:1px solid #efeee7!important;backdrop-filter:blur(18px)!important}
+.breadcrumbs strong{font-size:22px!important;letter-spacing:-.3px!important;color:#374237!important}
+.top-actions{gap:11px!important}
+.status-dot{background:#edf5e8!important;color:#5e855d!important;border:none!important;border-radius:999px!important;padding:9px 13px!important;font-size:14px!important}
+.circle-tool{border:1px solid #eaebe4!important;background:#fff!important;color:#687464!important;border-radius:14px!important;min-width:48px!important;min-height:48px!important;box-shadow:none!important}
+.role-pill{background:#fff0df!important;color:#a65e32!important;border:0!important;border-radius:15px!important;min-height:47px!important;font-size:16px!important;font-weight:750!important}
+.page-frame{padding:24px clamp(20px,3.2vw,52px) 45px!important;max-width:1560px!important}
+.content-footer{border-top:1px solid #e9e9df!important;padding-top:22px!important;color:#7f877b!important;font-size:14px!important}
+.content-footer span{color:#93988e!important}
+.page-intro{min-height:0!important;background:transparent!important;box-shadow:none!important;padding:3px 0 15px!important;margin:0 0 13px!important;border-radius:0!important}
+.page-intro h1{font-size:clamp(28px,2.7vw,36px)!important;color:#35473a!important;letter-spacing:-.5px!important}
+.page-intro p{display:none!important}
+.yx-page{font-size:18px!important;color:#465248!important}
+.yx-page input,.yx-page textarea,.yx-page select{font-size:18px!important;min-height:50px!important;border:1px solid #e5e7e1!important;background:#fff!important;color:#3a463c!important}
+.yx-page button,.yx-page [role=button]{min-height:44px;font-size:17px!important;transition:transform .18s var(--ease),background .18s,box-shadow .18s!important}
+.yx-page .section-title,.yx-page .panel-title,.yx-page .dialog-title{font-size:clamp(22px,2vw,28px)!important;color:#3e4c40!important;font-weight:800!important}
+.yx-page .card,.yx-page .child-card,.yx-page .feature-card,.yx-page .module-card,.yx-page .finance-card,.yx-page .recognize-card,.yx-page .track-card,.yx-page .advice-card,.yx-page .health-life-card,.yx-page .totals-card,.yx-page .ledger-scope-card,.yx-page .data-card,.yx-page .analysis-card,.yx-page .profile-card,.yx-page .family-dashboard-card{border:0!important;background:#fff!important;box-shadow:var(--shadow)!important;border-radius:22px!important}
+.yx-page .btn-primary,.yx-page .primary-btn,.yx-page .submit-btn,.yx-page .footer-btn.next-btn,.yx-page .go-btn{background:linear-gradient(125deg,#f8a95a,#f1793d)!important;border:0!important;color:#fff!important;box-shadow:0 6px 15px rgba(224,120,63,.19)!important;border-radius:13px!important}
+.yx-page .back-btn,.yx-page .round-back-btn{background:#f1f4eb!important;border:0!important;color:#65846d!important}
+/* 主页：自然色彩只用于“认知层次”，不做一堆同色描边 */
+body.is-home .page-frame{padding-top:22px!important}
+.yx-page .greet-hello{min-height:276px!important;padding:51px 43px 89px!important;margin:0 0 23px!important;border:0!important;border-radius:28px!important;box-shadow:0 12px 31px rgba(181,137,84,.11)!important;color:#374e3d!important;font-size:clamp(39px,3.8vw,58px)!important;line-height:1.24!important;font-weight:850!important;background-color:#fff2d7!important;background-image:linear-gradient(90deg,#fff4da 0%,#fff4da 34%,rgba(255,244,218,.9) 43%,rgba(255,244,218,.32) 63%,rgba(255,244,218,0) 82%),url('assets/cute/elderly.webp')!important;background-position:center,right 14px center!important;background-size:cover,auto 115%!important;overflow:hidden!important}
+.yx-page .greet-hello::before{content:'早上好，欢迎回家'!important;font-size:18px!important;color:#aa7a42!important;margin-bottom:17px!important;font-weight:760!important;letter-spacing:1px!important}
+.cute-hero-actions{left:43px!important;bottom:31px!important;gap:11px!important}
+.cute-hero-actions button{min-height:51px!important;border:0!important;border-radius:14px!important;padding:10px 22px!important;font-size:18px!important;font-weight:800!important;background:linear-gradient(125deg,#f5aa56,#ed7b40)!important;color:#fff!important;box-shadow:0 7px 17px #e3904833!important}
+.cute-hero-actions button:last-child{background:#fffef9!important;color:#517e60!important;border:1px solid #d6e5cf!important;box-shadow:none!important}
+.yx-page .home-scroll-inner{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:19px!important;align-items:stretch!important}
+.yx-page .home-grid,.yx-page .home-grid-left,.yx-page .home-grid-right{display:contents!important}
+.yx-page .home-weather-card{grid-column:1!important;grid-row:1!important;min-height:205px!important;padding:31px 35px!important;background:linear-gradient(120deg,#ffebb6,#fff2d4 68%,#fff8e8)!important;border:0!important;border-radius:23px!important;box-shadow:none!important;overflow:hidden!important}
+.yx-page .home-weather-card::after{content:''!important;position:absolute!important;width:94px!important;height:94px!important;top:22px!important;right:37px!important;border-radius:50%!important;background:radial-gradient(circle at 42% 38%,#ffedaf 0%,#ffd476 45%,#f4b758 70%,transparent 72%)!important;box-shadow:0 0 0 17px rgba(255,210,116,.16)!important;opacity:1!important}
+.yx-page .home-weather-city{font-size:clamp(26px,2.45vw,34px)!important;font-weight:820!important;color:#6e5333!important}
+.yx-page .home-weather-date{font-size:18px!important;color:#886e51!important}
+.yx-page .home-weather-temp{font-size:clamp(37px,3.35vw,49px)!important;font-weight:850!important;color:#c97b29!important}
+.yx-page .home-weather-name{font-size:18px!important;color:#886e51!important}
+.yx-page .home-news-card{grid-column:2!important;grid-row:1!important;min-height:205px!important;max-height:330px!important;padding:24px 29px!important;margin:0!important;border:0!important;border-radius:23px!important;background:#fff!important;box-shadow:var(--shadow)!important}
+.yx-page .home-news-head{margin-bottom:7px!important;padding:0 0 10px!important;border-bottom:0!important}
+.yx-page .home-news-title{font-size:24px!important;color:#425344!important}
+.yx-page .home-news-refresh{background:#e9f2e5!important;color:#4e8667!important;min-height:43px!important;min-width:43px!important}
+.yx-page .home-news-item{border-bottom:1px solid #eef0e9!important;padding:10px 0!important}
+.yx-page .home-news-name{font-size:17px!important;line-height:1.5!important;color:#4e5a4e!important}
+.yx-page .home-news-num{background:#f1f5e8!important;color:#5c8968!important;border-radius:9px!important}
+.yx-page .home-news-empty{font-size:18px!important;color:#6a7469!important}
+.yx-page .lesson-card{grid-column:1!important;grid-row:2!important;min-height:0!important;background:#fff!important;padding:24px!important;border:0!important;border-radius:23px!important;box-shadow:var(--shadow)!important}
+.yx-page .lesson-title{font-size:25px!important;color:#3c4b3c!important;font-weight:810!important}
+.yx-page .lesson-video-shell{border:0!important;border-radius:17px!important;overflow:hidden!important;background:#f4f5eb!important;margin-top:16px!important}
+.yx-page .lesson-video-toolbar{min-height:62px!important;background:#eff4e9!important;padding:11px 17px!important;color:#465e4c!important}
+.yx-page .lesson-current-title{font-size:18px!important;color:#4b5d4c!important}
+.yx-page .lesson-picker-open{font-size:16px!important;color:#4f805b!important;border:1px solid #dbe6d3!important;background:#fff!important;border-radius:11px!important;min-height:41px!important}
+.yx-page .lesson-video-stage,.yx-page .lesson-video{min-height:235px!important;background:#e8eddf!important}
+.yx-page .lesson-fallback{min-height:232px!important;background:linear-gradient(145deg,#f3f4e5,#e5ecd7)!important;color:#53775b!important}
+.yx-page .lesson-fallback-title{font-size:23px!important;color:#486b50!important}
+.yx-page .common-func-panel{grid-column:2!important;grid-row:2!important;min-height:0!important;padding:24px!important;background:#fff!important;border:0!important;border-radius:23px!important;box-shadow:var(--shadow)!important}
+.yx-page .common-func-title{font-size:25px!important;font-weight:820!important;color:#425044!important}
+.yx-page .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+.yx-page .common-func-item:nth-child(n){min-height:96px!important;border:0!important;border-radius:17px!important;padding:14px!important;gap:12px!important;box-shadow:none!important}
+.yx-page .common-func-item:nth-child(5n+1){background:#fff1df!important}
+.yx-page .common-func-item:nth-child(5n+2){background:#eef4e5!important}
+.yx-page .common-func-item:nth-child(5n+3){background:#f0effa!important}
+.yx-page .common-func-item:nth-child(5n+4){background:#fff0ed!important}
+.yx-page .common-func-item:nth-child(5n+5){background:#eef5f3!important}
+.yx-page .common-func-item-label{font-size:18px!important;color:#4b5a4a!important;font-weight:780!important}
+.yx-page .common-func-item .quick-icon{width:52px!important;height:52px!important;min-width:52px!important;border-radius:15px!important}
+.yx-page .common-func-item:nth-child(5n+1) .quick-icon{background:#ffcf8f!important;color:#bb6e2f!important}
+.yx-page .common-func-item:nth-child(5n+2) .quick-icon{background:#cfdfbd!important;color:#4f845f!important}
+.yx-page .common-func-item:nth-child(5n+3) .quick-icon{background:#dbd6f8!important;color:#8074c0!important}
+.yx-page .common-func-item:nth-child(5n+4) .quick-icon{background:#f8d6cc!important;color:#c87054!important}
+.yx-page .common-func-item:nth-child(5n+5) .quick-icon{background:#cde6e0!important;color:#4e8780!important}
+.yx-page .home-message-mini{grid-column:1/-1!important;grid-row:3!important;background:linear-gradient(100deg,#eaf2e5,#f3f7ef)!important;border:0!important;min-height:86px!important;border-radius:20px!important;color:#486850!important;padding:17px 25px!important}
+.yx-page .home-message-mini .home-message-arrow{color:#659b73!important}
+/* 业务功能各有调性，不再同一种橙色 */
+.yx-page .assistant-page .chat-scroll{background:linear-gradient(140deg,#f8fbf5,#fffaf2)!important;border:0!important}
+.yx-page .assistant-page .msg-row.self .bubble{background:linear-gradient(130deg,#f5a253,#e98347)!important;color:#fff!important}
+.yx-page .assistant-page .msg-row:not(.self) .bubble{background:#fff!important;color:#445348!important;box-shadow:0 2px 10px #4058430b!important}
+.yx-page .assistant-tool-btn{background:#eaf3e8!important;color:#507f61!important;border:0!important}
+.yx-page .voice-fab{background:linear-gradient(140deg,#fbb966,#f18744)!important;border:3px solid #fff!important}
+.yx-page .m-summary{background:#f2f6ed!important;border:0!important}
+.yx-page .m-summary.s2{background:#fff2e4!important}
+.yx-page .summary-label{font-size:17px!important;color:#607561!important}
+.yx-page .summary-amount{color:#3b5e4a!important}
+.yx-page .finance-layer{background:transparent!important}
+.yx-page .questionnaire-page .q-card{background:#f5f8f1!important;border:0!important}
+.yx-page .questionnaire-page .q-title{color:#435a44!important}
+.yx-page .family-dashboard-card{background:linear-gradient(140deg,#fff,#f4f8f0)!important}
+.yx-page .health-life-card{background:linear-gradient(140deg,#fff,#eff7ec)!important}
+.yx-page .child-page .guard-card{background:linear-gradient(130deg,#fff5e2,#fff)!important;border:0!important}
+.yx-page .child-page .child-news-card{background:#f4f8ef!important;border:0!important}
+/* 登录：更像亲切的服务网站，而不是一张大型广告 */
+body.is-auth .login-art{background:linear-gradient(145deg,#fff0d7 0%,#fff7e7 60%,#f0f6df 100%)!important}
+body.is-auth .login-art h1{color:#3e593d!important;font-size:clamp(43px,4.5vw,64px)!important}
+body.is-auth .login-art h1 em{color:#df8235!important}
+body.is-auth .login-art p{font-size:20px!important;color:#6c745c!important}
+body.is-auth .login-label{background:#fff8e9!important;color:#af743d!important}
+body.is-auth .hero-stat{color:#66816e!important}
+body.is-auth .role-btn.active{color:#d27b35!important}
+body.is-auth .login-btn{background:linear-gradient(120deg,#f8b163,#ee8346)!important;color:#fff!important}
+body.is-auth .wechat-btn{background:#eff5ea!important;color:#4c8460!important}
+/* 非装饰性动画：低频、尊重减弱动态偏好 */
+@media(hover:hover){.yx-page .common-func-item:hover{transform:translateY(-4px)!important;box-shadow:0 9px 18px rgba(75,102,74,.12)!important}.yx-page button:hover{filter:brightness(1.015)}}
+@media(max-width:1150px){.yx-page .home-scroll-inner{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)!important}.yx-page .greet-hello{background-size:cover,auto 99%!important}.yx-page .common-func-item:nth-child(n){min-height:89px!important}}
+@media(max-width:860px){
+ .side-nav{width:min(82vw,308px)!important;min-width:0!important}
+ .top-head{height:69px!important}.page-frame{padding:18px 17px 36px!important}
+ .yx-page .home-scroll-inner{display:flex!important;flex-direction:column!important;gap:16px!important}
+ .yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel,.yx-page .home-message-mini{width:100%!important;grid-column:auto!important;grid-row:auto!important}
+ .yx-page .greet-hello{min-height:241px!important;font-size:clamp(32px,5vw,43px)!important;padding:37px 25px 83px!important;background-size:cover,auto 95%!important}
+ .cute-hero-actions{left:25px!important;bottom:25px!important}
+ .yx-page .home-weather-card{min-height:135px!important;padding:24px!important}.yx-page .home-news-card{min-height:128px!important;max-height:none!important}
+ .yx-page .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .yx-page .common-func-item:nth-child(n){min-height:85px!important}
+ .mobile-nav{background:rgba(255,254,250,.96)!important;border-top:1px solid #e8eadf!important;box-shadow:0 -5px 20px #4b674010!important}
+ .mobile-nav button{color:#627765!important}.mobile-nav button.active{background:#fff0df!important;color:#d07734!important}
+}
+@media(max-width:540px){
+ .page-frame{padding:13px 13px 32px!important}
+ .status-dot{display:none!important}
+ .yx-page .greet-hello{min-height:232px!important;font-size:32px!important;padding:30px 17px 82px!important;background-image:linear-gradient(90deg,#fff4da 0%,rgba(255,244,218,.98) 36%,rgba(255,244,218,.78) 58%,rgba(255,244,218,.08) 100%),url('assets/cute/elderly.webp')!important;background-size:cover,auto 78%!important;background-position:center,right -75px top!important}
+ .yx-page .greet-hello::before{font-size:16px!important;max-width:190px!important}
+ .cute-hero-actions{left:17px!important;bottom:20px!important;gap:9px!important}
+ .cute-hero-actions button{min-height:46px!important;font-size:16px!important;padding:7px 12px!important}
+ .yx-page .home-weather-card{padding:22px!important;min-height:120px!important}
+ .yx-page .home-weather-card::after{width:68px!important;height:68px!important;right:36px!important;top:14px!important}
+ .yx-page .home-weather-city{font-size:27px!important}.yx-page .home-weather-date{font-size:17px!important}.yx-page .home-weather-temp{font-size:37px!important}.yx-page .home-weather-name{font-size:17px!important}
+ .yx-page .home-news-card{padding:20px!important}.yx-page .lesson-card,.yx-page .common-func-panel{padding:19px!important}
+ .yx-page .home-news-name,.yx-page .common-func-item-label{font-size:17px!important}
+ .yx-page .lesson-title,.yx-page .common-func-title{font-size:23px!important}
+ .yx-page .common-func-grid{gap:10px!important}.yx-page .common-func-item:nth-child(n){min-height:80px!important;padding:10px!important;gap:8px!important}
+ .yx-page .common-func-item .quick-icon{width:43px!important;min-width:43px!important;height:43px!important}
+ .yx-page .home-message-mini{padding:18px!important}
+ .yx-page .lesson-video-toolbar{gap:9px!important}.yx-page .lesson-current-title{font-size:16px!important}
+ .yx-page .lesson-picker-open{min-width:92px!important;font-size:15px!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* 逐屏检查后的细节修复 */
+.top-actions .status-dot{display:none!important}
+.yx-page .home-weather-card::after{display:none!important}
+.yx-page .home-weather-name::before{content:'☀';display:inline-block;margin-right:6px;color:#d99a36;font-size:21px;vertical-align:middle}
+.yx-page .home-weather-card .home-weather-right{position:relative!important;z-index:2!important}
+.yx-page .home-weather-card{position:relative!important}
+.yx-page .home-weather-card::before{content:''!important;display:block!important;position:absolute!important;right:-45px!important;bottom:-70px!important;width:195px!important;height:195px!important;border-radius:50%!important;background:rgba(255,198,87,.15)!important}
+.yx-page .child-page .guard-card,.yx-page .child-page .child-news-card{border:none!important;box-shadow:var(--shadow)!important}
+.yx-page .child-page .family-dashboard-card,.yx-page .child-page .overview-card{border:0!important;box-shadow:var(--shadow)!important}
+@media(max-width:540px){
+ .top-head .top-left{flex:1!important;min-width:0!important}
+ .top-head .breadcrumbs{min-width:0!important;white-space:nowrap!important}
+ .top-head .breadcrumbs strong{font-size:20px!important;white-space:nowrap!important;word-break:keep-all!important}
+ .top-actions{gap:7px!important;flex-shrink:0!important}
+ .top-actions .role-pill{min-width:45px!important;width:45px!important;padding:0!important;justify-content:center!important;border-radius:13px!important}
+ .top-actions .role-pill #role-label{display:none!important}
+ .top-actions .circle-tool{min-width:45px!important;width:45px!important;height:45px!important}
+ .top-head .hamburger{min-width:45px!important;width:45px!important}
+ .yx-page .home-weather-card::before{width:125px!important;height:125px!important;right:-25px!important;bottom:-40px!important}
+}
+/* 场景色：理财是绿、账本是黄、家庭与健康是柔和草绿；主操作橙色贯穿品牌。 */
+body[data-route="pages-finance-finance"] .side-nav .nav-item.active,
+body[data-route="pages-health-health"] .side-nav .nav-item.active,
+body[data-route^="pages-child-"] .side-nav .nav-item.active{background:#e9f3e6!important;color:#497f5a!important;box-shadow:inset 4px 0 0 #80ac80!important}
+body[data-route="pages-money-money"] .side-nav .nav-item.active{background:#fff2d4!important;color:#9c6b2f!important;box-shadow:inset 4px 0 0 #e8b653!important}
+body[data-route="pages-finance-finance"] .page-intro h1,body[data-route="pages-health-health"] .page-intro h1{color:#4c7658!important}
+body[data-route="pages-money-money"] .page-intro h1{color:#8a6a39!important}
+body[data-route^="pages-child-"] .page-intro h1{color:#4d755c!important}
+/* 主要说明文字的字号下限，保持适老可读性 */
+#yx-render :is(.form-tip,.form-hint,.safe-note,.input-hint,.info-note,.field-hint,.footer-note,.login-note,.empty-tip,.empty-desc,.page-desc){font-size:max(16px,1em)!important;line-height:1.55!important}
+.yx-page .home-message-mini>div>view{font-size:16px!important}

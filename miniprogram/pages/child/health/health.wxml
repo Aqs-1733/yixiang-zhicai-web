@@ -1,0 +1,29 @@
+<view class="page {{globalFontPageClass}}">
+  <view class="child-nav"><button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button><view class="nav-label">子女端</view></view>
+  <view class="title">长辈健康</view>
+  <view wx:if="{{loading}}" class="safe">正在读取长辈授权的健康信息...</view>
+  <view wx:elif="{{permissionDenied}}" class="safe denied">长辈暂未开放该权限</view>
+  <block wx:elif="{{summary}}">
+    <view class="care-summary">{{summary.summary}}</view>
+    <view class="care-section medicine">
+      <view class="care-title">用药安排</view>
+      <view wx:if="{{!summary.meds.length}}" class="care-empty">长辈暂未设置用药</view>
+      <view wx:for="{{summary.meds}}" wx:key="id" class="care-row">
+        <view class="care-main"><view>{{item.name}}</view><text>{{item.dose || '未填写用量'}}</text></view>
+        <view class="care-side"><text>{{item.time || '未设时间'}}</text><view>{{item.done ? '今日已服' : '待服用'}}</view></view>
+      </view>
+    </view>
+    <view class="care-section meal">
+      <view class="care-title">饮食记录</view>
+      <view wx:if="{{!summary.meals.length}}" class="care-empty">长辈暂未记录吃了什么</view>
+      <view wx:for="{{summary.meals}}" wx:key="id" class="journal-row"><view class="journal-content">{{item.content}}</view><view wx:if="{{item.analysis}}" class="journal-analysis">{{item.analysis}}</view><view class="journal-time">{{item.timeText}}</view></view>
+    </view>
+    <view class="care-section exercise">
+      <view class="care-title">运动记录</view>
+      <view wx:if="{{!summary.exercises.length}}" class="care-empty">长辈暂未记录运动</view>
+      <view wx:for="{{summary.exercises}}" wx:key="id" class="journal-row"><view class="journal-content">{{item.content}}</view><view wx:if="{{item.analysis}}" class="journal-analysis">{{item.analysis}}</view><view class="journal-time">{{item.timeText}}</view></view>
+    </view>
+  </block>
+  <view wx:else class="safe">暂无健康数据</view>
+</view>
+<child-bottom-nav active="family" />

@@ -1,0 +1,19 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">账本摘要</view>
+  <view class="summary">
+    <view>收入 ¥{{summary.income_text || 0}}</view>
+    <view>支出 ¥{{summary.expense_text || 0}}</view>
+    <view>结余 ¥{{summary.balance_text || 0}}</view>
+  </view>
+  <view wx:for="{{records}}" wx:key="id" class="card">
+    <view class="row"><text>{{item.title}}</text><text>{{item.type}} ¥{{item.amount}}</text></view>
+    <view class="sub">{{item.date}}</view>
+  </view>
+  <view class="safe">{{safeNote}}</view>
+</view>
+<child-bottom-nav active="family" />
+

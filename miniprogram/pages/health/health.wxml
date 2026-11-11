@@ -1,0 +1,167 @@
+<!-- 守护健康页面 —— 开关直接控制每日闹钟 -->
+<view class="bg-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/health_bg.jpg" mode="heightFix" />
+
+  <view class="layer health-layer">
+    <view class="abs back" bindtap="back">＜</view>
+
+    <scroll-view class="abs meds" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <view class="{{globalFontPageClass}}">
+
+      <!-- 今日建议卡片 -->
+      <view class="advice-card">
+        <view class="advice-header">
+          <view class="advice-title">今日建议</view>
+          <view class="advice-speak-btn" bindtap="speakAdvice">
+            <text class="advice-speak-icon">🔊</text>
+            <text>语音播报</text>
+          </view>
+        </view>
+        <view class="advice-text">{{todayAdvice}}</view>
+      </view>
+
+      <view class="health-life-card">
+        <view class="health-section-title">运动与饮食</view>
+        <view class="health-life-actions">
+          <button hover-class="none" disabled="{{healthBusy}}" bindtap="recordMeal">记录吃了什么</button>
+          <button hover-class="none" disabled="{{healthBusy}}" bindtap="chooseFoodImage">拍照识别饭菜</button>
+          <button hover-class="none" disabled="{{healthBusy}}" bindtap="recordExercise">记录运动</button>
+        </view>
+        <view wx:if="{{!healthJournal.length}}" class="health-life-empty">暂无运动或饮食记录。记录后，小享会结合您的画像给出生活建议。</view>
+        <view wx:for="{{healthJournal}}" wx:key="id" class="health-journal-item">
+          <view class="health-journal-kind">{{item.kind === 'food' ? '饮食分析' : '运动记录'}}</view>
+          <view wx:if="{{item.content}}" class="health-journal-content">{{item.content}}</view>
+          <view class="health-journal-analysis">{{item.analysis}}</view>
+          <view class="health-journal-time">{{item.created_at}}</view>
+        </view>
+      </view>
+
+      <!-- 吃药提醒列表 -->
+      <view class="health-section-title meds-title">吃药提醒</view>
+      <view wx:for="{{meds}}" wx:key="id" class="med card">
+        <view class="med-row">
+          <view class="med-bell {{item.alarm ? 'bell-on' : 'bell-off'}}">
+            {{item.alarm ? '🔔' : '🔕'}}
+          </view>
+
+          <view class="med-info">
+            <view class="mname">{{item.name}}</view>
+            <view class="small">
+              <text class="med-time">{{item.time}}</text>
+              <text class="med-dot">·</text>
+              <text>{{item.dose}}</text>
+            </view>
+          </view>
+
+          <view class="med-actions">
+            <switch
+              checked="{{item.alarm}}"
+              data-id="{{item.id}}"
+              bindchange="toggleAlarmSwitch"
+              color="#ffc43b"
+            />
+            <button
+              class="med-delete-btn"
+              hover-class="none"
+              data-id="{{item.id}}"
+              bindtap="deleteMed"
+            >删除</button>
+          </view>
+        </view>
+      </view>
+
+      <button class="btn-soft add-med" hover-class="none" bindtap="showAddPanel">
+        + 添加吃药提醒
+      </button>
+      </view>
+    </scroll-view>
+
+    <view class="bottom-bless">要好好吃药哦</view>
+  </view>
+</view>
+
+<!-- ========== 添加药品半屏面板 ========== -->
+<view class="panel-mask {{showPanel ? 'panel-show' : ''}}" bindtap="hideAddPanel"></view>
+<view class="add-panel {{globalFontPageClass}} {{showPanel ? 'panel-show' : ''}}">
+  <view class="panel-close" bindtap="hideAddPanel">✕</view>
+  <view class="panel-header">
+    <text class="panel-title">添加吃药提醒</text>
+  </view>
+
+  <view class="panel-body">
+    <view class="form-item">
+      <text class="form-label">药品名称</text>
+      <view class="form-input-row">
+        <input
+          class="form-input form-input-flex"
+          placeholder="请输入药品名称"
+          placeholder-class="ph"
+          value="{{form.name}}"
+          bindinput="onNameInput"
+        />
+        <view class="voice-input-btn {{recordingField === 'name' ? 'voice-input-active' : ''}}" bindtouchstart="startVoiceInput" bindtouchend="stopVoiceInput" data-field="name">🎤</view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">吃药时间</text>
+      <view class="form-input-row">
+        <picker
+          mode="time"
+          value="{{form.time}}"
+          bindchange="onTimeChange"
+        >
+          <view class="form-picker form-picker-flex">
+            <text class="{{form.time ? '' : 'ph'}}">{{form.time || '请选择时间'}}</text>
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
+        <view class="voice-input-btn {{recordingField === 'time' ? 'voice-input-active' : ''}}" bindtouchstart="startVoiceInput" bindtouchend="stopVoiceInput" data-field="time">🎤</view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">每次用量</text>
+      <view class="form-input-row">
+        <input
+          class="form-input form-input-flex"
+          placeholder="如：1片、2粒、10ml"
+          placeholder-class="ph"
+          value="{{form.dose}}"
+          bindinput="onDoseInput"
+        />
+        <view class="voice-input-btn {{recordingField === 'dose' ? 'voice-input-active' : ''}}" bindtouchstart="startVoiceInput" bindtouchend="stopVoiceInput" data-field="dose">🎤</view>
+      </view>
+    </view>
+
+    <view class="form-item form-alarm-row">
+      <view class="form-alarm-left">
+        <text class="form-label">开启闹钟提醒</text>
+        <text class="form-hint"></text>
+      </view>
+      <switch
+        checked="{{form.alarm}}"
+        bindchange="onAlarmChange"
+        color="#ff914d"
+      />
+    </view>
+
+    <view class="form-voice-area">
+      <view class="hold-speak-btn {{recording ? 'hold-speak-active' : ''}}" bindtouchstart="startHoldSpeak" bindtouchend="stopHoldSpeak" bindtouchcancel="stopHoldSpeak">
+        <text class="hold-speak-text">{{recording ? '松开识别 · ' + recordingSeconds + '秒' : '按住说话 · 一次性说完药品、时间和用量'}}</text>
+      </view>
+      <text class="voice-hint"></text>
+    </view>
+  </view>
+
+  <view class="panel-footer">
+    <button class="panel-btn panel-btn-cancel" hover-class="none" bindtap="hideAddPanel">取消</button>
+    <button class="panel-btn panel-btn-confirm" hover-class="none" bindtap="submitMed">确认添加</button>
+  </view>
+</view>
+
+<!-- 录音浮层 -->
+<view wx:if="{{recording}}" class="record-overlay">
+  <view class="record-pulse"></view>
+  <text class="record-text">正在聆听…（{{recordingSeconds}}秒/{{recordingMax}}秒）松手结束</text>
+</view>

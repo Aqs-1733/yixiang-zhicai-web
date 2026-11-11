@@ -1,0 +1,17 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">持仓摘要</view>
+  <view wx:if="{{items.length === 0}}" class="card">暂无授权持仓信息。</view>
+  <view wx:for="{{items}}" wx:key="id" class="card">
+    <view class="name">{{item.product_name}}</view>
+    <view class="sub">{{item.institution || '机构未填写'}} · {{item.source}}</view>
+    <view class="row"><text>金额 ¥{{item.buy_amount}}</text><text>{{item.profit_status}}</text></view>
+    <view wx:if="{{item.product_code}}" class="sub">登记编码：{{item.product_code}}</view>
+  </view>
+  <view class="safe">{{safeNote}}</view>
+</view>
+<child-bottom-nav active="family" />
+

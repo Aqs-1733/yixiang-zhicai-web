@@ -1,0 +1,11 @@
+<view class="page {{globalFontPageClass}}">
+  <view class="child-nav"><button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button><view class="nav-label">子女端</view></view>
+  <view class="title">长辈位置</view>
+  <view wx:if="{{loading}}" class="safe">正在读取长辈主动授权的位置...</view>
+  <view wx:elif="{{permissionDenied}}" class="safe denied">长辈暂未开放该权限</view>
+  <block wx:elif="{{location}}">
+    <view class="location-card"><view class="location-icon">●</view><view class="location-label">长辈手机最近定位</view><view class="location-address">{{location.address || '已取得手机定位'}}</view><view class="time">更新时间：{{location.timeText || '未记录'}}</view><view class="location-note">此处只显示长辈手机最近一次授权定位。</view></view>
+  </block>
+  <view wx:else class="safe">长辈暂未保存位置</view>
+</view>
+<child-bottom-nav active="family" />

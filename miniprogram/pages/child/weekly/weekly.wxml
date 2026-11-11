@@ -1,0 +1,17 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">家庭金融周报</view>
+  <view wx:if="{{!report}}" class="card">
+    <view class="report-summary">{{message}}</view>
+  </view>
+  <view wx:else class="card">
+    <view class="period">{{report.period_start}} 至 {{report.period_end}}</view>
+    <view class="report-summary">{{report.summary}}</view>
+    <view class="sub">{{report.ai_advice}}</view>
+  </view>
+</view>
+<child-bottom-nav active="family" />
+

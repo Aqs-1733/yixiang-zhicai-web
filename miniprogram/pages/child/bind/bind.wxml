@@ -1,0 +1,11 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">绑定 1 位长辈</view>
+  <input class="code" type="number" maxlength="6" value="{{code}}" bindinput="onInput" placeholder="请输入6位绑定码" />
+  <button class="primary" bindtap="submit">提交绑定</button>
+</view>
+<child-bottom-nav active="profile" />
+

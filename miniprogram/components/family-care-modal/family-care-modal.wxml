@@ -1,0 +1,16 @@
+<view wx:if="{{visible}}" class="care-mask {{globalFontPageClass}}" catchtap="close">
+  <view class="care-dialog" catchtap="stopTap">
+    <view class="care-close" catchtap="close">×</view>
+    <view class="care-heading">{{type === 'health' ? '长辈健康记录' : '长辈手机位置'}}</view>
+    <view wx:if="{{loading}}" class="care-status">正在读取长辈授权的信息…</view>
+    <view wx:elif="{{denied}}" class="care-status denied">长辈暂未开放该权限</view>
+    <block wx:elif="{{type === 'health' && health}}">
+      <scroll-view class="care-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="care-section medicine"><view class="care-title">用药安排</view><view wx:if="{{!health.meds.length}}" class="care-empty">暂无用药记录</view><view wx:for="{{health.meds}}" wx:key="id" class="care-row"><view><text>{{item.name}}</text><view>{{item.dose || '未填写用量'}}</view></view><view class="care-right">{{item.time || '未设时间'}}<text>{{item.done ? '今日已服' : '待服用'}}</text></view></view></view>
+        <view class="care-section meal"><view class="care-title">饮食记录</view><view wx:if="{{!health.meals.length}}" class="care-empty">暂无饮食记录</view><view wx:for="{{health.meals}}" wx:key="id" class="journal"><text>{{item.content}}</text><view>{{item.analysis}}</view><view class="journal-time">{{item.timeText}}</view></view></view>
+        <view class="care-section exercise"><view class="care-title">运动记录</view><view wx:if="{{!health.exercises.length}}" class="care-empty">暂无运动记录</view><view wx:for="{{health.exercises}}" wx:key="id" class="journal"><text>{{item.content}}</text><view>{{item.analysis}}</view><view class="journal-time">{{item.timeText}}</view></view></view>
+      </scroll-view>
+    </block>
+    <block wx:elif="{{type === 'location'}}"><view wx:if="{{location}}" class="location-card"><view class="location-dot">●</view><view class="location-title">长辈手机最近定位</view><view class="location-address">{{location.address}}</view><view class="location-time">更新时间：{{location.timeText || '未记录'}}</view></view><view wx:else class="care-status">长辈尚未授权手机定位</view></block>
+  </view>
+</view>

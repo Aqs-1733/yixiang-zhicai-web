@@ -1,0 +1,317 @@
+/* 颐享智财 · 暖心卡通适老版 | 保留原始 WXML / JS / FastAPI 功能 */
+:root{
+  --ink:#542d2b;--ink-soft:#79534b;--sub:#9d7468;
+  --line:#f3dfcd;--cream:#fff8f0;--paper:#fffdfb;--white:#fff;
+  --orange:#ff883e;--orange-dark:#dd6329;--peach:#ffe5d0;
+  --mint:#ffeadd;--mint-dark:#d96637;
+  --shadow:0 10px 30px rgba(154,88,43,.09),0 2px 6px rgba(132,75,45,.035);
+  --radius:22px;--ease:cubic-bezier(.2,.83,.21,1);--depth:#fff5e9;--depth-2:#fff0df;
+  --font-s:1.12;
+}
+:root[data-font=large]{--font-s:1.22}
+:root[data-font=xlarge]{--font-s:1.34}
+html,body{color:var(--ink)!important;letter-spacing:0!important;background:#fff6ee!important}
+*{scrollbar-color:#f4bd98 transparent}
+::selection{background:#ffe0a4;color:#74351d}
+a{color:#dd6934}
+button,input,textarea,select{accent-color:#f88342;color:var(--ink)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ef974c!important;outline-offset:3px!important}
+.premium-ambient{background:#fff7ef!important}
+.ambient-mesh{background:radial-gradient(circle at 15% 8%,#ffe8d8 0,transparent 33%),radial-gradient(circle at 83% 92%,#ffe7e8 0,transparent 39%),#fff9f2!important}
+.ambient-mesh::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#f2bb9a 1px,transparent 1px);background-size:34px 34px;opacity:.20}
+.ambient-glow{display:none!important}
+.site-layout{box-shadow:none!important;min-height:540px}
+/* 侧栏：奶油桃色、卡通助手，没有英文说明或装饰星球 */
+.side-nav{width:245px!important;min-width:245px!important;padding:25px 13px 18px!important;background:linear-gradient(165deg,#fff7ed,#fff3ec 64%,#ffece5)!important;border-right:1px solid #f6dfcc!important;box-shadow:8px 0 28px rgba(183,104,67,.045)!important;color:#623a2c!important}
+.side-nav:before,.side-nav:after{display:none!important}
+.identity{margin:0 7px 23px!important;gap:11px!important}
+.identity-logo{width:54px!important;height:54px!important;border-radius:17px!important;background:#fff!important;border:2px solid #fff3e4;box-shadow:0 7px 20px #d68b6240!important;color:#e87c45!important}
+.identity-logo svg{display:none!important}.identity-logo img{width:100%;height:100%;object-fit:cover;border-radius:15px}
+.identity strong{font-size:23px!important;color:#773a25!important;letter-spacing:0!important;font-weight:900!important}.identity small{display:none!important}
+.side-deco{position:relative;min-height:136px!important;margin:0 3px 18px!important;padding:20px 15px!important;background:linear-gradient(115deg,#ffe6cb,#ffdbce)!important;border:1px solid #ffd9b8!important;border-radius:21px!important;box-shadow:0 8px 20px #dc987933!important;overflow:hidden}
+.side-deco .deco-orbit,.side-deco .deco-kicker,.side-deco p,.side-deco .deco-line{display:none!important}
+.side-deco strong{display:block;position:relative;z-index:1;font-family:inherit!important;font-size:20px!important;line-height:1.6!important;letter-spacing:0!important;color:#8e442e!important;font-weight:850!important;max-width:145px}
+.side-deco .cute-side-mascot{width:99px;height:100px;position:absolute;right:-21px;bottom:-9px;object-fit:cover;border-radius:48%;opacity:.92;transform:rotate(-8deg);mix-blend-mode:multiply}
+.nav-search{border:1px solid #f4dbcd!important;background:#fffefb!important;color:#c47e60!important;border-radius:14px!important;min-height:48px!important;margin:0 3px 12px!important}
+.nav-search input{font-size:15px!important;color:#653e30!important}.nav-search input::placeholder{color:#a8887e!important}
+.side-nav .nav-section{font-size:13px!important;letter-spacing:0!important;color:#b9785b!important;padding:14px 13px 7px!important;font-weight:800!important}
+.side-nav .nav-item{min-height:49px!important;padding:12px 13px!important;margin:1px 0!important;border-radius:14px!important;font-size:16px!important;color:#795244!important;font-weight:720!important;line-height:1.4!important;gap:12px!important}
+.side-nav .nav-item svg{width:22px!important;height:22px!important;stroke-width:2.1!important}
+.side-nav .nav-item .nav-icon{width:26px!important;color:#df7e54!important}
+.side-nav .nav-item.active{color:#fff!important;background:linear-gradient(125deg,#ff9b56,#f97842)!important;border:0!important;box-shadow:0 7px 14px #f5a06a60!important}
+.side-nav .nav-item.active .nav-icon{color:#fff!important}
+.side-nav .nav-item:hover{background:#ffe8d8!important;color:#853b21!important;transform:translateX(3px)!important}
+.side-nav .nav-item.active:hover{color:#fff!important;background:linear-gradient(125deg,#ff9954,#f97539)!important}
+.side-end{display:none!important}
+/* 顶部只保留有用操作，文字真正清楚可读 */
+.content-column{background:linear-gradient(145deg,rgba(255,245,235,.85),rgba(255,250,247,.97) 44%,rgba(255,244,235,.82))!important}
+.content-column::before{display:none!important}
+.top-head{height:78px!important;padding:0 clamp(16px,3vw,42px)!important;background:rgba(255,253,250,.92)!important;border-bottom:1px solid #f8e5d8!important;backdrop-filter:blur(15px)!important}
+.breadcrumbs{font-size:0!important;color:#b9876a!important}.breadcrumbs>span{display:none!important}.breadcrumbs strong{font-size:22px!important;color:#64392c!important;letter-spacing:0!important}
+.top-tagline{display:none!important}.top-actions{gap:11px!important}
+.status-dot{display:none!important}.status-dot.status-warn{display:flex!important;background:#fff0e4!important;color:#b95836!important;font-size:13px!important}
+.status-dot i{background:#ec8544!important}
+.circle-tool,.role-pill{border:1px solid #f3dac7!important;background:#fffaf3!important;color:#7d4635!important;box-shadow:0 2px 6px #d29a7115!important}
+.circle-tool{min-width:49px!important;width:49px!important;height:49px!important;border-radius:15px!important;font-size:22px!important;font-weight:800!important}
+.circle-tool span{font-size:13px!important}
+.role-pill{min-height:49px!important;border-radius:15px!important;padding:10px 17px!important;font-size:15px!important;gap:8px!important;font-weight:850!important}
+.role-pill>span:first-child{color:#f38b42!important}
+.circle-tool:hover,.role-pill:hover{background:#ffe5cc!important;box-shadow:0 7px 17px #f4a5733b!important;transform:translateY(-2px)!important}
+.main-scroll{scrollbar-color:#f4c7a9 transparent}
+.page-frame{max-width:1600px!important;padding:27px clamp(16px,3vw,47px) 26px!important}
+.page-overline{display:none!important}
+.page-intro{min-height:110px!important;padding:22px 31px!important;border:1px solid #f4d9c2!important;background:linear-gradient(100deg,#ffefd8,#ffebdf 65%,#f4eafd)!important;border-radius:22px!important;margin:0 0 22px!important;box-shadow:var(--shadow)!important}
+.page-intro::before{display:none!important}
+.page-intro .page-kicker,.page-intro p,.intro-orb{display:none!important}
+.page-intro h1{font-size:clamp(27px,2.5vw,36px)!important;line-height:1.3!important;letter-spacing:0!important;color:#743d2b!important;margin:0!important;font-weight:900!important}
+.content-footer{font-size:13px!important;color:#9c796d!important;margin-top:35px!important;border-color:#f6ddd0!important;line-height:1.8!important}
+.content-footer span{font-size:13px;color:#a68a80!important}
+/* 对保留的小程序页面统一做可读性与卡片感适配 */
+.yx-page{font-size:calc(17px * var(--font-s))!important;color:#603c31!important}
+.yx-page .card,.yx-page :is(.home-weather-card,.home-news-card,.lesson-card,.common-func-panel,.home-message-mini,.guard-card,.child-weather-card,.child-news-card,.elder-card,.family-dashboard-card,.top-card,.analysis-card,.data-card,.recognize-card,.track-card,.advice-card,.ledger-scope-card,.totals-card,.record-line,.record,.med-card,.phone-card,.service-card,.news-card,.child-card,.risk-card,.summary-card,.detail-panel,.location-card){background:#fffcf8!important;border:1px solid #f4e1d2!important;box-shadow:var(--shadow)!important;border-radius:21px!important}
+.yx-page :is(.card,.home-news-card,.lesson-card,.common-func-panel,.elder-card,.guard-card,.home-weather-card,.analysis-card,.data-card,.recognize-card,.record,.home-message-mini,.child-news-card,.child-weather-card):hover{box-shadow:0 17px 34px #e8985d25!important;border-color:#f3c6a9!important;transform:translateY(-3px)!important}
+.yx-page input,.yx-page textarea,.yx-page select{font-size:calc(17px * var(--font-s))!important;color:#613d31!important;line-height:1.45!important}
+.yx-page :is(.btn-primary,.primary-btn,.submit-btn,.confirm-btn,.footer-btn.next-btn,.go-btn,.login-btn){background:linear-gradient(125deg,#ffa45a,#f57e3e)!important;border-color:#f88846!important;color:#fff!important;box-shadow:0 9px 17px #f9a27048!important;border-radius:13px!important;font-weight:820!important}
+.yx-page :is(.btn-primary,.primary-btn,.submit-btn,.confirm-btn,.footer-btn.next-btn,.go-btn,.login-btn):hover{box-shadow:0 12px 23px #f9a2706c!important}
+/* 首页卡通横幅：真正的插画，原动态问候继续显示 */
+.yx-page .greet-hello{position:relative!important;margin:0 0 20px!important;min-height:270px!important;padding:57px 39px 91px!important;border:1px solid #ffdfbf!important;border-radius:25px!important;background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 28%,rgba(255,239,217,.96) 43%,rgba(255,239,217,.36) 67%,rgba(255,239,217,.04) 100%),url('assets/cute/elderly.webp')!important;background-color:#fff0d9!important;background-repeat:no-repeat!important;background-size:cover,auto 100%!important;background-position:center,right center!important;color:#8c3b20!important;box-shadow:0 12px 30px #efa87924!important;font-size:clamp(35px,4vw,54px)!important;font-weight:900!important;letter-spacing:0!important;overflow:hidden}
+.yx-page .greet-hello::before{content:'🌷 小享陪着您，安心每一天'!important;display:block!important;position:relative!important;font-size:17px!important;font-weight:800!important;letter-spacing:0!important;color:#b85f36!important;margin-bottom:14px!important}
+.yx-page .greet-hello::after{content:none!important}
+.cute-hero-actions{position:absolute;left:39px;bottom:33px;display:flex;gap:11px;z-index:3}
+.cute-hero-actions button{border:0;background:linear-gradient(115deg,#fb8b3b,#f9713f);color:white;border-radius:999px;min-height:45px;font-size:17px;font-weight:850;box-shadow:0 7px 18px #f3904c50;padding:9px 22px;cursor:pointer;transition:transform .3s,box-shadow .3s}
+.cute-hero-actions button:last-child{background:#fffaf5;border:1px solid #ffca9e;color:#a95b35;box-shadow:0 4px 13px #e99b711b}
+.cute-hero-actions button:hover{transform:translateY(-3px);box-shadow:0 13px 23px #f69a5865}
+.yx-page .home-scroll-inner{gap:17px!important}
+.yx-page .home-weather-card{min-height:166px!important;padding:23px 28px!important;background:linear-gradient(120deg,#fff2de,#ffe7d4,#ffe9ed)!important;box-shadow:var(--shadow)!important}
+.yx-page .home-weather-card::after{content:'☀️'!important;border:0!important;background:none!important;width:auto!important;height:auto!important;top:21px!important;right:23px!important;left:auto!important;transform:none!important;font-size:46px!important}
+.yx-page .home-weather-card::before{content:none!important}
+.yx-page .home-weather-city{color:#6b3d2c!important;font-size:clamp(26px,2.7vw,36px)!important}
+.yx-page .home-weather-date{color:#946854!important;font-size:16px!important}
+.yx-page .home-weather-temp{color:#f17e39!important;font-size:clamp(36px,3.5vw,48px)!important}
+.yx-page .home-weather-name{color:#9a5b43!important;font-size:16px!important}
+.yx-page .home-news-card{min-height:166px!important;max-height:390px!important;background:#fffefb!important;padding:22px 26px!important}
+.yx-page .home-news-head{border-color:#f3ddcc!important}
+.yx-page .home-news-title{font-size:22px!important;color:#743f2b!important}
+.yx-page .home-news-badge{font-size:13px!important;background:#fff0de!important;color:#ce704a!important}
+.yx-page .home-news-num{background:#ffebd6!important;color:#ed7845!important;font-size:14px!important;min-width:26px!important;height:26px!important}
+.yx-page .home-news-name{font-size:17px!important;color:#654639!important;line-height:1.52!important;font-weight:720!important}
+.yx-page .home-news-item{padding:12px 0!important}
+.yx-page .lesson-card,.yx-page .common-func-panel{padding:24px!important;background:#fffdf9!important}
+.yx-page .lesson-title,.yx-page .common-func-title{font-size:clamp(23px,2vw,30px)!important;color:#753d2d!important;font-weight:850!important;text-decoration:none!important}
+.yx-page .common-func-grid{gap:12px!important}
+.yx-page .common-func-item{background:#fff5eb!important;border:1px solid #f6ddc9!important;border-radius:17px!important;padding:17px 11px!important;min-height:99px!important}
+.yx-page .common-func-item:nth-child(4n+2){background:#fff3e1!important}
+.yx-page .common-func-item:nth-child(4n+3){background:#f2efff!important;border-color:#e6dcfb!important}
+.yx-page .common-func-item:nth-child(4n+4){background:#fcebf0!important;border-color:#f8d9e4!important}
+.yx-page .common-func-item:hover{background:#ffe6d6!important;border-color:#ffbd94!important;box-shadow:0 12px 22px #f5a67536!important}
+.yx-page .common-func-item-label{font-size:17px!important;color:#734434!important;font-weight:800!important}
+.yx-page .home-message-mini{background:#fff7f2!important;padding:20px 22px!important}
+.yx-page .lesson-video-toolbar{background:#824e45!important;color:#fff9f0!important}
+.yx-page .lesson-video-stage{background:#f9e7d6!important}
+.yx-page .lesson-video{background:#443832!important}
+.yx-page .lesson-fallback{background:linear-gradient(120deg,#ffe9ce,#f7d3bd)!important;color:#7b452f!important}
+.yx-page .lesson-fallback-title,.yx-page .lesson-fallback-icon{color:#8c512f!important}
+/* 问小享：暖白聊天容器，大按钮 */
+.yx-page .assistant-page .chat-scroll{background:linear-gradient(130deg,#fffaf4,#fff1ea)!important;border-color:#f7dfcd!important}
+.yx-page .assistant-page .assistant-input-bar-v2{border-color:#f5d9c2!important;background:#fffdfa!important}
+.yx-page .assistant-page .msg-row.self .bubble{background:#ff9755!important;color:#fff!important}
+.yx-page .assistant-page .msg-row:not(.self) .bubble{background:#fff!important;color:#613a2d!important}
+.yx-page .assistant-tool-btn{border:1px solid #f7dac7!important;background:#fff4e8!important;color:#a15d41!important;border-radius:12px!important;font-size:15px!important;min-height:46px!important}
+.yx-page .voice-fab{border:3px solid #fff8ef!important;background:linear-gradient(145deg,#ffb666,#f47a46)!important;box-shadow:0 9px 23px #e8945860!important}
+.yx-page .assistant-page .assistant-input-bar-v2 .hold-speak-text{color:#c66b3a!important;font-size:16px!important}
+.yx-page .m-summary{background:#fffaf4!important;border-color:#f5dccb!important;padding:23px!important}
+.yx-page .m-summary:before{border-color:#f8dfc1!important}
+.yx-page .m-summary.s2{background:#fff0e8!important}
+.yx-page .summary-label{font-size:16px!important;color:#92644d!important}
+.yx-page .summary-amount{font-size:clamp(26px,2.6vw,42px)!important;color:#7b422e!important}
+.yx-page .action-btn{font-size:16px!important;min-height:46px!important}
+/* 风险测评、弹窗与列表：统一暖色 */
+.yx-page .questionnaire-page .q-card{border-color:#f5dcca!important;background:#fffaf5!important}
+.yx-page .questionnaire-page .q-title{color:#6a382b!important;font-size:clamp(25px,2.35vw,34px)!important}
+.yx-page .questionnaire-page .q-desc{font-size:17px!important;color:#896151!important}
+.yx-page .questionnaire-page .q-no{background:#ffead8!important;color:#bd6b40!important;font-size:15px!important}
+.yx-page .questionnaire-page .term{background:#fff2e7!important;border-color:#f8dccb!important;color:#8f5d48!important;font-size:14px!important}
+.yx-page .questionnaire-page .option{background:#fff7ee!important;border-color:#f5ddc8!important}
+.yx-page .questionnaire-page .option.active{background:#ffead5!important;border-color:#f5a46e!important;box-shadow:0 0 0 2px #f49b5e33!important}
+.yx-page .questionnaire-page .option-label{font-size:18px!important;color:#744634!important}
+.yx-page .questionnaire-page .option-letter{background:#ffe4b7!important;color:#a45e34!important}
+.yx-page .questionnaire-page .footer-btn.next-btn{background:linear-gradient(110deg,#ff9a54,#f37b3f)!important}
+.yx-page .questionnaire-page .tool-btn{font-size:16px!important;color:#a56242!important;border-color:#f3d9c6!important}
+.modal-cover{background:#50372b83!important}
+.dialog-box{background:#fffaf4!important;border:1px solid #f5d5b8!important;box-shadow:0 24px 66px #5c311f40!important}
+.dialog-box h3{color:#6f3b2b!important;font-size:24px!important}
+.dialog-box p{font-size:17px!important;line-height:1.65!important}
+.dialog-actions button:last-child{background:#f38343!important;border-color:#f38343!important}
+#toast{background:#7e4632!important;border-color:#d58e68!important;font-size:16px!important}
+/* 登录：原生长辈 / 子女切换、忘记密码、注册均保持可操作 */
+.is-auth .login-chrome{inset:0 50% 0 0!important;display:block}
+.is-auth .login-art{padding:clamp(30px,4.5vw,74px)!important;background:linear-gradient(145deg,#ffe5c5,#ffe1d5 55%,#fff2e4)!important}
+.is-auth .login-art::before{background:none!important}
+.is-auth .login-art::after{content:'🌷';width:auto;height:auto;right:38px;top:32px;border:0;font-size:46px;opacity:.7}
+.is-auth .login-label{display:none!important}
+.is-auth .login-graphic{right:3%!important;top:25%!important;width:clamp(230px,34vw,580px)!important;height:clamp(160px,23vw,390px)!important;opacity:.97!important;animation:cuteFloat 7s ease-in-out infinite alternate!important}
+.is-auth .login-graphic img{width:100%;height:100%;object-fit:cover;border-radius:30px;box-shadow:0 14px 45px #d8976b33!important;filter:none!important}
+.is-auth .login-art h1{color:#813e2a!important;font-size:clamp(40px,4.6vw,63px)!important;max-width:600px;margin:30px 0 13px!important;letter-spacing:0!important;line-height:1.27!important;text-shadow:none!important}
+.is-auth .login-art h1 em{color:#f28040!important}
+.is-auth .login-art p{color:#855344!important;font-size:clamp(17px,1.3vw,20px)!important;line-height:1.75!important;margin:0!important;max-width:450px}
+.is-auth .hero-stat{display:none!important}
+.is-auth .main-scroll{background:#fffaf6!important}
+.is-auth .page-frame{padding:35px clamp(18px,4vw,66px)!important}
+.is-auth .page-frame:before{display:none!important}
+.is-auth #yx-render{max-width:580px!important}
+.is-auth .login-panel,.is-auth .register-panel{padding:25px 20px 29px!important}
+.is-auth .login-panel::before,.is-auth .register-panel::before{font-size:clamp(33px,3vw,43px)!important;letter-spacing:0!important;color:#813e2e!important}
+.is-auth .login-panel:after{display:none!important}
+.is-auth .role-switch{margin:23px 0 20px!important;padding:6px!important;background:#fff1e7!important;border-color:#f5d6c1!important}
+.is-auth .role-btn{min-height:54px!important;font-size:18px!important;color:#a57158!important}
+.is-auth .role-btn.active{color:#bb5d32!important;background:#fff!important;box-shadow:0 7px 15px #eeaa8f42!important}
+.is-auth .field{margin:16px 0!important}
+.is-auth .field input{min-height:60px!important;background:#fffcf9!important;border-color:#efdbcd!important;color:#643b2e!important;font-size:18px!important;padding:16px 18px!important}
+.is-auth .field input:focus{border-color:#f6a670!important;box-shadow:0 0 0 4px #f5ad7f38!important}
+.is-auth .login-action-row{margin:22px 0 16px!important}
+.is-auth .login-action-row button{min-height:56px!important;font-size:17px!important;letter-spacing:0!important}
+.is-auth .wechat-btn{background:#fff0df!important;color:#af603f!important;border:1px solid #f2d5c1!important}
+.is-auth .remember-row{font-size:16px!important;color:#885f4f!important}
+.is-auth .content-footer{font-size:13px!important}
+@keyframes cuteFloat{to{transform:translateY(-9px) rotate(1deg)}}
+@keyframes cuteEnter{from{opacity:0;transform:translateY(15px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cutePop{0%{transform:scale(.95);opacity:0}70%{transform:scale(1.02);opacity:1}100%{transform:scale(1)}}
+.yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel{animation:cuteEnter .55s var(--ease) both!important}
+.yx-page .common-func-item:hover{transform:translateY(-4px) rotate(-.4deg)!important}
+/* 桌面宽屏与手机：保证可读、按钮不小于手指易点的尺寸 */
+@media(min-width:1560px){.yx-page .greet-hello{min-height:290px!important;padding-top:68px!important;background-size:cover,auto 100%!important}.yx-page .home-scroll-inner{gap:20px!important}.yx-page .common-func-item{min-height:110px!important}}
+@media(max-width:1150px){.side-nav{width:214px!important;min-width:214px!important;padding:19px 9px!important}.side-nav .nav-item{font-size:15px!important}.identity strong{font-size:19px!important}.side-deco strong{font-size:17px!important}}
+@media(max-width:860px){
+ .side-nav{min-width:0!important;width:min(86vw,310px)!important;box-shadow:16px 0 38px #9e65443d!important}
+ .hamburger{display:flex!important;color:#a66b46!important;background:#fff9f3!important;border-color:#f5d8c7!important;width:45px!important;height:45px!important}
+ .hamburger span{background:#b46b48!important}
+ .top-head{height:70px!important;padding:0 15px!important}
+ .breadcrumbs strong{font-size:19px!important}
+ .page-frame{padding:19px 17px 24px!important}
+ .mobile-nav{min-height:74px!important;background:rgba(255,249,242,.96)!important;border-top:1px solid #f4dcca!important;box-shadow:0 -5px 20px #db9d7133!important}
+ .mobile-nav button{color:#a47057!important;min-width:52px!important;padding:7px 3px!important}
+ .mobile-nav button small{font-size:12px!important;line-height:1.3!important}
+ .mobile-nav svg{width:25px!important;height:25px!important}
+ .mobile-nav button.active{background:#ffdec3!important;color:#b6532f!important;border-radius:13px!important}
+ .yx-page .home-scroll-inner{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+ .yx-page .home-grid{grid-template-columns:1fr!important;display:grid!important}
+ .yx-page .greet-hello{min-height:236px!important;padding:38px 23px 78px!important;background-size:cover,auto 100%!important;background-position:center,right center!important;font-size:clamp(29px,4vw,43px)!important}
+ .yx-page .greet-hello::before{font-size:15px!important;max-width:210px}
+ .cute-hero-actions{left:23px;bottom:22px}.cute-hero-actions button{min-height:47px;font-size:16px;padding:10px 17px}
+}
+@media(max-width:610px){
+ .page-frame{padding:16px 13px 24px!important}
+ .page-intro{padding:17px 19px!important;min-height:82px!important;margin-bottom:15px!important}
+ .page-intro h1{font-size:26px!important}
+ .top-head{height:65px!important;padding:0 10px!important}
+ .breadcrumbs strong{font-size:17px!important}
+ .role-pill{min-height:43px!important;padding:7px 9px!important}.role-pill #role-label{display:none!important}
+ .circle-tool{min-width:42px!important;width:42px!important;height:42px!important}
+ .yx-page .greet-hello{min-height:225px!important;padding:26px 17px 82px!important;margin-bottom:15px!important;font-size:clamp(27px,7.7vw,36px)!important;background-size:cover,auto 76%!important;background-position:center,right top!important;background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 25%,rgba(255,239,217,.76) 45%,rgba(255,240,217,.13) 100%),url('assets/cute/elderly.webp')!important}
+ .yx-page .greet-hello::before{font-size:14px!important;margin-bottom:13px!important;max-width:230px!important}
+ .cute-hero-actions{left:17px;bottom:19px;gap:7px}
+ .cute-hero-actions button{font-size:15px;min-height:44px;padding:8px 15px}
+ .yx-page .home-weather-card{min-height:128px!important;padding:18px 19px!important}
+ .yx-page .home-weather-card::after{top:19px!important;right:19px!important;font-size:32px!important}
+ .yx-page .home-weather-city{font-size:25px!important}.yx-page .home-weather-date{font-size:15px!important}.yx-page .home-weather-temp{font-size:36px!important}
+ .yx-page .home-news-card{padding:19px!important;max-height:390px!important}
+ .yx-page .home-news-title{font-size:20px!important}.yx-page .home-news-name{font-size:16px!important}
+ .yx-page .lesson-card,.yx-page .common-func-panel{padding:18px!important}
+ .yx-page .lesson-title,.yx-page .common-func-title{font-size:21px!important}
+ .yx-page .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ .yx-page .common-func-item{min-height:91px!important;padding:14px 8px!important}
+ .yx-page .common-func-item-label{font-size:16px!important}
+ .yx-page .m-summary{padding:13px 8px!important;min-height:91px!important}
+ .yx-page .summary-label{font-size:13px!important}.yx-page .summary-amount{font-size:22px!important}
+ .yx-page .action-btn{min-height:47px!important;min-width:90px!important;font-size:14px!important}
+ .yx-page .assistant-tool-btn{min-height:44px!important;font-size:14px!important}
+ .yx-page .assistant-page .chat-scroll{max-height:55dvh!important}
+ .yx-page .questionnaire-page .option-label{font-size:17px!important}
+ .yx-page .questionnaire-page .q-desc{font-size:16px!important}
+ .content-footer,.content-footer span{font-size:12px!important}
+ .is-auth .login-chrome{display:none!important}
+ .is-auth .page-frame{padding:23px 17px!important}
+ .is-auth .login-panel,.is-auth .register-panel{padding:15px 7px 22px!important}
+ .is-auth .login-panel::before{font-size:32px!important}
+ .is-auth .role-switch{margin-top:24px!important}
+ .is-auth .login-action-row{flex-direction:column!important;gap:10px!important}
+ .is-auth .login-action-row button{min-height:53px!important;font-size:16px!important}
+ .is-auth .remember-row{font-size:14px!important}
+}
+@media(prefers-reduced-motion:reduce){.yx-page *, .login-graphic{animation:none!important;transition-duration:0.01ms!important}}
+/* 最终样式冲突修正：完整保留行为，只更换视觉色与字号 */
+.is-auth .login-art{justify-content:flex-start!important}
+.is-auth .login-art h1{margin:43px 0 14px!important;position:relative!important;z-index:3!important}
+.is-auth .login-art p{position:relative!important;z-index:3!important}
+.is-auth .login-graphic{top:auto!important;bottom:10%!important;right:7%!important;width:76%!important;height:auto!important;aspect-ratio:535 / 280!important;max-height:37%!important}
+.is-auth .login-graphic img{display:block!important;height:100%!important}
+.is-auth .yx-page .login-action-row .login-btn{background:linear-gradient(115deg,#ffa05b,#f67a40)!important;color:#fff!important;border:1px solid #f78b53!important;font-weight:850!important;font-size:17px!important;box-shadow:0 9px 18px #f9a4714f!important}
+.is-auth .yx-page .login-action-row .wechat-btn{background:#fff0e3!important;color:#a85836!important;border:1px solid #f5d0b6!important;font-size:17px!important;font-weight:800!important}
+.is-auth .yx-page .link-btn,.is-auth .yx-page .forgot-link{color:#b56644!important;font-size:16px!important;min-height:40px!important}
+.is-auth .yx-page .yx-switch:checked{background:#f79553!important}
+.is-auth .yx-page .yx-switch{background:#f4ddcd!important}
+.is-auth .yx-page .role-switch{background:#fff1e8!important}
+.is-auth .yx-page .role-btn.active{color:#ad5333!important}
+.yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 44%,rgba(255,240,217,.96) 53%,rgba(255,240,217,.48) 68%,rgba(255,240,217,.04) 85%),url('assets/cute/elderly.webp')!important}
+.yx-page .assistant-page :is(.msg-text,.msg-content,.msg-time,.bubble-text){color:#623e30!important;font-size:17px!important;line-height:1.65!important}
+.yx-page .assistant-page .msg-row.self :is(.msg-text,.msg-content,.bubble-text){color:white!important}
+.yx-page .assistant-page :is(.assistant-back,.back-btn,.assistant-tool-btn,.mode-switch-btn,.image-pick-btn,.send-btn-v2,.auto-speak-toggle){background:#fff1e4!important;border-color:#f5d3b9!important;color:#aa6245!important}
+.yx-page .assistant-page .assistant-input-bar-v2 :is(.hold-speak,.hold-speak-btn,.hold-speak-button,.hold-speak-wrap,.hold-speak-text){background:#fff0e3!important;color:#a85b3f!important}
+.yx-page .assistant-page .assistant-input-bar-v2{background:#fffcf9!important}
+.yx-page .assistant-page .assistant-input-bar-v2 button{color:#a55b3f!important}
+.yx-page .assistant-page :is(.new-chat-btn,.history-btn,.chat-toolbar-btn){border-color:#f6d1b8!important;color:#a96042!important;background:#fff2e6!important;font-size:16px!important}
+.yx-page .assistant-page .chat-scroll{background:#fff4e9!important}
+.yx-page :is(.round-back-btn,.assistant-back,.back-btn,.abs.back,.back){background:#fff6ec!important;border-color:#f3d9c4!important;color:#ad5e3e!important}
+.yx-page :is(.home-news-refresh,.lesson-picker-open,.finance-mode-tabs button.active){background:#f88e4d!important;color:white!important;border-color:#f88e4d!important}
+.yx-page :is(.news-time,.news-source,.news-summary,.news-date,.home-news-time,.lesson-video-title){font-size:15px!important;line-height:1.5!important}
+.yx-page :is(.finance-tabs,.finance-mode-tabs,.finance-filter-item,.recognize-form-label,.record-category,.child-tab,.child-nav-item){font-size:16px!important}
+.yx-page .lesson-video-toolbar,.yx-page .lesson-video-toolbar *{background:#8b5140!important;color:#fff4e9!important;font-size:14px!important}
+@media(max-width:610px){
+ .yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 23%,rgba(255,240,217,.52) 56%,rgba(255,240,217,.0) 100%),url('assets/cute/elderly.webp')!important}
+ .yx-page .assistant-page :is(.msg-text,.msg-content,.bubble-text){font-size:16px!important}
+ .yx-page :is(.news-time,.news-source,.news-summary,.home-news-time){font-size:14px!important}
+}
+/* 金融识别：文字识别、截图识别、保存记录按钮统一暖橙 */
+.yx-page .finance-page .btn-primary,
+.yx-page .finance-page .btn-soft,
+.yx-page .finance-page .finance-mode-tabs button.active,
+.yx-page .finance-page .finance-tabs button.active,
+.yx-page .finance-page .recognize-card button{
+ background:linear-gradient(115deg,#ff9e56,#f78042)!important;
+ border:1px solid #ef975d!important;color:#fff!important;
+ box-shadow:0 7px 15px #f0a5713b!important;
+ font-size:17px!important;font-weight:820!important;min-height:49px!important
+}
+.yx-page .finance-page .finance-mode-tabs button:not(.active),
+.yx-page .finance-page .finance-tabs button:not(.active){background:#fffaf6!important;color:#9b6047!important;border-color:#f2d7c3!important;font-size:17px!important;min-height:46px!important}
+.yx-page .finance-page textarea{min-height:96px!important;font-size:17px!important;line-height:1.6!important;background:#fffbf8!important;border-color:#f3dcc9!important}
+.yx-page .finance-page :is(.section-title,.field-title,.tab-label,.recognize-title){font-size:19px!important;font-weight:850!important;color:#774432!important}
+.yx-page .finance-page :is(.empty,.placeholder,.hint,.mini-desc){font-size:15px!important;color:#97715e!important}
+/* 子女端：清除旧版冷绿配色，增强标题与说明字号 */
+.yx-page .child-page :is(.title,.guard-title,.child-section-head,.child-card-title,.child-news-title){font-size:clamp(20px,2.2vw,29px)!important;color:#8c462f!important;font-weight:850!important;line-height:1.4!important}
+.yx-page .child-page .title{font-size:clamp(25px,2.4vw,35px)!important}
+.yx-page .child-page :is(.desc,.guard-desc,.child-news-empty,.info-text,.info-title,.child-weather-city,.empty){font-size:16px!important;line-height:1.65!important;color:#8c614d!important}
+.yx-page .child-page :is(.guard-card,.child-news-card,.child-weather-card,.family-dashboard-card,.child-card){background:#fff8f1!important;border:1px solid #f5ddc9!important;box-shadow:var(--shadow)!important}
+.yx-page .child-page .guard-card{background:linear-gradient(120deg,#fff3e0,#ffeadd)!important}
+.yx-page .child-page .child-weather-card{background:linear-gradient(120deg,#fffaf1,#fff1e6)!important}
+.yx-page .child-page .child-news-card{background:#fffefa!important}
+.yx-page .child-page :is(.child-weather-value,.child-data-number,.info-number){color:#ed8343!important}
+.yx-page .child-page :is(.tab.active,.btn-primary,.button-primary,.child-nav-item.active){background:#ffebdb!important;color:#ab5a39!important}
+.yx-page .child-page :is(.bind-btn,.action-btn,.go-btn){background:linear-gradient(110deg,#ffa161,#f98546)!important;color:#fff!important;border-color:#f7a46a!important}
+.yx-page .child-page :is(.empty,.hint,.caption){font-size:16px!important}
+/* 用户画像、服务、账本输入处适老最小值 */
+.yx-page :is(.profile-page,.health-page,.service-page,.money-page,.family-page) :is(.section-title,.section-head,.card-title,.module-title){font-size:22px!important;color:#7a4635!important}
+.yx-page :is(.profile-page,.health-page,.service-page,.money-page,.family-page) :is(.label,.field-label,.item-label,.record-title){font-size:17px!important;color:#684436!important}
+@media(max-width:610px){.yx-page .finance-page .btn-primary,.yx-page .finance-page .btn-soft{font-size:16px!important;min-height:48px!important}.yx-page .child-page .title{font-size:27px!important}}
+/* 修复小程序旧样式对理财识别操作区的高优先级覆盖 */
+#yx-render .recognize-card .actions .btn-primary,
+#yx-render .recognize-card .actions .btn-soft,
+#yx-render .finance-layer .actions .btn-primary,
+#yx-render .finance-layer .actions .btn-soft{
+  background:linear-gradient(110deg,#ff9f57,#f87c43)!important;
+  color:#fff!important;border:1px solid #f58c51!important;
+  box-shadow:0 7px 16px rgba(245,139,81,.25)!important;
+  font-size:17px!important;font-weight:850!important;min-height:48px!important;
+}
+#yx-render .finance-mode-tabs button:not(.active){color:#99634c!important;background:#fff7f1!important;border-color:#f5ddc8!important;font-size:17px!important}
+#yx-render .finance-layer .recognize-card .section-title{font-size:20px!important;color:#794433!important}

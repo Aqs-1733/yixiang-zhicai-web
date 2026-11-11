@@ -1,0 +1,437 @@
+<view class="bg-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/finance_bg.jpg" mode="widthFix" />
+  <view class="layer finance-layer">
+    <button class="abs back round-back-btn" hover-class="none" bindtap="goBack">‹</button>
+
+    <view class="abs products">
+      <view class="finance-mode-tabs">
+        <button class="{{financeMode === 'recognize' ? 'active' : ''}}" hover-class="none" data-mode="recognize" bindtap="switchFinanceMode">产品识别</button>
+        <button class="{{financeMode === 'learn' ? 'active' : ''}}" hover-class="none" data-mode="learn" bindtap="switchFinanceMode">理财认知</button>
+      </view>
+
+      <view wx:if="{{financeMode === 'recognize'}}" class="recognize-card card">
+        <view class="section-title">识别我看到的理财产品</view>
+        <textarea class="product-input" value="{{productText}}" bindinput="onProductText" placeholder="粘贴产品名称、风险等级、期限、业绩比较基准等文字"></textarea>
+        <view class="actions">
+          <button class="btn-primary mini" bindtap="parseProductText">文字识别</button>
+          <button class="btn-soft" bindtap="chooseProductImage">截图识别</button>
+        </view>
+        <view wx:if="{{analysis}}" class="analysis-box">
+          <view class="analysis-ai-summary"><view class="analysis-ai-label">小享整理</view><view>{{analysis.explanationText}}</view></view>
+          <view wx:if="{{analysis.ledgerCards.length}}" class="recognized-ledger-section">
+            <view class="recognized-section-title">识别到的收支明细</view>
+            <view wx:for="{{analysis.ledgerCards}}" wx:for-index="ledgerIndex" wx:key="key" class="recognized-ledger-card {{item.recordKind}}">
+              <view class="recognized-ledger-head">
+                <view>
+                  <view class="recognized-ledger-title"><text wx:for="{{item.titleSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></view>
+                  <view class="recognized-ledger-meta">{{item.kindLabel}} · {{item.category}}<text wx:if="{{item.date}}"> · {{item.date}}</text></view>
+                </view>
+                <view class="recognized-ledger-amount {{item.type === '收入' ? 'income' : 'expense'}}">{{item.type === '收入' ? '+' : '-'}}{{item.amountText}}元</view>
+              </view>
+              <view class="recognized-ledger-actions">
+                <button hover-class="none" data-index="{{ledgerIndex}}" catchtap="editAnalysisLedgerItem">修改</button>
+                <button class="delete" hover-class="none" data-index="{{ledgerIndex}}" catchtap="deleteAnalysisLedgerItem">删除</button>
+                <button class="save" hover-class="none" data-index="{{ledgerIndex}}" disabled="{{item.saved}}" catchtap="saveAnalysisLedgerItem">{{item.saved ? '已加入' : '加入收支'}}</button>
+              </view>
+            </view>
+          </view>
+          <view wx:for="{{analysis.productCards}}" wx:for-index="productIndex" wx:key="key" class="analysis-product-card">
+            <view class="analysis-product-title">{{item.title}}</view>
+            <view class="analysis-grid {{item.expanded ? '' : 'analysis-grid-collapsed'}}">
+              <view wx:for="{{item.fields}}" wx:for-item="field" wx:for-index="fieldIndex" wx:key="key" class="analysis-field" data-product-index="{{productIndex}}" data-field-index="{{fieldIndex}}" catchtap="editAnalysisField">
+                <view class="analysis-field-label"><text wx:for="{{field.labelSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></view>
+                <view class="analysis-field-value"><text wx:for="{{field.valueSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></view>
+              </view>
+            </view>
+            <view class="analysis-edit-tip">点击任意信息可修改</view>
+            <button wx:if="{{item.fields.length > 6}}" class="analysis-expand" data-index="{{productIndex}}" hover-class="none" catchtap="toggleAnalysisProduct">{{item.expanded ? '收起详情' : '展开全部'}}</button>
+            <view class="analysis-product-actions">
+              <button class="edit" data-index="{{productIndex}}" hover-class="none" catchtap="editAnalysisProduct">修改</button>
+              <button class="delete" data-index="{{productIndex}}" hover-class="none" catchtap="deleteAnalysisProduct">删除</button>
+              <button data-index="{{productIndex}}" disabled="{{item.savedLedger}}" hover-class="none" catchtap="saveAnalysisToLedger">{{item.savedLedger ? '已加入收支' : '加入收支'}}</button>
+              <button data-index="{{productIndex}}" disabled="{{item.savedFinance}}" hover-class="none" catchtap="trackAnalysis">{{item.savedFinance ? '已加入记录' : '加入理财记录'}}</button>
+              <button class="assistant" data-index="{{productIndex}}" hover-class="none" catchtap="openAnalysisAsk">问小享解释</button>
+            </view>
+          </view>
+          <view wx:if="{{analysis.risk_flags && analysis.risk_flags.length}}" class="risk-flag">
+            <text
+              wx:for="{{analysis.riskSummarySegments}}"
+              wx:for-item="seg"
+              wx:key="*this"
+              class="{{seg.term ? 'explainable-finance' : ''}}"
+              data-term="{{seg.term}}"
+              catchtap="explainTerm"
+            >{{seg.text}}</text>
+          </view>
+          <view wx:if="{{!analysis.productCards.length && !analysis.ledgerCards.length}}" class="analysis-empty">暂未识别到可保存的收支或产品，请换一张更清晰的图片，或在上方补充具体名称和金额。</view>
+          <view wx:if="{{analysisAskOpen}}" class="analysis-inline-chat">
+            <view class="analysis-chat-head"><text>小享解释</text><button hover-class="none" catchtap="closeAnalysisAsk">×</button></view>
+            <scroll-view class="analysis-chat-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+              <view wx:for="{{analysisAskMessages}}" wx:key="index" class="analysis-chat-msg {{item.role}}">
+                <text>{{item.role === 'user' ? '我' : '小享'}}</text><view>{{item.text}}</view>
+              </view>
+              <view wx:if="{{analysisAskLoading}}" class="analysis-chat-thinking">小享正在认真看这项记录...</view>
+            </scroll-view>
+            <view class="analysis-chat-input-row">
+              <input value="{{analysisAskInput}}" bindinput="onAnalysisAskInput" bindconfirm="sendAnalysisAsk" confirm-type="send" placeholder="继续问风险、期限、收益或赎回..." />
+              <button hover-class="none" bindtap="sendAnalysisAsk">发送</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{financeMode === 'recognize'}}" class="track-card card">
+        <view class="section-title">已保存的理财记录</view>
+        <scroll-view wx:if="{{trackedPositions.length}}" class="track-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+          <view class="{{globalFontPageClass}}">
+          <view wx:for="{{trackedPositions}}" wx:key="id" class="track-item" data-id="{{item.id}}" bindtap="openPositionDetail">
+            <view class="track-title">{{item.product_name}}</view>
+            <view class="track-hint">{{item.status_label}} · {{item.amount_text}} 元</view>
+          </view>
+          </view>
+        </scroll-view>
+        <view wx:if="{{!trackedPositions.length}}" class="track-empty">暂无理财记录。识别后由您确认添加，系统不会自动保存。</view>
+      </view>
+
+      <view wx:if="{{financeMode === 'learn'}}" class="advice-card card" bindtap="readAdvice">
+        <view class="advice-title">{{advice.level || '稳健学习型'}}</view>
+      </view>
+
+      <view wx:if="{{financeMode === 'learn'}}" class="learn-tabs">
+        <button class="{{learnTab === 'modules' ? 'active' : ''}}" hover-class="none" data-tab="modules" bindtap="switchLearnTab">认知要点</button>
+        <button class="{{learnTab === 'channels' ? 'active' : ''}}" hover-class="none" data-tab="channels" bindtap="switchLearnTab">正规渠道</button>
+        <button wx:if="{{showProductVerification}}" class="{{learnTab === 'verify' ? 'active' : ''}}" hover-class="none" data-tab="verify" bindtap="switchLearnTab">产品查询</button>
+      </view>
+
+      <scroll-view wx:if="{{financeMode === 'learn' && learnTab === 'modules'}}" class="learn-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="{{globalFontPageClass}}">
+        <view wx:for="{{learnModules}}" wx:key="title" class="learn-module card">
+          <view class="learn-title">
+            <text
+              wx:for="{{item.titleSegments}}"
+              wx:for-item="seg"
+              wx:key="*this"
+              class="{{seg.term ? 'explainable-finance' : ''}}"
+              data-term="{{seg.term}}"
+              catchtap="explainTerm"
+            >{{seg.text}}</text>
+          </view>
+          <view wx:for="{{item.itemSegments}}" wx:for-item="line" wx:key="text" class="learn-line">
+            <text class="learn-dot">•</text>
+            <view class="learn-line-text">
+              <text
+                wx:for="{{line.segments}}"
+                wx:for-item="seg"
+                wx:key="*this"
+                class="{{seg.term ? 'explainable-finance' : ''}}"
+                data-term="{{seg.term}}"
+                catchtap="explainTerm"
+              >{{seg.text}}</text>
+            </view>
+          </view>
+        </view>
+        </view>
+      </scroll-view>
+
+      <scroll-view wx:if="{{financeMode === 'learn' && learnTab === 'channels'}}" class="channel-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="{{globalFontPageClass}}">
+        <!-- 渠道分类筛选 -->
+        <view class="channel-category-tabs">
+          <button class="{{selectedCategory === 'all' ? 'active' : ''}}" hover-class="none" data-category="all" bindtap="switchChannelCategory">全部</button>
+          <button class="{{selectedCategory === 'bank' ? 'active' : ''}}" hover-class="none" data-category="bank" bindtap="switchChannelCategory">🏦 银行</button>
+          <button class="{{selectedCategory === 'internet' ? 'active' : ''}}" hover-class="none" data-category="internet" bindtap="switchChannelCategory">💻 互联网</button>
+          <button class="{{selectedCategory === 'official' ? 'active' : ''}}" hover-class="none" data-category="official" bindtap="switchChannelCategory">📋 官方</button>
+        </view>
+
+        <!-- 朗读按钮 -->
+        <view class="channel-read-btn">
+          <button class="btn-read" bindtap="readChannels">🔊 朗读渠道列表</button>
+        </view>
+
+        <!-- 渠道列表 -->
+        <view wx:for="{{channels}}" wx:key="id" class="channel-card card" wx:if="{{selectedCategory === 'all' || item.category === selectedCategory}}">
+          <view class="channel-header">
+            <view class="channel-icon">{{item.icon}}</view>
+            <view class="channel-info">
+              <view class="channel-name">{{item.name}}</view>
+              <view class="channel-desc">{{item.desc}}</view>
+            </view>
+            <view class="channel-risk" data-term="风险等级" catchtap="explainTerm">{{item.riskLevel}}</view>
+          </view>
+          
+          <view class="channel-features">
+            <view wx:for="{{item.features}}" wx:for-item="feat" wx:key="*this" class="channel-feature-tag">{{feat}}</view>
+          </view>
+
+          <view class="channel-tips">
+            <text class="tips-label">💡 </text>{{item.tips}}
+          </view>
+
+          <view class="channel-actions">
+            <button class="btn-soft" data-id="{{item.id}}" catchtap="readChannelInfo">🔊 朗读</button>
+            <button class="btn-primary mini" data-id="{{item.id}}" catchtap="goToChannel">去访问</button>
+          </view>
+        </view>
+
+        <!-- 风险提示 -->
+        <view class="channel-warning card">
+          <view class="warning-title">⚠️ 重要提醒</view>
+          <view class="warning-content">
+            <view>1. 请认准正规金融机构，不要轻信陌生人推荐</view>
+            <view>2. 购买前先核验产品登记编码</view>
+            <view>3. 警惕高收益承诺，正规产品不会保证收益</view>
+            <view>4. 如有疑问，请先咨询家人或子女</view>
+          </view>
+        </view>
+        </view>
+      </scroll-view>
+
+      <!-- ==================== 产品核验功能 ==================== -->
+      <scroll-view wx:if="{{showProductVerification && financeMode === 'learn' && learnTab === 'verify'}}" class="verify-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="{{globalFontPageClass}}">
+        <!-- 核验入口 -->
+        <view class="verify-input-card card">
+          <view class="verify-title">🔍 核验理财产品真伪</view>
+          <view class="verify-hint">请输入产品登记编码（C开头14位数字）</view>
+          
+          <view class="verify-input-row">
+            <input 
+              class="verify-input" 
+              value="{{verifyInput}}" 
+              bindinput="onVerifyInput" 
+              placeholder="例如：C1082725000074"
+              maxlength="16"
+              type="text"
+            />
+            <button class="verify-clear-btn" wx:if="{{verifyInput}}" catchtap="clearVerifyInput">清空</button>
+          </view>
+          
+          <view class="verify-actions">
+            <button class="btn-primary verify-btn" catchtap="verifyProduct" disabled="{{verifyLoading}}">
+              {{verifyLoading ? '核验中...' : '立即核验'}}
+            </button>
+            <button class="btn-soft" catchtap="goToChinawealth">去官网核验</button>
+          </view>
+          
+          <!-- 示例编码 -->
+          <view class="verify-examples" wx:if="{{exampleCodes.length}}">
+            <view class="examples-title">💡 示例编码（点击填入）</view>
+            <view class="examples-list">
+              <view wx:for="{{exampleCodes}}" wx:key="code" class="example-item" data-code="{{item.code}}" catchtap="useExampleCode">
+                <view class="example-code">{{item.code}}</view>
+                <view class="example-name">{{item.bank}} · {{item.name}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 核验结果 -->
+        <view wx:if="{{verifyResult}}" class="verify-result-card card">
+          <!-- 核验成功 -->
+          <block wx:if="{{verifyResult.ok && verifyResult.is_valid}}">
+            <view class="result-header success">
+              <view class="result-icon">✅</view>
+              <view class="result-status">已查到登记信息</view>
+            </view>
+            
+            <view class="product-info">
+              <view class="product-name">{{verifyResult.product.name}}</view>
+              <view class="product-bank">发行机构：{{verifyResult.product.bank}}</view>
+              
+              <view class="product-details">
+                <view class="detail-item">
+                  <view class="detail-label">风险等级</view>
+                  <view class="detail-value">{{verifyResult.product.risk_level}} · {{verifyResult.product.risk_desc}}</view>
+                </view>
+                <view class="detail-item">
+                  <view class="detail-label">业绩比较基准</view>
+                  <view class="detail-value">{{verifyResult.product.yield_benchmark || '以说明书为准'}}</view>
+                </view>
+                <view class="detail-item">
+                  <view class="detail-label">产品期限</view>
+                  <view class="detail-value">{{verifyResult.product.term || '详见说明书'}}</view>
+                </view>
+                <view class="detail-item">
+                  <view class="detail-label">起购金额</view>
+                  <view class="detail-value">{{verifyResult.product.min_amount || '以说明书为准'}}</view>
+                </view>
+                <view class="detail-item">
+                  <view class="detail-label">产品状态</view>
+                  <view class="detail-value">{{verifyResult.product.status || '未知'}}</view>
+                </view>
+                <view class="detail-item">
+                  <view class="detail-label">运作模式</view>
+                  <view class="detail-value">{{verifyResult.product.operation_mode || '详见说明书'}}</view>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 风险提示 -->
+            <view class="verify-warning-box" wx:if="{{verifyResult.warning}}">
+              <view class="warning-header">⚠️ {{verifyResult.warning.title}}</view>
+              <view class="warning-list">
+                <view wx:for="{{verifyResult.warning.content}}" wx:for-item="tip" wx:key="*this" class="warning-tip">• {{tip}}</view>
+              </view>
+              <view class="elderly-tips" wx:if="{{verifyResult.warning.elderly_tips}}">
+                <view class="elderly-label">💡 给您的建议</view>
+                <view class="elderly-content">{{verifyResult.warning.elderly_tips}}</view>
+              </view>
+            </view>
+            
+            <!-- 白话解释 -->
+            <view class="verify-explain-box" wx:if="{{verifyResult.explain}}">
+              <view class="explain-header">📖 白话解释</view>
+              <view class="explain-list">
+                <view wx:if="{{verifyResult.explain.risk_level}}" class="explain-item">
+                  <view class="explain-label">风险等级</view>
+                  <view class="explain-value">{{verifyResult.explain.risk_level}}</view>
+                </view>
+                <view wx:if="{{verifyResult.explain.yield_type}}" class="explain-item">
+                  <view class="explain-label">收益类型</view>
+                  <view class="explain-value">{{verifyResult.explain.yield_type}}</view>
+                </view>
+                <view wx:if="{{verifyResult.explain.term}}" class="explain-item">
+                  <view class="explain-label">期限说明</view>
+                  <view class="explain-value">{{verifyResult.explain.term}}</view>
+                </view>
+                <view wx:if="{{verifyResult.explain.operation_mode}}" class="explain-item">
+                  <view class="explain-label">运作模式</view>
+                  <view class="explain-value">{{verifyResult.explain.operation_mode}}</view>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 操作按钮 -->
+            <view class="result-actions">
+              <button class="btn-soft" catchtap="readVerifyResult">🔊 朗读结果</button>
+              <button class="btn-soft" catchtap="readVerifyWarning">🔊 读风险提示</button>
+              <button class="btn-soft" catchtap="readVerifyExplain">🔊 读白话解释</button>
+              <button class="btn-primary" catchtap="askAboutProduct">问小享详细解释</button>
+            </view>
+          </block>
+          
+          <!-- 核验失败 -->
+          <block wx:if="{{!verifyResult.ok || !verifyResult.is_valid}}">
+            <view class="result-header warning">
+              <view class="result-icon">!</view>
+              <view class="result-status">{{verifyResult.statusTitle || '暂时不能确认'}}</view>
+            </view>
+            
+            <view class="verify-error-box">
+              <view class="error-title">核验说明</view>
+              <view class="error-content">
+                <view>{{verifyResult.error}}</view>
+                <view wx:if="{{verifyResult.reasonCode === 'not_found'}}">未查到不等于产品一定有问题，也不等于产品真实，请继续通过发行机构或官方登记平台复核。</view>
+                <view wx:if="{{verifyResult.reasonCode === 'not_configured'}}">当前没有可用的授权产品数据源，系统不会用本地样例冒充核验结果。</view>
+              </view>
+              <view class="error-action">
+                <view>建议您：</view>
+                <view>• 再核对一次登记编码</view>
+                <view>• 到发行机构或官方登记平台核实</view>
+                <view>• 没核实清楚前不要付款</view>
+              </view>
+            </view>
+            
+            <view class="result-actions">
+              <button class="btn-soft" catchtap="goToChinawealth">去官网核验</button>
+              <button class="btn-primary" bindtap="goAssistant">问小享求助</button>
+            </view>
+          </block>
+        </view>
+
+        <!-- 核验历史 -->
+        <view class="verify-history-card card" wx:if="{{verifyHistory.length}}">
+          <view class="history-header">
+            <view class="history-title">📋 核验历史</view>
+            <button class="history-clear" catchtap="clearVerifyHistory">清空</button>
+          </view>
+          <view class="history-list">
+            <view wx:for="{{verifyHistory}}" wx:key="code" class="history-item" data-code="{{item.code}}" catchtap="useHistoryCode">
+              <view class="history-status {{item.is_valid ? 'valid' : 'invalid'}}">{{item.is_valid ? '✅' : '❌'}}</view>
+              <view class="history-info">
+                <view class="history-code">{{item.code}}</view>
+                <view class="history-name">{{item.bank}} · {{item.name}}</view>
+              </view>
+              <view class="history-time">{{item.time}}</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 使用说明 -->
+        <view class="verify-guide-card card">
+          <view class="guide-title">💡 如何找到产品登记编码？</view>
+          <view class="guide-content">
+            <view class="guide-step">
+              <view class="step-num">1</view>
+              <view class="step-text">打开产品说明书或银行APP产品详情页</view>
+            </view>
+            <view class="guide-step">
+              <view class="step-num">2</view>
+              <view class="step-text">找到"登记编码"或"产品编码"字段</view>
+            </view>
+            <view class="guide-step">
+              <view class="step-num">3</view>
+              <view class="step-text">一般是C开头 + 14位数字，如C1082725000074</view>
+            </view>
+          </view>
+          <view class="guide-warning">⚠️ 正规产品必须在官方平台登记，未登记的产品请警惕！</view>
+        </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="bottom-nav">
+      <view class="nav-item" bindtap="goHome"><view class="nav-icon">🌳</view><view>首页</view></view>
+      <view class="nav-item" bindtap="goAssistant"><view class="nav-icon">🤖</view><view>问小享</view></view>
+      <view class="nav-item active" bindtap="readNav" data-label="钱生钱"><view class="nav-icon">🌱</view><view>钱生钱</view></view>
+      <view class="nav-item" bindtap="goProfile"><view class="nav-icon">👀</view><view>我的画像</view></view>
+    </view>
+  </view>
+
+  <view wx:if="{{showPositionDetail && selectedPosition}}" class="detail-mask" catchtap="closePositionDetail">
+    <view class="detail-panel position-detail-panel" catchtap="stopTap">
+      <view class="detail-head">
+        <view class="detail-title">理财记录详情</view>
+        <view class="detail-close" catchtap="closePositionDetail">×</view>
+      </view>
+      <view class="position-action-bar">
+        <button hover-class="none" catchtap="editPosition">修改</button>
+        <button class="danger" hover-class="none" catchtap="deletePosition">删除</button>
+        <button class="assistant" hover-class="none" catchtap="togglePositionAsk">问小享</button>
+        <button hover-class="none" catchtap="closePositionDetail">关闭</button>
+      </view>
+      <view class="detail-name">{{selectedPosition.product_name}}</view>
+      <view class="detail-status">{{selectedPosition.status_label}}</view>
+      <view class="detail-row"><text>投入金额</text><text>{{selectedPosition.amount_text}} 元</text></view>
+      <view wx:if="{{selectedPosition.institution}}" class="detail-row"><text>发行机构</text><text>{{selectedPosition.institution}}</text></view>
+      <view wx:if="{{selectedPosition.risk_level}}" class="detail-row"><text>风险等级</text><text>{{selectedPosition.risk_level}}</text></view>
+      <view wx:if="{{selectedPosition.benchmark}}" class="detail-row"><text>收益基准</text><text>{{selectedPosition.benchmark}}</text></view>
+      <view wx:if="{{selectedPosition.term}}" class="detail-row"><text>产品期限</text><text>{{selectedPosition.term}}</text></view>
+      <view wx:if="{{selectedPosition.min_amount}}" class="detail-row"><text>起购金额</text><text>{{selectedPosition.min_amount}}</text></view>
+      <view wx:if="{{selectedPosition.redeem_rule}}" class="detail-row"><text>赎回规则</text><text>{{selectedPosition.redeem_rule}}</text></view>
+      <view wx:if="{{selectedPosition.service_phone}}" class="detail-row"><text>客服电话</text><text>{{selectedPosition.service_phone}}</text></view>
+      <view wx:for="{{selectedPosition.detailFields}}" wx:key="label" class="detail-row">
+        <text><text wx:for="{{item.labelSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></text>
+        <text><text wx:for="{{item.valueSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></text>
+      </view>
+      <view wx:if="{{selectedPosition.risk_summary}}" class="risk-flag">{{selectedPosition.risk_summary}}</view>
+      <view wx:if="{{selectedPosition.elder_explanation}}" class="detail-desc">{{selectedPosition.elder_explanation}}</view>
+      <view wx:if="{{positionAskOpen}}" class="position-ask-box">
+        <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
+          <view wx:for="{{positionAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
+          <view wx:if="{{positionAskLoading}}" class="position-ask-message assistant">小享正在认真想一想…</view>
+        </scroll-view>
+        <view class="position-ask-input-row">
+          <input value="{{positionAskInput}}" bindinput="onPositionAskInput" bindconfirm="sendPositionAsk" confirm-type="send" placeholder="继续问小享…" />
+          <button hover-class="none" catchtap="sendPositionAsk">发送</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+</view>
+
+<!-- 语音输入悬浮按钮 -->
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{loading}}" overlay-text="请说出理财相关问题…" bind:result="onVoiceResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />

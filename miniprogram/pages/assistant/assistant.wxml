@@ -1,0 +1,185 @@
+﻿<view class="bg-page assistant-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/assistant_bg.jpg" mode="widthFix" />
+
+  <view class="layer assistant-layer">
+    <!-- 左上角返回按钮 -->
+    <view class="assistant-back" bindtap="goBack">‹</view>
+    <view class="assistant-tools">
+      <button class="assistant-tool-btn" hover-class="none" bindtap="newSession">新聊天</button>
+      <button class="assistant-tool-btn" hover-class="none" bindtap="openHistoryPanel">记录</button>
+    </view>
+
+    <!-- 聊天记录区域 -->
+    <scroll-view
+      class="abs chat-scroll"
+      scroll-y="true"
+      scroll-with-animation="true"
+      scroll-into-view="{{scrollTo}}"
+      enhanced="true"
+      show-scrollbar="false"
+    >
+      <view class="{{globalFontPageClass}}">
+      <block wx:for="{{displayMessages}}" wx:for-item="msg" wx:key="id">
+        <view id="{{msg.id}}" class="msg-row {{msg.alignClass}}">
+          <image class="avatar" src="{{msg.avatar}}" mode="aspectFill"></image>
+          <view class="bubble {{msg.bubbleClass}}">
+            <view class="msg-text {{chatFontClass}}">
+              <text
+                wx:for="{{msg.segments || [{text: msg.text, term: ''}]}}"
+                wx:for-item="seg"
+                wx:key="*this"
+                class="{{seg.term ? 'term-inline' : ''}} {{chatFontClass}}"
+                data-term="{{seg.term}}"
+                data-msg="{{msg.text}}"
+                catchtap="explainChatTerm"
+              >{{seg.text}}</text>
+            </view>
+            <text class="msg-time">{{msg.time}}</text>
+          </view>
+        </view>
+      </block>
+
+      <view wx:if="{{nearbyResults.length}}" class="assistant-nearby-card">
+        <view class="assistant-nearby-title">为您找到的附近地点</view>
+        <view wx:for="{{nearbyResults}}" wx:key="id" class="assistant-place-item">
+          <view class="assistant-place-name">{{item.title}}</view>
+          <view class="assistant-place-address">{{item.address}} · {{item.distanceText}}</view>
+          <view class="assistant-place-actions">
+            <button data-index="{{index}}" hover-class="none" catchtap="openAssistantPlace">去这里</button>
+            <button data-index="{{index}}" hover-class="none" catchtap="askAssistantRouteStep">问这一步怎么走</button>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="msg-row msg-left">
+        <image class="avatar" src="{{assistantAvatar}}" mode="aspectFill"></image>
+        <view class="bubble bubble-ai typing-bubble">
+          <image class="typing-img" src="/assets/ui/assistant_avatar.png" mode="aspectFit"></image>
+          <text class="typing-text">正在调用智能体思考中…</text>
+        </view>
+      </view>
+
+      <view wx:if="{{explainMode}}" class="understand-wrap">
+        <button class="understand-btn" hover-class="none" bindtap="understoodAndBack">我明白了，返回上一页</button>
+      </view>
+      </view>
+    </scroll-view>
+
+    <!-- 录音浮层 -->
+    <view wx:if="{{recording}}" class="record-overlay">
+      <view class="record-pulse"></view>
+      <text class="record-text">小享正在认真听您说话…（{{recordingSeconds}}秒/{{recordingMax}}秒）再点一次结束</text>
+    </view>
+
+    <!-- 底部输入区：语音模式 -->
+    <view wx:if="{{inputMode === 'voice'}}" class="assistant-input-bar-v2">
+      <view class="mode-switch-btn" bindtap="switchInputMode">
+        <text class="mode-switch-icon">⌨</text>
+      </view>
+      <view class="image-pick-btn" bindtap="chooseAssistantImage">
+        <text class="image-pick-icon">图</text>
+      </view>
+      <view
+        class="hold-speak-btn {{recording ? 'hold-speak-active' : ''}}"
+        bindtouchstart="startHoldSpeak"
+        bindtouchend="stopHoldSpeak"
+        bindtouchcancel="stopHoldSpeak"
+      >
+        <text class="hold-speak-text">{{recording ? '松开结束 正在听...' : '按住 说话'}}</text>
+      </view>
+      <view class="auto-speak-toggle {{autoSpeak ? 'auto-speak-on' : ''}}" bindtap="toggleAutoSpeak">
+        <text class="auto-speak-icon">{{autoSpeak ? '🔊' : '🔇'}}</text>
+      </view>
+    </view>
+
+    <!-- 底部输入区：文字模式 -->
+    <view wx:else class="assistant-input-bar-v2">
+      <view class="mode-switch-btn" bindtap="switchInputMode">
+        <text class="mode-switch-icon">🎤</text>
+      </view>
+      <view class="input-box-v2 input-box-v2-narrow">
+        <input
+          class="ask-input-v2 {{chatFontClass}}"
+          type="text"
+          placeholder="输入您的问题..."
+          placeholder-class="input-ph-v2"
+          value="{{inputText}}"
+          bindinput="onInput"
+          confirm-type="send"
+          bindconfirm="sendInput"
+          adjust-position="{{false}}"
+          focus="{{inputMode === 'text'}}"
+        />
+        <view wx:if="{{inputText}}" class="clear-btn-v2" bindtap="clearInput">×</view>
+      </view>
+      <view class="auto-speak-toggle {{autoSpeak ? 'auto-speak-on' : ''}}" bindtap="toggleAutoSpeak">
+        <text class="auto-speak-icon">{{autoSpeak ? '🔊' : '🔇'}}</text>
+      </view>
+      <view class="image-pick-btn" bindtap="chooseAssistantImage">
+        <text class="image-pick-icon">图</text>
+      </view>
+      <view class="send-btn-v2" bindtap="sendInput">
+        <text class="send-icon-v2">➤</text>
+      </view>
+    </view>
+
+  </view>
+
+  <view wx:if="{{showHistoryPanel}}" class="history-mask" catchtap="closeHistoryPanel">
+    <view class="history-panel" catchtap="stopTap">
+      <view class="history-head">
+        <view class="history-title">聊天记录</view>
+        <button class="history-close" hover-class="none" bindtap="closeHistoryPanel">×</button>
+      </view>
+      <input
+        class="history-search"
+        placeholder="搜索聊天内容"
+        placeholder-class="input-ph-v2"
+        value="{{historyKeyword}}"
+        bindinput="onHistorySearch"
+      />
+      <scroll-view class="history-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view wx:if="{{filteredSessionList.length === 0 && filteredFinanceSessionList.length === 0}}" class="history-empty">没有找到聊天记录</view>
+        <view wx:if="{{filteredSessionList.length}}" class="history-section-title">聊天记录</view>
+        <view wx:for="{{filteredSessionList}}" wx:key="id" class="history-item">
+          <view class="history-info" data-id="{{item.id}}" bindtap="selectHistorySession">
+            <view class="history-item-title">{{item.title}}</view>
+            <view class="history-item-text">{{item.lastText}}</view>
+            <view class="history-item-time">{{item.updatedAt}}</view>
+          </view>
+          <button class="history-delete" hover-class="none" data-id="{{item.id}}" catchtap="deleteHistorySession">删除</button>
+        </view>
+        <view wx:if="{{filteredFinanceSessionList.length}}" class="history-section-title finance">金融卡片认知</view>
+        <view wx:for="{{filteredFinanceSessionList}}" wx:key="id" class="history-item finance-history-item">
+          <view class="history-info" data-id="{{item.id}}" bindtap="selectHistorySession">
+            <view class="history-item-title">{{item.title}}</view>
+            <view class="history-item-text">{{item.lastText}}</view>
+            <view class="history-item-time">{{item.updatedAt}}</view>
+          </view>
+          <button class="history-delete" hover-class="none" data-id="{{item.id}}" catchtap="deleteHistorySession">删除</button>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+  <!-- 底部导航栏 -->
+  <view class="bottom-nav">
+    <view class="nav-item" bindtap="goHome">
+      <view class="nav-icon">🌳</view>
+      <view>首页</view>
+    </view>
+    <view class="nav-item active">
+      <view class="nav-icon">🤖</view>
+      <view>问小享</view>
+    </view>
+    <view class="nav-item" bindtap="goFinance">
+      <view class="nav-icon">{{isChild ? '👪' : '🌱'}}</view>
+      <view>{{isChild ? '家庭协同' : '钱生钱'}}</view>
+    </view>
+    <view class="nav-item" bindtap="goProfile">
+      <view class="nav-icon">👀</view>
+      <view>{{isChild ? '我的' : '我的画像'}}</view>
+    </view>
+  </view>
+</view>

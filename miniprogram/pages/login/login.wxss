@@ -1,0 +1,289 @@
+.login-page {
+  position: relative;
+  width: 750rpx;
+  height: 100vh;
+  overflow: hidden;
+  background: #fff8ec;
+}
+
+.login-scroll {
+  position: relative;
+  z-index: 1;
+  width: 750rpx;
+  height: 100vh;
+}
+
+.login-canvas {
+  position: relative;
+  width: 750rpx;
+  min-height: 1780rpx;
+  overflow: hidden;
+  background: #fff8ec;
+}
+
+.login-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 750rpx;
+  height: auto;
+  z-index: 0;
+}
+
+.login-layer {
+  position: relative;
+  z-index: 2;
+  width: 750rpx;
+  min-height: 1780rpx;
+}
+
+.login-panel {
+  left: 40rpx;
+  top: 1074rpx;
+  width: 670rpx;
+  min-height: 650rpx;
+  padding: 0 34rpx 130rpx;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.remember-row {
+  margin: 18rpx 8rpx 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #72551e;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.forgot-link { margin-top: 2rpx; }
+
+.login-success-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36rpx;
+  box-sizing: border-box;
+  background: rgba(62, 44, 16, 0.42);
+}
+
+.login-success-card {
+  width: 620rpx;
+  padding: 44rpx 34rpx 38rpx;
+  border-radius: 32rpx;
+  background: #fffdf7;
+  border: 2rpx solid #efd99f;
+  box-shadow: 0 24rpx 70rpx rgba(72, 46, 8, 0.24);
+  text-align: center;
+}
+
+.success-avatar { width: 132rpx; height: 132rpx; border-radius: 50%; border: 5rpx solid #ffd260; }
+.success-title { margin-top: 22rpx; color: #4d320c; font-size: 42rpx; font-weight: 900; }
+.success-name { margin-top: 10rpx; color: #5f3a06; font-size: 34rpx; font-weight: 900; }
+.success-role { margin-top: 8rpx; color: #98763c; font-size: 26rpx; font-weight: 800; }
+.success-enter { margin-top: 30rpx; height: 82rpx; line-height: 82rpx; border-radius: 41rpx; background: #ffc94a; color: #5f3a06; font-size: 31rpx; font-weight: 900; }
+
+/* 头像昵称区域 */
+.login-user-row {
+  width: 100%;
+  height: 80rpx;
+  margin-bottom: 22rpx;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* 头像单独一行 */
+.avatar-row {
+  width: 100%;
+  margin-bottom: 18rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-choose {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 58rpx;
+  padding: 0;
+  background: linear-gradient(180deg, #fff3cf 0%, #ffd66f 100%);
+  border: 4rpx solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10rpx 22rpx rgba(176, 112, 18, 0.18);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-img {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 58rpx;
+}
+
+.avatar-default {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 58rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #fff7dc 0%, #ffe08c 100%);
+}
+
+.avatar-icon {
+  font-size: 56rpx;
+  line-height: 116rpx;
+}
+
+.avatar-tip {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #9b835a;
+}
+
+/* 昵称单独一行 */
+.nickname-row {
+  width: 100%;
+  height: 78rpx;
+  margin-bottom: 18rpx;
+}
+
+.nickname-input {
+  width: 100%;
+  height: 68rpx;
+  line-height: 78rpx;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+  border-radius: 39rpx;
+  background: rgba(255, 248, 235, 0.92);
+  border: 1rpx solid rgba(223, 198, 132, 0.45);
+  font-size: 30rpx;
+  color: #4d320c;
+  font-weight: 800;
+}
+
+.field {
+  width: 100%;
+  height: 65rpx;
+  margin-top: 10rpx;
+  padding: 0 34rpx;
+  box-sizing: border-box;
+  border-radius: 42rpx;
+  background: rgba(255, 248, 235, 0.92);
+  border: 1rpx solid rgba(223, 198, 132, 0.45);
+  display: flex;
+  align-items: center;
+  transform: translateY(-15rpx);
+}
+
+.input-text {
+  width: 100%;
+  height: 86rpx;
+  line-height: 86rpx;
+  font-size: 30rpx;
+  color: #4d320c;
+}
+
+.input-placeholder {
+  color: #b4a07a;
+  font-weight: 500;
+}
+
+.role-switch {
+  width: 100%;
+  display: flex;
+  gap: 18rpx;
+  margin: 0 0 18rpx;
+  transform: translateY(-15rpx);
+}
+
+.role-btn {
+  flex: 1;
+  height: 78rpx;
+  line-height: 68rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 34rpx;
+  background: rgba(255, 248, 235, 0.92);
+  border: 2rpx solid rgba(223, 198, 132, 0.5);
+  color: #8a6a2b;
+  font-size: 27rpx;
+  font-weight: 900;
+}
+
+.role-btn.active {
+  background: linear-gradient(180deg, #ffe28a 0%, #ffc94a 100%);
+  border-color: rgba(255, 185, 45, 0.75);
+  color: #5f3a06;
+}
+
+.role-btn::after {
+  border: none;
+}
+
+.login-action-row {
+  width: 100%;
+  margin-top: 18rpx;
+  display: flex;
+  gap: 18rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-btn,
+.wechat-btn {
+  flex: 1;
+  height: 78rpx;
+  line-height: 78rpx;
+  border-radius: 39rpx;
+  font-size: 27rpx;
+  font-weight: 900;
+  margin: 0;
+}
+
+.link-btn {
+  margin: 24rpx auto 0;
+  color: #8a6819;
+  font-size: 28rpx;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ========== 全局字号适配 ========== */
+.font-global-large .field { height: 72rpx; }
+.font-global-large .input-text { font-size: 36rpx; }
+.font-global-large .role-btn { font-size: 33rpx; height: 86rpx; line-height: 76rpx; }
+.font-global-large .login-btn,
+.font-global-large .wechat-btn { font-size: 33rpx; height: 86rpx; line-height: 86rpx; }
+.font-global-large .link-btn { font-size: 34rpx; }
+.font-global-large .remember-row { font-size: 30rpx; }
+.font-global-large .success-title { font-size: 50rpx; }
+.font-global-large .success-name { font-size: 42rpx; }
+.font-global-large .success-role { font-size: 32rpx; }
+.font-global-large .success-enter { font-size: 37rpx; height: 90rpx; line-height: 90rpx; }
+.font-global-large .nickname-input { font-size: 36rpx; height: 78rpx; line-height: 86rpx; }
+.font-global-large .avatar-tip { font-size: 28rpx; }
+.font-global-large .avatar-icon { font-size: 64rpx; }
+
+.font-global-xlarge .field { height: 80rpx; }
+.font-global-xlarge .input-text { font-size: 42rpx; }
+.font-global-xlarge .role-btn { font-size: 39rpx; height: 94rpx; line-height: 84rpx; }
+.font-global-xlarge .login-btn,
+.font-global-xlarge .wechat-btn { font-size: 39rpx; height: 94rpx; line-height: 94rpx; }
+.font-global-xlarge .link-btn { font-size: 40rpx; }
+.font-global-xlarge .remember-row { font-size: 34rpx; }
+.font-global-xlarge .success-title { font-size: 58rpx; }
+.font-global-xlarge .success-name { font-size: 48rpx; }
+.font-global-xlarge .success-role { font-size: 36rpx; }
+.font-global-xlarge .success-enter { font-size: 43rpx; height: 98rpx; line-height: 98rpx; }
+.font-global-xlarge .nickname-input { font-size: 42rpx; height: 88rpx; line-height: 96rpx; }
+.font-global-xlarge .avatar-tip { font-size: 32rpx; }
+.font-global-xlarge .avatar-icon { font-size: 72rpx; }

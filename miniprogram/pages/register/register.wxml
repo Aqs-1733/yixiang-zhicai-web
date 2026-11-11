@@ -1,0 +1,94 @@
+<view class="register-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/register_bg.jpg" mode="widthFix" />
+
+  <scroll-view class="register-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <view class="register-content {{globalFontPageClass}}">
+      <button class="back round-back-btn" hover-class="none" bindtap="back">‹</button>
+
+      <view class="register-card">
+        <view class="register-title">注册账号</view>
+        <view class="register-subtitle">请先设置昵称和头像；子女端还需填写长辈生成的家庭绑定码。</view>
+
+        <view class="register-avatar-row">
+          <button class="register-avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" hover-class="none">
+            <image class="register-avatar-img" src="{{avatar}}" mode="aspectFill" />
+          </button>
+          <view class="register-avatar-tip">点击选择头像，暂不选择会使用默认头像</view>
+        </view>
+
+        <view class="form-field">
+          <input class="input-text" type="nickname" placeholder="请设置昵称" placeholder-class="input-placeholder" value="{{nickname}}" bindinput="onInput" data-k="nickname" maxlength="20" />
+        </view>
+
+        <view class="role-switch">
+          <button
+            class="role-btn {{role === 'elder' ? 'active' : ''}}"
+            hover-class="none"
+            bindtap="chooseRole"
+            data-role="elder"
+          >长辈端</button>
+          <button
+            class="role-btn {{role === 'child' ? 'active' : ''}}"
+            hover-class="none"
+            bindtap="chooseRole"
+            data-role="child"
+          >子女端</button>
+        </view>
+
+        <view class="form-field">
+          <input
+            class="input-text"
+            placeholder="请输入手机号"
+            placeholder-class="input-placeholder"
+            value="{{phone}}"
+            bindinput="onInput"
+            data-k="phone"
+            type="number"
+            maxlength="11"
+          />
+        </view>
+
+        <view class="form-field">
+          <input
+            class="input-text"
+            placeholder="设置登录密码（至少4位）"
+            placeholder-class="input-placeholder"
+            value="{{password}}"
+            bindinput="onInput"
+            data-k="password"
+            password="true"
+          />
+        </view>
+
+        <view wx:if="{{role === 'child'}}" class="form-field bind-code-field">
+          <input
+            class="input-text"
+            placeholder="请输入长辈提供的6位家庭绑定码"
+            placeholder-class="input-placeholder"
+            value="{{bind_code}}"
+            bindinput="onInput"
+            data-k="bind_code"
+            type="number"
+            maxlength="6"
+          />
+        </view>
+
+        <view class="role-note">
+          <text wx:if="{{role === 'elder'}}">长辈注册后进入小程序，可在家庭协同里生成绑定码给子女。</text>
+          <text wx:else>子女端注册必须先拿到长辈的绑定码，注册成功后会自动绑定该长辈。</text>
+        </view>
+
+        <view class="security-option">
+          <view>
+            <view class="security-title">设置忘记密码问题</view>
+            <view class="security-desc">可选。开启后注册成功会进入密保设置页。</view>
+          </view>
+          <switch checked="{{setSecurityQuestion}}" bindchange="onSecuritySwitch" color="#f2b632" />
+        </view>
+
+        <button class="submit-btn" hover-class="none" loading="{{submitting}}" bindtap="register">完成注册</button>
+        <button class="login-link" hover-class="none" bindtap="back">已有账号，去登录</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

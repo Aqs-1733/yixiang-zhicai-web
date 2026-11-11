@@ -1,0 +1,15 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">已授权长辈</view>
+  <view wx:for="{{items}}" wx:key="id" class="card" bindtap="open" data-id="{{item.elder_user_id}}">
+    <view class="name">{{item.nickname || '长辈'}}</view>
+    <view class="sub">{{item.relation || '家人'}} · {{item.status}}</view>
+    <view class="sub">查看长辈已经开放的家庭信息</view>
+  </view>
+  <button class="primary" bindtap="bind">添加绑定</button>
+</view>
+<child-bottom-nav active="family" />
+

@@ -1,0 +1,145 @@
+.news-page {
+  position: relative;
+  width: 750rpx;
+  min-height: 100vh;
+  background: #fff8ec;
+}
+
+.news-bg {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+  opacity: 0.18;
+}
+
+.back-btn {
+  position: fixed;
+  left: 30rpx;
+  top: 56rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.news-scroll {
+  position: relative;
+  z-index: 2;
+  padding: 120rpx 40rpx 60rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.news-title {
+  margin-top: 60rpx;
+  color: #0b0700;
+  font-size: 58rpx;
+  line-height: 1.5;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+}
+
+.news-meta {
+  margin-top: 24rpx;
+  padding-bottom: 28rpx;
+  border-bottom: 2rpx solid rgba(180, 140, 60, 0.35);
+  color: #e6b75f;
+  font-size: 38rpx;
+  font-weight: 800;
+}
+
+.news-body {
+  margin-top: 36rpx;
+}
+
+.news-loading {
+  margin-top: 36rpx;
+  padding: 48rpx 0;
+  text-align: center;
+}
+
+.news-loading-text {
+  color: #b98628;
+  font-size: 38rpx;
+  font-weight: 800;
+}
+
+.news-paragraph {
+  margin-bottom: 34rpx;
+  color: #6f5436;
+  font-size: 44rpx;
+  line-height: 2.0;
+  font-weight: 600;
+  text-align: justify;
+  text-indent: 2em;
+}
+
+.term-inline-news {
+  text-decoration-line: underline;
+  text-decoration-style: double;
+  text-decoration-thickness: 4rpx;
+  text-underline-offset: 8rpx;
+  text-decoration-color: #c87d1e;
+  color: #5c2d00;
+  font-weight: 900;
+}
+
+.news-actions {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 40rpx;
+  padding-top: 28rpx;
+  border-top: 2rpx solid rgba(180, 140, 60, 0.25);
+}
+
+.news-actions button {
+  flex: 1;
+  height: 100rpx;
+  line-height: 100rpx;
+  padding: 0;
+  border-radius: 50rpx;
+  background: linear-gradient(180deg, #ffe28a 0%, #ffc94a 100%);
+  color: #603d08;
+  font-size: 42rpx;
+  font-weight: 900;
+}
+
+.news-actions button:first-child {
+  background: rgba(255, 248, 236, 0.9);
+  border: 2rpx solid #ead7ae;
+}
+
+.news-actions button::after {
+  border: none;
+}
+
+/* 全局字体适配：直接组合选择器，不依赖后代关系 */
+.news-title.font-global-large { font-size: 68rpx !important; }
+.news-meta.font-global-large { font-size: 46rpx !important; }
+.news-loading-text.font-global-large { font-size: 46rpx !important; }
+.news-paragraph.font-global-large { font-size: 54rpx !important; line-height: 1.9; margin-bottom: 42rpx; }
+.news-actions button.font-global-large { font-size: 50rpx !important; height: 108rpx; line-height: 108rpx; }
+
+.news-title.font-global-xlarge { font-size: 80rpx !important; }
+.news-meta.font-global-xlarge { font-size: 54rpx !important; }
+.news-loading-text.font-global-xlarge { font-size: 54rpx !important; }
+.news-paragraph.font-global-xlarge { font-size: 64rpx !important; line-height: 1.85; margin-bottom: 50rpx; }
+.news-actions button.font-global-xlarge { font-size: 58rpx !important; height: 116rpx; line-height: 116rpx; }
+
+/* 段落内 <text> 元素字号适配 — 直接组合选择器覆盖全局规则 */
+text.font-global-large,
+.term-inline-news.font-global-large { font-size: 54rpx !important; }
+
+text.font-global-xlarge,
+.term-inline-news.font-global-xlarge { font-size: 64rpx !important; }

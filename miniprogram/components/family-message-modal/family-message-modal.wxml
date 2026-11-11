@@ -1,0 +1,16 @@
+<view wx:if="{{visible}}" class="family-message-mask {{globalFontPageClass}}" catchtap="close">
+  <view class="family-message-dialog" catchtap="stopTap">
+    <view class="modal-close" catchtap="close">×</view>
+    <view class="modal-title">家庭留言</view>
+    <view class="modal-sub">选择家人，写下想说的话</view>
+    <picker wx:if="{{members.length}}" mode="selector" range="{{memberNames}}" value="{{selectedIndex}}" bindchange="chooseMember">
+      <view class="member-picker"><text>留言给</text><view>{{selectedName}} 〉</view></view>
+    </picker>
+    <view wx:else class="member-hint">{{memberHint}}</view>
+    <textarea class="message-input" value="{{inputText}}" maxlength="300" disabled="{{!selectedPeerId}}" placeholder="请输入留言内容" bindinput="onInput"></textarea>
+    <scroll-view wx:if="{{messages.length}}" class="message-history" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <view wx:for="{{messages}}" wx:key="id" class="message-row {{item.isMine ? 'mine' : ''}}"><view class="message-name">{{item.isMine ? '我' : item.senderText}}</view><view class="message-content">{{item.content || '语音留言'}}</view><view class="message-time">{{item.timeText}}</view></view>
+    </scroll-view>
+    <view class="modal-actions"><button class="cancel" catchtap="close">取消</button><button class="send" disabled="{{!selectedPeerId || !inputText || sending}}" bindtap="send">发送留言</button></view>
+  </view>
+</view>

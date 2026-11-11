@@ -1,0 +1,6 @@
+<view class="child-bottom-nav {{globalFontPageClass}}">
+  <view class="child-nav-item {{active === 'home' ? 'active' : ''}}" bindtap="goHome"><view class="child-nav-icon">🌳</view><text>首页</text></view>
+  <view class="child-nav-item {{active === 'assistant' ? 'active' : ''}}" bindtap="goAssistant"><view class="child-nav-icon">🤖</view><text>问小享</text></view>
+  <view class="child-nav-item {{active === 'family' ? 'active' : ''}} family-entry" bindtap="goFamily"><view class="child-nav-icon">👪</view><text>家庭协同</text><view wx:if="{{unread > 0}}" class="nav-badge">{{unread > 99 ? '99+' : unread}}</view></view>
+  <view class="child-nav-item {{active === 'profile' ? 'active' : ''}}" bindtap="goProfile"><view class="child-nav-icon">👀</view><text>我的</text></view>
+</view>

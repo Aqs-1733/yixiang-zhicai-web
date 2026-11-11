@@ -1,0 +1,95 @@
+﻿<view class="questionnaire-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/risk_bg.jpg" mode="widthFix"></image>
+
+  <!-- 左上角小圆返回 -->
+  <button class="back-hot round-back-btn" hover-class="none" bindtap="back">‹</button>
+
+  <!-- 问题内容，不再加后面大白块 -->
+  <view class="q-card">
+    <view class="q-head">
+      <!-- 左边留给背景里原来的橘子图标 -->
+      <view class="q-left-space"></view>
+
+      <view class="q-head-right">
+        <view class="q-no">{{questionNo}}</view>
+        <view class="q-title">{{cur.title}}</view>
+        <view wx:if="{{cur.desc}}" class="q-desc">{{cur.desc}}</view>
+
+        <view class="term-row">
+          <view
+            wx:for="{{termList}}"
+            wx:key="*this"
+            class="term"
+            data-term="{{item}}"
+            bindtap="explainTerm"
+          >
+            {{item}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <radio-group bindchange="choose" class="option-group">
+      <label
+        wx:for="{{cur.options}}"
+        wx:key="value"
+        class="option {{answers[cur.key] === item.value ? 'active' : ''}}"
+      >
+        <view class="option-left">
+          <view class="option-letter">{{item.letter}}</view>
+
+          <view class="option-text">
+            <view class="option-label">{{item.label}}</view>
+          </view>
+        </view>
+
+        <radio
+          value="{{item.value}}"
+          checked="{{answers[cur.key] === item.value}}"
+          color="#dfbb55"
+        ></radio>
+      </label>
+    </radio-group>
+  </view>
+
+  <!-- 三个功能按钮横排 -->
+  <view class="tool-row">
+    <button class="tool-btn" hover-class="none" bindtap="read">读读题</button>
+    <button class="tool-btn" hover-class="none" bindtap="explainCurrent">听不懂</button>
+  </view>
+
+  <!-- 上一题 / 下一题 -->
+  <view class="footer-bar">
+    <button
+      class="footer-btn prev-btn {{isFirst ? 'disabled-btn' : ''}}"
+      hover-class="none"
+      bindtap="prev"
+    >
+      上一题
+    </button>
+
+    <button
+      wx:if="{{!isLast}}"
+      class="footer-btn next-btn"
+      hover-class="none"
+      bindtap="next"
+    >
+      下一题
+    </button>
+
+    <button
+      wx:else
+      class="footer-btn next-btn"
+      hover-class="none"
+      bindtap="next"
+    >
+      完成
+    </button>
+  </view>
+
+</view>
+
+<term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+<!-- 语音输入悬浮按钮：语音回答问卷 -->
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{false}}" overlay-text="请说出您的答案…" bind:result="onVoiceResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />

@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/assistant/assistant",
+    "pages/child/alerts/alerts",
+    "pages/child/assist/assist",
+    "pages/child/bind/bind",
+    "pages/child/elder-dashboard/elder-dashboard",
+    "pages/child/elder-list/elder-list",
+    "pages/child/health/health",
+    "pages/child/index/index",
+    "pages/child/ledger/ledger",
+    "pages/child/location/location",
+    "pages/child/permissions/permissions",
+    "pages/child/positions/positions",
+    "pages/child/profile/profile",
+    "pages/child/weekly/weekly",
+    "pages/family-group-chat/family-group-chat",
+    "pages/family-messages/family-messages",
+    "pages/family/family",
+    "pages/finance/finance",
+    "pages/forgot-password/forgot-password",
+    "pages/health/health",
+    "pages/index/index",
+    "pages/login/login",
+    "pages/money/money",
+    "pages/nearby/nearby",
+    "pages/news-detail/news-detail",
+    "pages/profile/profile",
+    "pages/questionnaire/questionnaire",
+    "pages/register/register",
+    "pages/security-question/security-question",
+    "pages/service/service"
+  ],
+  "components": [
+    "components/child-bottom-nav/child-bottom-nav",
+    "components/family-care-modal/family-care-modal",
+    "components/family-message-modal/family-message-modal",
+    "components/term-popups/term-popups",
+    "components/voice-input/voice-input"
+  ]
+}

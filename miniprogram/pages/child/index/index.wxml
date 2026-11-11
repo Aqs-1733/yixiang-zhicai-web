@@ -1,0 +1,57 @@
+<view class="child-page {{globalFontPageClass}}">
+  <image class="child-bg" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
+  <view class="top">
+    <view class="top-main">
+      <view>
+        <view class="title">您好，{{accountName}}</view>
+        <view class="desc">颐享智财 · 家庭安心相伴</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="guard-card">
+    <view class="guard-title">家庭金融周报</view>
+    <view class="guard-desc">{{weeklyReports.length ? weeklyReports[0].summary : '暂无金融周报数据'}}</view>
+  </view>
+
+  <view class="child-weather-card">
+    <view><view class="child-weather-city">{{weatherCard.city}}</view><view class="child-weather-tip">{{weatherCard.suggestion}}</view></view>
+    <view class="child-weather-value">{{weatherCard.temperature}}<text>{{weatherCard.weather}}</text></view>
+  </view>
+
+  <view class="child-news-card">
+    <view class="child-section-head">今日资讯</view>
+    <view wx:if="{{!newsItems.length}}" class="child-news-empty">暂无实时资讯</view>
+    <view wx:for="{{newsItems}}" wx:key="id" class="child-news-item" data-index="{{index}}" bindtap="openChildNews">{{item.title}}</view>
+  </view>
+
+  <view wx:if="{{elders.length === 0}}" class="empty">
+    暂无绑定家人，请到“我的”完成家庭绑定。
+  </view>
+
+  <view wx:if="{{elders.length}}" class="section-title">已绑定家人</view>
+  <view wx:for="{{elders}}" wx:key="id" class="elder-card" data-id="{{item.elder_user_id}}" bindtap="goDashboard">
+    <view class="elder-name">{{item.display_name || item.nickname || '长辈'}}</view>
+    <view class="elder-sub">{{item.relation || '长辈'}}</view>
+    <view class="elder-actions">
+      <button catchtap="setElderRemark" data-id="{{item.elder_user_id}}">备注</button>
+      <button catchtap="goWeekly" data-id="{{item.elder_user_id}}">周报</button>
+      <button catchtap="goGroupChat">群聊</button>
+      <button catchtap="goHealth" data-id="{{item.elder_user_id}}">健康</button>
+      <button catchtap="goLocation" data-id="{{item.elder_user_id}}">位置</button>
+    </view>
+  </view>
+
+  <view wx:if="{{elders.length}}" class="child-message-mini" bindtap="goMessages" data-id="{{elders[0].elder_user_id}}"><view><text>家庭留言</text><view>{{messageCount ? '有 ' + messageCount + ' 条新留言' : '查看长辈留言或写一条'}}</view></view><view class="mini-arrow">›</view></view>
+
+  <view class="family-dashboard-grid">
+    <view class="family-dashboard-card risk" bindtap="goAlerts" data-id="{{elders.length ? elders[0].elder_user_id : ''}}">
+      <view class="info-title">风险备注</view>
+      <view class="info-text">{{alertCount ? '有 ' + alertCount + ' 条真实风险提醒待查看' : '暂无异常提醒'}}</view>
+    </view>
+  </view>
+
+  <child-bottom-nav active="home" />
+  <family-message-modal visible="{{showMessageModal}}" peer-id="{{messagePeerId}}" bind:close="closeMessageModal"></family-message-modal>
+  <family-care-modal visible="{{showCareModal}}" type="{{careType}}" elder-id="{{careElderId}}" bind:close="closeCareModal"></family-care-modal>
+</view>

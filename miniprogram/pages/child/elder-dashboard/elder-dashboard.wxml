@@ -1,0 +1,29 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">{{overview.profile_summary.nickname || '长辈'}}概览</view>
+  <view wx:if="{{overview.permissions.view_positions}}" class="card">
+    <view class="label">资产摘要</view>
+    <view class="big">¥ {{overview.asset_summary.total_text || '--'}}</view>
+    <view class="sub">安全占比 {{overview.asset_summary.safe_ratio || 0}}%</view>
+  </view>
+  <view wx:if="{{overview.permissions.receive_alerts}}" class="card">
+    <view class="label">风险画像</view>
+    <view class="big">{{overview.risk_summary.risk_level || '--'}}</view>
+    <view class="sub">{{overview.risk_summary.summary}}</view>
+  </view>
+  <view class="grid">
+    <button bindtap="goAlerts">风险提醒</button>
+    <button bindtap="goWeekly">家庭周报</button>
+    <button bindtap="goLedger">账本摘要</button>
+    <button bindtap="goPositions">持仓风险</button>
+    <button bindtap="goHealth">长辈健康</button>
+    <button bindtap="goLocation">长辈位置</button>
+  </view>
+  <view class="safe">{{overview.safe_note}}</view>
+</view>
+<child-bottom-nav active="family" />
+<family-care-modal visible="{{showCareModal}}" type="{{careType}}" elder-id="{{elderId}}" bind:close="closeCareModal"></family-care-modal>
+

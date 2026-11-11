@@ -1,0 +1,213 @@
+page { background:#fff8ec; color:#563a12; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+button { padding:0; margin:0; background:transparent; line-height:1.2; }
+button::after { border:0; }
+.bg-page { position: relative; width:750rpx; min-height:1624rpx; overflow:hidden; background:#fff8ec; }
+.page-bg { position:absolute; left:0; top:0; width:750rpx; height:1624rpx; z-index:0; }
+.layer { position:relative; z-index:1; min-height:1624rpx; }
+.abs { position:absolute; z-index:2; box-sizing:border-box; }
+.safe-text { color:#5a3a0c; font-weight:700; }
+.muted { color:#9d8a68; font-size:25rpx; line-height:1.55; }
+.small { font-size:22rpx; color:#9c885e; }
+.big { font-size:44rpx; font-weight:900; letter-spacing:1rpx; color:#4d320c; }
+.btn-primary { height:86rpx; border-radius:44rpx; background:linear-gradient(180deg,#ffd86b,#ffc233); color:#5a3a0c; display:flex; align-items:center; justify-content:center; font-size:32rpx; font-weight:900; box-shadow:0 10rpx 18rpx rgba(196,136,32,.18); }
+.btn-soft { height:78rpx; border-radius:39rpx; border:1rpx solid rgba(218,183,93,.4); background:rgba(255,255,255,.78); color:#6a4a19; display:flex; align-items:center; justify-content:center; font-size:28rpx; font-weight:800; }
+.input-text { height:84rpx; width:100%; border:0; color:#563a12; font-size:30rpx; background:transparent; }
+.input-placeholder { color:#cbbd9c; }
+.card { background:rgba(255,255,255,.82); border:1rpx solid rgba(223,197,130,.55); border-radius:28rpx; box-shadow:0 8rpx 24rpx rgba(172,125,40,.08); box-sizing:border-box; }
+.card-title { font-size:32rpx; font-weight:900; color:#4d320c; }
+.tag { display:inline-flex; align-items:center; justify-content:center; padding:8rpx 18rpx; min-width:80rpx; border-radius:999rpx; background:#fff4d8; color:#8a6819; border:1rpx solid rgba(221,178,78,.35); font-size:22rpx; }
+.scroll-box { box-sizing:border-box; overflow:hidden; }
+.row { display:flex; align-items:center; }
+.between { display:flex; align-items:center; justify-content:space-between; }
+.col { display:flex; flex-direction:column; }
+.center { display:flex; align-items:center; justify-content:center; }
+.icon { width:54rpx; height:54rpx; border-radius:16rpx; background:linear-gradient(145deg,#ffe49a,#fff3d4); display:flex; align-items:center; justify-content:center; font-size:30rpx; flex-shrink:0; }
+.back { left:38rpx; top:60rpx; width:62rpx; height:62rpx; border-radius:31rpx; }
+.bottom-nav { position:fixed; left:24rpx; right:24rpx; bottom:22rpx; height:112rpx; border-radius:58rpx; background:rgba(255,255,255,.94); border:2rpx solid #f1d597; z-index:99; display:flex; align-items:center; justify-content:space-around; box-shadow:0 10rpx 28rpx rgba(171,116,26,.14); }
+.nav-item { width:170rpx; height:88rpx; border-radius:44rpx; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#836327; font-size:25rpx; font-weight:800; }
+.nav-item .nav-icon { font-size:36rpx; margin-bottom:4rpx; }
+.nav-item.active { background:linear-gradient(180deg,#ffd86b,#ffc340); color:#593a0d; }
+.list-item { padding:20rpx; border-radius:22rpx; background:rgba(255,249,237,.92); border:1rpx solid rgba(237,209,147,.6); margin-bottom:16rpx; }
+.warning { color:#b16a00; background:#fff4dc; border-radius:18rpx; padding:14rpx 18rpx; font-size:24rpx; line-height:1.45; }
+.divider { height:1rpx; background:rgba(221,196,132,.5); margin:16rpx 0; }
+
+/* 全项目统一字体与按钮规范 — 三挡梯级：标准(页面默认) < 大字 < 超大字 */
+.font-global-large {
+  font-size: 38rpx;
+}
+
+.font-global-xlarge {
+  font-size: 48rpx;
+}
+
+.font-global-large .small,
+.font-global-large .muted,
+.font-global-large .desc,
+.font-global-large .sub,
+.font-global-large .safe,
+.font-global-large .warning,
+.font-global-large input,
+.font-global-large textarea {
+  font-size: 34rpx !important;
+}
+
+.font-global-xlarge .small,
+.font-global-xlarge .muted,
+.font-global-xlarge .desc,
+.font-global-xlarge .sub,
+.font-global-xlarge .safe,
+.font-global-xlarge .warning,
+.font-global-xlarge input,
+.font-global-xlarge textarea {
+  font-size: 42rpx !important;
+}
+
+.font-global-large .card-title,
+.font-global-large .section-title,
+.font-global-large .title,
+.font-global-large .name {
+  font-size: 44rpx !important;
+}
+
+.font-global-xlarge .card-title,
+.font-global-xlarge .section-title,
+.font-global-xlarge .title,
+.font-global-xlarge .name {
+  font-size: 56rpx !important;
+}
+
+/* 超大字体：底部导航适配 */
+.font-global-xlarge .bottom-nav { height: 130rpx; }
+.font-global-xlarge .nav-item { font-size: 30rpx; width: 180rpx; height: 100rpx; }
+.font-global-xlarge .nav-item .nav-icon { font-size: 42rpx; }
+
+/* 全局字号必须覆盖普通文字、按钮、表单、弹窗和标签。页面级标题规则在下方继续放大。 */
+.font-global-large view,
+.font-global-large text,
+.font-global-large label,
+.font-global-large button,
+.font-global-large input,
+.font-global-large textarea,
+.font-global-large picker {
+  font-size: 38rpx !important;
+  word-break: break-word;
+}
+
+.font-global-xlarge view,
+.font-global-xlarge text,
+.font-global-xlarge label,
+.font-global-xlarge button,
+.font-global-xlarge input,
+.font-global-xlarge textarea,
+.font-global-xlarge picker {
+  font-size: 48rpx !important;
+  word-break: break-word;
+}
+
+.font-global-large [class*="title"],
+.font-global-large [class*="heading"],
+.font-global-large [class*="section-head"] { font-size: 48rpx !important; line-height: 1.35 !important; }
+.font-global-xlarge [class*="title"],
+.font-global-xlarge [class*="heading"],
+.font-global-xlarge [class*="section-head"] { font-size: 58rpx !important; line-height: 1.35 !important; }
+
+.font-global-large button,
+.font-global-large [class*="tab"],
+.font-global-large [class*="nav-item"] { min-height: 72rpx; line-height: 1.25 !important; }
+.font-global-xlarge button,
+.font-global-xlarge [class*="tab"],
+.font-global-xlarge [class*="nav-item"] { min-height: 82rpx; line-height: 1.25 !important; }
+
+.font-global-large [class*="icon"],
+.font-global-large [class*="badge"] { font-size: 34rpx !important; }
+.font-global-xlarge [class*="icon"],
+.font-global-xlarge [class*="badge"] { font-size: 42rpx !important; }
+
+/* 超大字体：通用按钮高度适配 */
+.font-global-xlarge button { min-height: 76rpx; line-height: 1.2; }
+
+.round-back-btn,
+.round-back,
+.round-close-btn,
+.back,
+.back-btn,
+.back-hot,
+.floating-back,
+.assistant-back,
+.detail-close,
+.panel-close,
+.history-close,
+.panel-round-close,
+.floating-close,
+.term-popup-close {
+  width: 72rpx !important;
+  min-width: 72rpx !important;
+  max-width: 72rpx !important;
+  height: 72rpx !important;
+  min-height: 72rpx !important;
+  max-height: 72rpx !important;
+  padding: 0 !important;
+  margin: 0;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.round-back-btn,
+.round-back,
+.back,
+.back-btn,
+.back-hot,
+.floating-back,
+.assistant-back {
+  position: fixed !important;
+  left: 24rpx !important;
+  top: 58rpx !important;
+  background: rgba(255, 253, 247, 0.98) !important;
+  border: 2rpx solid #ead79f !important;
+  color: #6a4308 !important;
+  box-shadow: 0 10rpx 22rpx rgba(145, 101, 32, 0.16);
+  font-size: 48rpx !important;
+  font-weight: 900;
+  z-index: 9999;
+}
+
+.round-close-btn,
+.detail-close,
+.panel-close,
+.history-close,
+.panel-round-close,
+.floating-close,
+.term-popup-close {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #7c570e !important;
+  box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.14);
+  font-size: 38rpx !important;
+  font-weight: 900;
+  z-index: 99999;
+}
+
+.pill-btn,
+.btn-primary,
+.btn-soft,
+.primary,
+.soft,
+.top-tool-btn,
+.action-btn,
+.parse-btn,
+.guide-quick-actions button,
+.guide-input-row button,
+.place-actions button,
+.lesson-seek-row button {
+  border-radius: 999rpx !important;
+  min-height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1.2;
+}

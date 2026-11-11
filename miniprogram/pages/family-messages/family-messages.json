@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "term-popups": "/components/term-popups/term-popups"
+  }
+}

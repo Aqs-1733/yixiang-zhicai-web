@@ -1,0 +1,135 @@
+<view class="nearby-page {{globalFontPageClass}}">
+  <image class="nearby-bg" src="/assets/ui/service_bg.jpg" mode="heightFix" />
+
+  <button class="round-back-btn floating-back" hover-class="none" catchtap="goBack">‹</button>
+
+  <view class="nearby-layer">
+    <view class="nearby-head">
+      <view class="nearby-title">附近服务</view>
+    </view>
+
+    <view class="location-card">
+      <view class="location-head">
+        <button class="location-action-btn" hover-class="none" loading="{{locating}}" bindtap="getMyLocation">自动定位</button>
+        <button class="location-action-btn soft" hover-class="none" bindtap="chooseLocation">地图选点</button>
+      </view>
+      <view class="location-address">{{currentAddress}}</view>
+      <view class="address-row">
+        <input
+          class="address-input"
+          value="{{addressInput}}"
+          placeholder="手动输入街道、小区或城市地址"
+          placeholder-class="address-ph"
+          bindinput="onAddressInput"
+          confirm-type="search"
+          bindconfirm="searchAddress"
+        />
+        <button hover-class="none" bindtap="searchAddress">查找</button>
+      </view>
+    </view>
+
+    <scroll-view class="category-scroll" scroll-x="true" show-scrollbar="false">
+      <view
+        wx:for="{{categoryList}}"
+        wx:key="key"
+        class="category-chip {{currentCategory === item.key ? 'active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="switchCategory"
+      >{{item.label}}</view>
+    </scroll-view>
+
+    <map
+      wx:if="{{!showGuideDialog}}"
+      class="nearby-map"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      scale="{{mapScale}}"
+      markers="{{markers}}"
+      show-location
+      bindmarkertap="onMarkerTap"
+    ></map>
+    <view wx:else class="nearby-map map-dialog-placeholder">
+      小享指路已打开。关闭指路窗后地图会自动恢复，下面的地点列表仍可继续操作。
+    </view>
+
+    <scroll-view
+      class="place-list"
+      scroll-y="true"
+      enhanced="true"
+      show-scrollbar="false"
+      scroll-into-view="{{scrollIntoView}}"
+    >
+      <view class="{{globalFontPageClass}}">
+
+
+      <view
+        wx:for="{{places}}"
+        wx:key="id"
+        id="place-{{item.id}}"
+        class="place-card {{activePlaceId === item.id ? 'active' : ''}}"
+      >
+        <view class="place-head">
+          <view class="place-name">{{item.title}}</view>
+          <view class="place-distance">{{item.distanceText}}</view>
+        </view>
+        <view class="place-actions">
+          <button class="go-btn" hover-class="none" data-id="{{item.id}}" bindtap="openNavigate">去这里</button>
+          <button hover-class="none" data-id="{{item.id}}" bindtap="drawRoute">问小享指路</button>
+        </view>
+      </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view
+    wx:if="{{showGuideDialog}}"
+    class="guide-dialog {{guideDialogMinimized ? 'minimized' : ''}}"
+    style="left: {{dialogLeft}}rpx; top: {{dialogTop}}rpx;"
+  >
+    <view class="round-close-btn floating-close" catchtap="closeGuideDialog">×</view>
+    <view
+      class="guide-dialog-head"
+      catchtouchstart="guideDragStart"
+      catchtouchmove="guideDragMove"
+      catchtouchend="guideDragEnd"
+      catchtouchcancel="guideDragEnd"
+    >
+      <view class="guide-title">小享指路</view>
+      <view class="guide-subtitle">{{selectedGuidePlace.title || '附近服务'}}</view>
+    </view>
+
+    <view wx:if="{{!guideDialogMinimized}}" class="guide-dialog-body">
+      <scroll-view class="guide-message-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view wx:for="{{guideMessages}}" wx:key="id" class="guide-message {{item.role === 'user' ? 'user' : 'assistant'}}">
+          <view class="guide-sender">{{item.sender}}</view>
+          <view class="guide-bubble">{{item.text}}</view>
+        </view>
+      </scroll-view>
+
+      <view class="guide-quick-actions">
+        <button hover-class="none" bindtap="openGuideNavigation">打开导航</button>
+      </view>
+      <view wx:if="{{selectedGuidePlace.phone}}" class="guide-phone-line">目的地电话：{{selectedGuidePlace.phone}}</view>
+
+      <view class="guide-input-row">
+        <button class="guide-icon-btn" hover-class="none" bindtouchstart="startGuideVoice" bindtouchend="stopGuideVoice" bindtouchcancel="stopGuideVoice">🎤</button>
+        <button class="guide-icon-btn" hover-class="none" catchtap="chooseGuideImage">图</button>
+        <input
+          class="guide-input"
+          value="{{guideInput}}"
+          placeholder="继续问：远不远、安全吗、怎么去..."
+          placeholder-class="guide-input-ph"
+          bindinput="onGuideInput"
+          confirm-type="send"
+          bindconfirm="sendGuideQuestion"
+          adjust-position="{{false}}"
+        />
+        <button hover-class="none" bindtap="sendGuideQuestion">发送</button>
+      </view>
+    </view>
+  </view>
+
+</view>
+
+<!-- 语音输入悬浮按钮 -->
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{false}}" overlay-text="请说出您想找的服务，如「附近银行」…" bind:result="onVoiceResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />

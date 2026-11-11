@@ -1,0 +1,585 @@
+/* 守护健康页面 —— 优化版样式 */
+
+/* ========== 页面基础 ========== */
+.bg-page {
+  height: 100vh;
+  overflow: hidden;
+}
+.page-bg {
+  width: auto;
+  height: 100vh;
+}
+.health-layer {
+  height: 100vh;
+  overflow: hidden;
+}
+.abs.back {
+  top: 35px;
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2rpx solid #ead79f;
+  color: #6a4308;
+  font-size: 42rpx;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  box-shadow: 0 4rpx 12rpx rgba(145, 101, 32, 0.12);
+}
+
+/* ========== 滚动列表区域 ========== */
+.meds {
+  left: 34rpx;
+  top: 382rpx;
+  width: 682rpx;
+  height: 948rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+}
+
+.health-section-title {
+  margin: 10rpx 4rpx 18rpx;
+  color: #4d320c;
+  font-size: 34rpx;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.health-life-card { margin: 20rpx 0 28rpx; padding: 24rpx; border-radius: 24rpx; background: rgba(255,253,247,.96); border: 2rpx solid #ead79f; box-sizing: border-box; }
+.health-life-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin-top: 16rpx; }
+.health-life-actions button { 
+  width:100%; 
+  min-height: 78rpx; 
+  margin: 0; 
+  padding: 20rpx 14rpx 6rpx; 
+  border-radius: 39rpx; 
+  background: linear-gradient(135deg,#eff9e8,#d2edc4); 
+  color: #4f6e32; 
+  font-size: 27rpx; 
+  line-height: 1.25; 
+  font-weight: 900; 
+  box-sizing: border-box;
+}
+.health-life-actions button:nth-child(2) { background: linear-gradient(135deg,#fff8d9,#ffe5a0); color: #6b470d; }
+.health-life-actions button:last-child { grid-column:1 / -1; background: linear-gradient(135deg,#eef7ef,#cfe8dc); color:#315f4a; }
+.health-life-actions button::after { border: none; }
+.health-life-empty { margin-top: 18rpx; color: #8d7448; font-size: 26rpx; line-height: 1.55; font-weight: 700; }
+.health-journal-item { margin-top: 18rpx; padding: 18rpx; border-radius: 18rpx; background: #fff7e3; }
+.health-journal-kind { color: #6a4308; font-size: 28rpx; font-weight: 900; }
+.health-journal-content { margin-top: 8rpx; color: #7a613a; font-size: 25rpx; font-weight: 800; }
+.health-journal-analysis { margin-top: 8rpx; color: #4d320c; font-size: 27rpx; line-height: 1.55; font-weight: 800; }
+.health-journal-time { margin-top: 8rpx; color: #a48b61; font-size: 22rpx; }
+
+.meds-title {
+  margin-top: 28rpx;
+}
+
+/* ========== 今日建议卡片 ========== */
+.advice-card {
+  background: rgba(255, 253, 247, 0.96);
+  border: 2rpx solid rgba(232, 202, 134, 0.75);
+  border-radius: 22rpx;
+  box-shadow: 0 10rpx 24rpx rgba(145, 101, 32, 0.08);
+  padding: 22rpx 20rpx;
+  margin-bottom: 18rpx;
+  box-sizing: border-box;
+}
+
+.advice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid rgba(232, 202, 134, 0.5);
+}
+
+.advice-title {
+  color: #4d320c;
+  font-size: 34rpx;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.advice-speak-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  padding: 0 20rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(180deg, #ffe28a 0%, #ffc94a 100%);
+  color: #603d08;
+  font-size: 25rpx;
+  font-weight: 800;
+}
+
+.advice-speak-icon {
+  font-size: 28rpx;
+}
+
+.advice-text {
+  color: #6f5428;
+  font-size: 27rpx;
+  line-height: 1.6;
+  font-weight: 800;
+}
+
+/* ========== 吃药列表 ========== */
+.med {
+  position: relative;
+  min-height: 126rpx;
+  padding: 22rpx 188rpx 22rpx 82rpx;
+  margin-bottom: 16rpx;
+  box-sizing: border-box;
+}
+
+.med-row {
+  display: flex;
+  align-items: center;
+}
+
+.med-bell {
+  position: absolute;
+  left: 12rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 68rpx;
+  height: 78rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 43rpx;
+  z-index: 15;
+}
+
+.bell-on {
+  opacity: 1;
+}
+
+.bell-off {
+  opacity: 0.35;
+}
+
+.med-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mname {
+  font-size: 34rpx;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #4d320c;
+  margin-bottom: 4rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.small {
+  font-size: 26rpx;
+  line-height: 1.35;
+  color: #8e7544;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.med-time {
+  color: #c07830;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.med-dot {
+  margin: 0 6rpx;
+  color: #bfbfbf;
+}
+
+.med-actions {
+  position: absolute;
+  right: 10rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2rpx;
+  z-index: 20;
+}
+
+.med-actions switch {
+  transform: scale(0.72);
+  transform-origin: right center;
+}
+
+.med-delete-btn {
+  width: 92rpx !important;
+  height: 54rpx !important;
+  line-height: 50rpx !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 22rpx;
+  background: #fce8e4;
+  color: #a06050;
+  font-size: 26rpx;
+  padding-top: 3px;
+  font-weight: 800;
+  text-align: center;
+  display: block;
+  flex: none !important;
+  box-sizing: border-box;
+}
+
+.med-delete-btn::after { border: none; }
+
+.add-med {
+  margin-top: 22rpx;
+  margin-bottom: 20rpx;
+  font-size: 32rpx;
+  background: #f5f2e0;
+  color: #9b9558;
+}
+
+.bottom-bless {
+  position: absolute;
+  left: 50px;
+  right: 0;
+  bottom: 70rpx;
+  text-align: center;
+  font-size: 50rpx;
+  color: #c9a36e;
+  font-weight: 800;
+  z-index: 30;
+}
+
+/* ========== 添加面板（底部弹出） ========== */
+.panel-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.panel-mask.panel-show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.add-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  z-index: 901;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-panel.panel-show {
+  transform: translateY(0);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 36rpx 20rpx;
+  border-bottom: 1rpx solid #f0efe9;
+}
+
+.panel-title {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #4d320c;
+}
+
+.panel-close {
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  font-size: 56rpx;
+  color: #b0a090;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 10;
+}
+
+.panel-close::after { border: none; }
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24rpx 36rpx 0;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 42rpx;
+  font-weight: 800;
+  color: #4d320c;
+  margin-bottom: 12rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 90rpx;
+  background: #f8f6f0;
+  border-radius: 18rpx;
+  padding: 0 24rpx;
+  font-size: 40rpx;
+  color: #4d320c;
+  box-sizing: border-box;
+}
+
+.ph {
+  color: #bfb8a8;
+}
+
+.form-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.form-input-flex {
+  flex: 1;
+  min-width: 0;
+}
+
+.voice-input-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #f5edd8;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  flex-shrink: 0;
+}
+
+.voice-input-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+}
+
+/* 按住说话大按钮 */
+.form-voice-area {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.hold-speak-btn {
+  width: 100%;
+  height: 90rpx;
+  border-radius: 45rpx;
+  background: #fffaf0;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hold-speak-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+}
+
+.hold-speak-text {
+  font-size: 36rpx;
+  color: #b8a07a;
+  font-weight: 600;
+}
+
+.hold-speak-active .hold-speak-text {
+  color: #6e460a;
+}
+
+.voice-hint {
+  font-size: 28rpx;
+  color: #bfa078;
+  text-align: center;
+}
+
+/* ========== 录音浮层 ========== */
+.record-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: rgba(28, 28, 15, 0.92);
+  padding: 48rpx 64rpx;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.record-pulse {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #ff9800;
+  animation: record-pulse-anim 1.5s infinite;
+}
+
+.record-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  text-align: center;
+}
+
+@keyframes record-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+/* 时间选择器 */
+.form-picker {
+  width: 100%;
+  height: 90rpx;
+  background: #f8f6f0;
+  border-radius: 18rpx;
+  padding: 0 24rpx;
+  font-size: 40rpx;
+  color: #4d320c;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-picker-flex {
+  flex: 1;
+  min-width: 0;
+}
+
+.picker-arrow {
+  font-size: 48rpx;
+  color: #bfb8a8;
+  font-weight: 300;
+}
+
+/* 闹钟设置行 */
+.form-alarm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffaf5;
+  border-radius: 18rpx;
+  padding: 24rpx 24rpx;
+  margin-top: 8rpx;
+}
+
+.form-alarm-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-hint {
+  display: block;
+  font-size: 32rpx;
+  color: #bfa078;
+  margin-top: 6rpx;
+}
+
+/* 面板底部按钮 */
+.panel-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 36rpx;
+  border-top: 1rpx solid #f0efe9;
+}
+
+.panel-btn {
+  flex: 1;
+  height: 90rpx;
+  line-height: 90rpx;
+  text-align: center;
+  border-radius: 22rpx;
+  font-size: 40rpx;
+  font-weight: 800;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.panel-btn::after { border: none; }
+
+.panel-btn-cancel {
+  background: #f0efe9;
+  color: #8e7544;
+}
+
+.panel-btn-confirm {
+  background: linear-gradient(180deg, #ffe8b0 0%, #ffd580 100%);
+  color: #6a4308;
+}
+
+/* ========== 全局字号适配 ========== */
+.font-global-large .mname { font-size: 40rpx; }
+.font-global-large .small { font-size: 30rpx; }
+.font-global-large .med-time { font-size: 18px; }
+.font-global-large .med-delete-btn { font-size: 28rpx; }
+.font-global-large .panel-title { font-size: 54rpx; }
+.font-global-large .panel-close { font-size: 52rpx; }
+.font-global-large .form-label { font-size: 49rpx; }
+.font-global-large .form-input { font-size: 50rpx; }
+.font-global-large .form-picker { font-size: 50rpx; }
+.font-global-large .picker-arrow { font-size: 58rpx; }
+.font-global-large .form-hint { font-size: 42rpx; }
+.font-global-large .panel-btn { font-size: 50rpx; }
+.font-global-large .advice-title { font-size: 40rpx; }
+.font-global-large .advice-speak-btn { font-size: 30rpx; }
+.font-global-large .advice-text { font-size: 32rpx; }
+.font-global-large .bottom-bless { font-size: 36rpx; }
+.font-global-large .health-section-title { font-size: 40rpx; }
+
+.font-global-xlarge .mname { font-size: 46rpx; }
+.font-global-xlarge .small { font-size: 34rpx; }
+.font-global-xlarge .med-time { font-size: 20px; }
+.font-global-xlarge .med-delete-btn { font-size: 30rpx; }
+.font-global-xlarge .panel-title { font-size: 64rpx; }
+.font-global-xlarge .panel-close { font-size: 62rpx; }
+.font-global-xlarge .form-label { font-size: 59rpx; }
+.font-global-xlarge .form-input { font-size: 60rpx; }
+.font-global-xlarge .form-picker { font-size: 60rpx; }
+.font-global-xlarge .picker-arrow { font-size: 68rpx; }
+.font-global-xlarge .form-hint { font-size: 52rpx; }
+.font-global-xlarge .panel-btn { font-size: 60rpx; }
+.font-global-xlarge .advice-title { font-size: 46rpx; }
+.font-global-xlarge .advice-speak-btn { font-size: 36rpx; }
+.font-global-xlarge .advice-text { font-size: 38rpx; }
+.font-global-xlarge .bottom-bless { font-size: 42rpx; }
+.font-global-xlarge .health-section-title { font-size: 46rpx; }

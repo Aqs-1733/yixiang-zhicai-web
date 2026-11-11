@@ -1,0 +1,55 @@
+<view class="family-page {{globalFontPageClass}}">
+  <image class="family-bg" src="/assets/ui/home_bg_top.jpg" mode="widthFix"></image>
+  <view class="family-back round-back-btn" bindtap="back">‹</view>
+
+  <scroll-view class="family-content" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <view class="{{globalFontPageClass}}">
+    <view class="family-hero-space"></view>
+    <view class="family-title">家庭协同</view>
+    <view class="family-subtitle">家庭账本、留言、群聊和授权信息</view>
+
+    <view class="family-quick-grid">
+      <button class="quick-card green" hover-class="none" bindtap="goFamilyLedger"><text>家庭账本</text><view>共同记录，按成员查看</view></button>
+      <button class="quick-card orange" hover-class="none" bindtap="goMessages"><text>家庭留言</text><view>给已绑定家人留言</view></button>
+      <button class="quick-card cream" hover-class="none" bindtap="goGroupChat"><text>家庭群聊</text><view>家人一起交流，可问小享</view><view wx:if="{{groupUnreadCount > 0}}" class="family-card-badge">{{groupUnreadCount > 99 ? '99+' : groupUnreadCount}}</view></button>
+      <button class="quick-card soft-green" hover-class="none" bindtap="goWeekly"><text>家庭周报</text><view>根据真实账本生成摘要</view></button>
+    </view>
+
+    <view wx:if="{{primaryMember && !isElder}}" class="child-access-panel">
+      <view class="access-title">长辈已开放功能</view>
+      <view class="access-grid">
+        <button class="access-item ledger {{primaryMember.canViewLedger ? 'enabled' : 'disabled'}}" bindtap="goFamilyLedger"><text>日常收支</text><view>{{primaryMember.canViewLedger ? '可查看' : '未开放'}}</view></button>
+        <button class="access-item positions {{primaryMember.canViewPositions ? 'enabled' : 'disabled'}}" bindtap="goPositions"><text>理财记录</text><view>{{primaryMember.canViewPositions ? '可查看' : '未开放'}}</view></button>
+        <button class="access-item risk {{primaryMember.canViewAlert ? 'enabled' : 'disabled'}}" bindtap="goAlerts"><text>风险提示</text><view>{{primaryMember.canViewAlert ? '可查看' : '未开放'}}</view></button>
+        <button class="access-item message {{primaryMember.canViewMessages ? 'enabled' : 'disabled'}}" bindtap="goMessages"><text>家庭留言</text><view>{{primaryMember.canViewMessages ? '可使用' : '未开放'}}</view></button>
+        <button class="access-item chat {{primaryMember.canViewGroupChat ? 'enabled' : 'disabled'}}" bindtap="goGroupChat"><text>家庭群聊</text><view>{{primaryMember.canViewGroupChat ? '可使用' : '未开放'}}</view></button>
+        <button class="access-item health {{primaryMember.canViewHealth ? 'enabled' : 'disabled'}}" bindtap="goHealth"><text>健康信息</text><view>{{primaryMember.canViewHealth ? '可查看' : '未开放'}}</view></button>
+        <button class="access-item location {{primaryMember.canViewLocation ? 'enabled' : 'disabled'}}" bindtap="goLocation"><text>长辈位置</text><view>{{primaryMember.canViewLocation ? '可查看' : '未开放'}}</view></button>
+      </view>
+    </view>
+
+    <view class="family-analysis-row">
+      <view class="family-card analysis-card warm" bindtap="goAlerts">
+        <view class="card-title">风险提醒</view>
+        <view class="analysis-text">{{aiLoading ? '正在分析家庭真实记录…' : alertText}}</view>
+      </view>
+      <view class="family-card analysis-card green" bindtap="goWeekly">
+        <view class="card-title">家庭金融周报</view>
+        <view class="analysis-text">{{aiLoading ? '正在整理本周账本…' : weeklyText}}</view>
+      </view>
+    </view>
+    <view class="family-bottom-space"></view>
+    </view>
+  </scroll-view>
+
+  <view class="family-bottom-nav">
+    <view class="family-nav-item" bindtap="goHome"><view class="family-nav-icon">🌳</view><text>首页</text></view>
+    <view class="family-nav-item" bindtap="goAssistant"><view class="family-nav-icon">🤖</view><text>问小享</text></view>
+    <view class="family-nav-item active"><view class="family-nav-icon">👪</view><text>家庭协同</text></view>
+    <view class="family-nav-item" bindtap="goProfile"><view class="family-nav-icon">👀</view><text>我的</text></view>
+  </view>
+</view>
+
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{aiLoading}}" overlay-text="请说出家庭相关问题…" bind:result="onVoiceResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />
+<family-message-modal visible="{{showMessageModal}}" peer-id="{{messagePeerId}}" bind:close="closeMessageModal"></family-message-modal>
+<family-care-modal visible="{{showCareModal}}" type="{{careType}}" elder-id="{{careElderId}}" bind:close="closeCareModal"></family-care-modal>

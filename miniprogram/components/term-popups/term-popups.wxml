@@ -1,0 +1,72 @@
+<view wx:if="{{localPopups.length}}" class="term-popup-layer {{globalFontPageClass}}">
+  <view
+    wx:for="{{localPopups}}"
+    wx:key="id"
+    class="term-popup-card"
+    style="top: {{item.top}}rpx; left: {{item.left}}rpx;"
+  >
+    <view
+      class="term-popup-head"
+      data-id="{{item.id}}"
+      catchtouchstart="dragStart"
+      catchtouchmove="dragMove"
+      catchtouchend="dragEnd"
+      catchtouchcancel="dragEnd"
+    >
+      <view class="term-popup-title">{{item.term}}</view>
+    </view>
+
+    <view class="term-popup-content">{{item.explanation}}</view>
+    <view wx:if="{{item.risk_tip}}" class="term-popup-tip">提醒：{{item.risk_tip}}</view>
+    <view wx:if="{{item.loading}}" class="term-popup-loading">解释中...</view>
+
+    <button
+      wx:if="{{!item.loading}}"
+      class="term-popup-ask"
+      hover-class="none"
+      data-id="{{item.id}}"
+      data-term="{{item.term}}"
+      catchtap="ask"
+    >{{item.chatOpen ? '继续问' : '问小享'}}</button>
+
+    <view wx:if="{{item.chatOpen}}" class="term-popup-chat">
+      <scroll-view class="term-chat-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view
+          wx:for="{{item.chatMessages}}"
+          wx:for-item="msg"
+          wx:key="id"
+          class="term-chat-msg {{msg.role === 'user' ? 'user' : 'assistant'}}"
+        >
+          <view class="term-chat-name">{{msg.role === 'user' ? '我' : '小享'}}</view>
+          <view class="term-chat-bubble">{{msg.text}}</view>
+        </view>
+      </scroll-view>
+      <view class="term-chat-input-row">
+        <input
+          class="term-chat-input"
+          value="{{item.chatInput}}"
+          data-id="{{item.id}}"
+          placeholder="继续问这个词..."
+          placeholder-class="term-chat-ph"
+          confirm-type="send"
+          bindinput="onChatInput"
+          bindconfirm="sendChat"
+          adjust-position="{{false}}"
+        />
+        <button
+          class="term-chat-send"
+          hover-class="none"
+          data-id="{{item.id}}"
+          catchtap="sendChat"
+        >发送</button>
+      </view>
+    </view>
+
+    <button
+      class="term-popup-close"
+      hover-class="none"
+      data-id="{{item.id}}"
+      catchtap="close"
+    >×</button>
+  </view>
+</view>

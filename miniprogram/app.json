@@ -1,0 +1,125 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/register/register",
+    "pages/security-question/security-question",
+    "pages/forgot-password/forgot-password",
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundTextStyle": "light",
+    "backgroundColor": "#fff8ec"
+  },
+  "usingComponents": {
+    "term-popups": "/components/term-popups/term-popups",
+    "voice-input": "/components/voice-input/voice-input",
+    "child-bottom-nav": "/components/child-bottom-nav/child-bottom-nav",
+    "family-message-modal": "/components/family-message-modal/family-message-modal",
+    "family-care-modal": "/components/family-care-modal/family-care-modal"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于天气、附近服务，并向家人显示最近定位"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "subpackages": [
+    {
+      "root": "pages/news-detail",
+      "pages": [
+        "news-detail"
+      ]
+    },
+    {
+      "root": "pages/assistant",
+      "pages": [
+        "assistant"
+      ]
+    },
+    {
+      "root": "pages/finance",
+      "pages": [
+        "finance"
+      ]
+    },
+    {
+      "root": "pages/profile",
+      "pages": [
+        "profile"
+      ]
+    },
+    {
+      "root": "pages/questionnaire",
+      "pages": [
+        "questionnaire"
+      ]
+    },
+    {
+      "root": "pages/family",
+      "pages": [
+        "family"
+      ]
+    },
+    {
+      "root": "pages/family-messages",
+      "pages": [
+        "family-messages"
+      ]
+    },
+    {
+      "root": "pages/family-group-chat",
+      "pages": [
+        "family-group-chat"
+      ]
+    },
+    {
+      "root": "pages/health",
+      "pages": [
+        "health"
+      ]
+    },
+    {
+      "root": "pages/service",
+      "pages": [
+        "service"
+      ]
+    },
+    {
+      "root": "pages/nearby",
+      "pages": [
+        "nearby"
+      ]
+    },
+    {
+      "root": "pages/money",
+      "pages": [
+        "money"
+      ]
+    },
+    {
+      "root": "pages/child",
+      "pages": [
+        "index/index",
+        "bind/bind",
+        "elder-list/elder-list",
+        "elder-dashboard/elder-dashboard",
+        "alerts/alerts",
+        "weekly/weekly",
+        "ledger/ledger",
+        "positions/positions",
+        "permissions/permissions",
+        "health/health",
+        "location/location",
+        "assist/assist",
+        "profile/profile"
+      ]
+    }
+  ],
+  "lazyCodeLoading": "requiredComponents"
+}

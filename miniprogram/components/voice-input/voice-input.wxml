@@ -1,0 +1,31 @@
+<!-- 语音输入组件：支持 bar 底部栏模式 和 fab 悬浮按钮模式 -->
+
+<!-- 底部输入栏模式：类似 assistant 页面的大按钮 -->
+<view wx:if="{{type === 'bar'}}" class="voice-bar {{recording ? 'voice-bar-active' : ''}} {{globalFontPageClass}}">
+  <view
+    class="hold-speak-btn {{recording ? 'hold-speak-active' : ''}} {{disabled ? 'voice-fab-disabled' : ''}}"
+    bindtouchstart="startHoldSpeak"
+    bindtouchend="stopHoldSpeak"
+    bindtouchcancel="stopHoldSpeak"
+    catchtouchmove="stopTouchMove"
+  >
+    <text class="hold-speak-text">{{recording ? '松开结束 正在听...' : btnText}}</text>
+  </view>
+</view>
+
+<!-- 悬浮按钮模式：右下角圆形浮钮 -->
+<view wx:elif="{{type === 'fab' && visible}}" class="voice-fab-wrap {{globalFontPageClass}}">
+  <!-- 录音浮层：阻止滚动穿透 -->
+  <view wx:if="{{recording}}" class="record-overlay" catchtouchmove="stopTouchMove">
+    <view class="record-pulse"></view>
+    <text class="record-text">{{overlayText}}（{{recordingSeconds}}秒/{{recordingMax}}秒）再点一次结束</text>
+  </view>
+  <!-- 悬浮按钮：点击切换 开始/结束 录音 -->
+  <view
+    class="voice-fab {{recording ? 'voice-fab-recording' : ''}} {{disabled ? 'voice-fab-disabled' : ''}}"
+    catchtap="tapSpeak"
+    catchtouchmove="stopTouchMove"
+  >
+    <text class="voice-fab-icon">{{recording ? '松' : '🎤'}}</text>
+  </view>
+</view>

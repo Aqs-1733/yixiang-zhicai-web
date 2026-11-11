@@ -1,0 +1,71 @@
+# Configuration and credentials: never push or commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*secret*.txt
+*密钥*.txt
+API.docx
+**/project.private.config.json
+
+# Runtime data and potential personal information
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+backend/app/data/
+*.bak
+*.log
+logs/
+
+# Python and JS build artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+build/
+
+# Editors and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Source archives or large raw packages should remain local
+*.zip
+*.7z
+*.rar
+
+# Local acceptance and generated media
+*.sqlite*
+.cache/
+backend/data/
+tests/local_acceptance/*.png
+tests/local_acceptance/*.webm
+tests/local_acceptance/*fixtures*.json
+tests/local_acceptance/*private*
+*.p8
+*.jks
+*.keystore
+*.der
+*.kdbx
+
+# Retain legacy artifacts locally, but keep previous run logs/screenshots out of Git
+tests/atelier_v6/
+tests/API状态.json
+tests/本轮测试结果.json
+API密钥需求.md
+
+*.db-journal
+tests/local_acceptance/*.json

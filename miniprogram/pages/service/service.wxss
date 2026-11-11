@@ -1,0 +1,500 @@
+/* 常用号码页面 —— 优化版：支持语音输入和语音播报 */
+
+/* ========== 页面基础 ========== */
+.page-bg {
+  width: auto;
+  height: 100vh;
+}
+.service-layer {
+  min-height: 1560rpx;
+}
+
+/* ========== 返回按钮 ========== */
+.back-btn {
+  position: absolute;
+  left: 30rpx;
+  top: 58rpx;
+  width: 94rpx;
+  height: 94rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2rpx solid #ead79f;
+  color: #6a4308;
+  font-size: 44rpx;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  box-shadow: 0 4rpx 12rpx rgba(145, 101, 32, 0.12);
+}
+
+/* ========== 标题 ========== */
+.service-title {
+  position: absolute;
+  left: 120rpx;
+  top: 60rpx;
+  font-size: 45rpx;
+  font-weight: 900;
+  color: #4d320c;
+  z-index: 50;
+}
+
+/* ========== 电话列表区域 ========== */
+.phone-list {
+  left: 34rpx;
+  top: 560rpx;
+  width: 682rpx;
+  height: 880rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+}
+
+.nearby-entry-card {
+  padding: 22rpx;
+  margin-bottom: 18rpx;
+  border-radius: 26rpx;
+  background: rgba(255, 253, 247, 0.96);
+  border: 2rpx solid rgba(232, 202, 134, 0.78);
+  box-sizing: border-box;
+}
+
+.nearby-entry-title {
+  color: #4d320c;
+  font-size: 34rpx;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.nearby-entry-desc {
+  margin-top: 8rpx;
+  color: #8e7544;
+  font-size: 26rpx;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.nearby-entry-card button {
+  height: 66rpx;
+  line-height: 66rpx;
+  margin: 16rpx 0 0;
+  padding: 0;
+  border-radius: 33rpx;
+  background: linear-gradient(180deg, #ffe28a 0%, #ffc94a 100%);
+  color: #603d08;
+  font-size: 27rpx;
+  font-weight: 900;
+}
+
+.nearby-entry-card button::after {
+  border: none;
+}
+
+/* 卡片 */
+.phone-item {
+  position: relative;
+  padding: 20rpx 16rpx 20rpx 22rpx;
+  margin-bottom: 16rpx;
+  box-sizing: border-box;
+}
+
+.phone-row {
+  display: flex;
+  align-items: center;
+}
+
+/* 联系人信息 — 可点击语音播报 */
+.phone-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-name {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #4d320c;
+  margin-bottom: 4rpx;
+}
+
+.phone-number {
+  font-size: 30rpx;
+  color: #8e7544;
+}
+
+/* 操作按钮区 */
+.phone-actions {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 语音播报按钮 */
+.phone-speak-btn {
+  width: 80rpx !important;
+  height: 80rpx !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50%;
+  background: rgba(255, 248, 236, 0.95);
+  border: 2rpx solid #ead79f;
+  font-size:35rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none !important;
+  box-sizing: border-box;
+}
+
+.phone-speak-btn::after { border: none; }
+
+/* 拨打按钮 */
+.phone-call-btn {
+  width: 110rpx !important;
+  height: 60rpx !important;
+  line-height: 54rpx !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 27rpx;
+  background: #ffc43b;
+  color: #5a3a0c;
+  font-size: 32rpx;
+  font-weight: 900;
+  text-align: center;
+  display: block;
+  flex: none !important;
+  box-sizing: border-box;
+}
+
+.phone-call-btn::after { border: none; }
+
+/* 删除按钮 */
+.phone-delete-btn {
+  width: 100rpx !important;
+  height: 60rpx !important;
+  line-height: 54rpx !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 27rpx;
+  background: rgba(244, 128, 96, 0.9);
+  color: #572a17;
+  font-size: 32rpx;
+  font-weight: 800;
+  text-align: center;
+  display: block;
+  flex: none !important;
+  box-sizing: border-box;
+}
+
+.phone-delete-btn::after { border: none; }
+
+/* 添加按钮 */
+.add-phone {
+  width: 280rpx;
+  height: 78rpx;
+  line-height: 68rpx;
+  margin: 16rpx auto 20rpx;
+  padding: 0;
+  border-radius: 34rpx;
+  background: rgba(239, 240, 213, 0.92);
+  color: #8a8a40;
+  font-size: 42rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+.add-phone::after { border: none; }
+
+/* 底部提示 */
+.service-tip {
+  left: 200rpx;
+  top: 1300rpx;
+  width: 400rpx;
+  font-size: 28rpx;
+  line-height: 1.5;
+  color: #8e7544;
+  text-align: center;
+}
+
+/* ========== 添加面板（底部弹出） ========== */
+.panel-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.panel-mask.panel-show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.add-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  z-index: 901;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-panel.panel-show {
+  transform: translateY(0);
+}
+
+/* 面板头部 */
+.panel-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 36rpx 20rpx;
+  border-bottom: 1rpx solid #fefae1;
+}
+
+.panel-title {
+  font-size: 44rpx;
+  font-weight: 900;
+  left:10px;
+  color: #735a38;
+}
+
+.panel-close {
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  font-size: 56rpx;
+  color: #b0a090;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 10;
+}
+
+.panel-close::after { border: none; }
+
+/* 面板内容 */
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24rpx 36rpx 0;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 28rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 39rpx;
+  font-weight: 800;
+  color: #4d320c;
+  margin-bottom: 12rpx;
+}
+
+/* 输入行：输入框 + 语音按钮 */
+.form-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.form-input {
+  height: 90rpx;
+  background: #f8f6f0;
+  border-radius: 18rpx;
+  padding: 0 24rpx;
+  font-size: 40rpx;
+  color: #4d320c;
+  box-sizing: border-box;
+}
+
+.form-input-flex {
+  flex: 1;
+  min-width: 0;
+}
+
+.ph {
+  color: #bfb8a8;
+}
+
+/* 单字段语音按钮 */
+.voice-input-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #f5edd8;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  flex-shrink: 0;
+}
+
+.voice-input-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+}
+
+/* 按住说话大按钮区域 */
+.form-voice-area {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.hold-speak-btn {
+  width: 100%;
+  height: 90rpx;
+  border-radius: 45rpx;
+  background: #fffaf0;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hold-speak-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+}
+
+.hold-speak-text {
+  font-size: 36rpx;
+  color: #b8a07a;
+  font-weight: 600;
+}
+
+.hold-speak-active .hold-speak-text {
+  color: #6e460a;
+}
+
+.voice-hint {
+  font-size: 28rpx;
+  color: #bfa078;
+  text-align: center;
+}
+
+/* 面板底部按钮 */
+.panel-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 36rpx;
+  border-top: 1rpx solid #f0efe9;
+}
+
+.panel-btn {
+  flex: 1;
+  height: 90rpx;
+  line-height: 90rpx;
+  text-align: center;
+  border-radius: 22rpx;
+  font-size: 40rpx;
+  font-weight: 800;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.panel-btn::after { border: none; }
+
+.panel-btn-cancel {
+  background: #f0efe9;
+  color: #8e7544;
+}
+
+.panel-btn-confirm {
+  background: linear-gradient(135deg, #ff914d, #ff6b35);
+  color: #fff;
+}
+
+/* ========== 录音浮层 ========== */
+.record-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: rgba(28, 28, 15, 0.92);
+  padding: 48rpx 64rpx;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.record-pulse {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #ff9800;
+  animation: record-pulse-anim 1.5s infinite;
+}
+
+.record-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  text-align: center;
+}
+
+@keyframes record-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+/* ========== 全局字号适配 ========== */
+.font-global-large .service-title { font-size: 55rpx; }
+.font-global-large .phone-name { font-size: 50rpx; }
+.font-global-large .phone-number { font-size: 38rpx; }
+.font-global-large .phone-call-btn { font-size: 36rpx; }
+.font-global-large .phone-delete-btn { font-size: 36rpx; }
+.font-global-large .add-phone { font-size: 42rpx; }
+.font-global-large .panel-title { font-size: 54rpx; }
+.font-global-large .panel-close { font-size: 52rpx; }
+.font-global-large .form-label { font-size: 49rpx; }
+.font-global-large .form-input { font-size: 50rpx; }
+.font-global-large .hold-speak-text { font-size: 44rpx; }
+.font-global-large .voice-hint { font-size: 36rpx; }
+.font-global-large .panel-btn { font-size: 50rpx; }
+.font-global-large .service-tip { font-size: 36rpx; }
+.font-global-large .back-btn { font-size: 42rpx; }
+.font-global-large .phone-speak-btn { font-size: 32rpx; }
+.font-global-large .record-text { font-size: 40rpx; }
+
+.font-global-xlarge .service-title { font-size: 65rpx; }
+.font-global-xlarge .phone-name { font-size: 60rpx; }
+.font-global-xlarge .phone-number { font-size: 46rpx; }
+.font-global-xlarge .phone-call-btn { font-size: 44rpx; }
+.font-global-xlarge .phone-delete-btn { font-size: 44rpx; }
+.font-global-xlarge .add-phone { font-size: 52rpx; }
+.font-global-xlarge .panel-title { font-size: 64rpx; }
+.font-global-xlarge .panel-close { font-size: 62rpx; }
+.font-global-xlarge .form-label { font-size: 59rpx; }
+.font-global-xlarge .form-input { font-size: 60rpx; }
+.font-global-xlarge .hold-speak-text { font-size: 52rpx; }
+.font-global-xlarge .voice-hint { font-size: 44rpx; }
+.font-global-xlarge .panel-btn { font-size: 60rpx; }
+.font-global-xlarge .service-tip { font-size: 44rpx; }
+.font-global-xlarge .back-btn { font-size: 50rpx; }
+.font-global-xlarge .phone-speak-btn { font-size: 38rpx; }
+.font-global-xlarge .record-text { font-size: 48rpx; }

@@ -1,0 +1,290 @@
+.questionnaire-page {
+  position: relative;
+  min-height: 100vh;
+  background: #fff8ec;
+  padding-bottom: 260rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.page-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 750rpx;
+  height: auto;
+  display: block;
+  z-index: 1;
+}
+
+/* 左上角背景圆形返回按钮透明热区 */
+.back-hot {
+  position: fixed;
+  left: 34rpx;
+  top: 56rpx;
+  width: 72rpx;
+  height: 72rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: rgba(255,253,247,.98);
+  border: 2rpx solid #ead79f;
+  color: #6a4308;
+  font-size: 52rpx;
+  font-weight: 900;
+  line-height: 66rpx;
+  box-shadow: 0 8rpx 20rpx rgba(145,101,32,.16);
+  z-index: 9999;
+}
+
+.back-hot::after {
+  border: none;
+}
+
+/* 主内容区域：不加大白块背景 */
+.q-card {
+  position: relative;
+  z-index: 20;
+  width: 702rpx;
+  margin: 300rpx auto 0;
+  box-sizing: border-box;
+  padding: 0 8rpx 24rpx;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* 题目区域 */
+.q-head {
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+/* 背景里原来有橘子，这里只留位置 */
+.q-left-space {
+  display: none;
+}
+
+.q-head-right {
+  min-width: 0;
+  padding: 26rpx 28rpx 24rpx;
+  box-sizing: border-box;
+  border-radius: 34rpx;
+  background: rgba(255, 255, 255, 0.94);
+  border: 2rpx solid rgba(235, 214, 168, 0.78);
+  box-shadow: 0 14rpx 30rpx rgba(176, 139, 63, 0.1);
+}
+
+.q-no {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52rpx;
+  padding: 0 22rpx;
+  border-radius: 24rpx;
+  background: #f7e39a;
+  color: #8b6215;
+  font-size: 28rpx;
+  font-weight: 900;
+  margin-bottom: 16rpx;
+}
+
+.q-title {
+  position: static;
+  font-size: 46rpx;
+  line-height: 1.28;
+  font-weight: 900;
+  color: #5a3a0c;
+  margin-bottom: 14rpx;
+  word-break: break-word;
+}
+
+.q-desc {
+  position: static;
+  font-size: 32rpx;
+  line-height: 1.62;
+  color: #a98a56;
+  margin-bottom: 18rpx;
+  word-break: break-word;
+}
+
+.term-row {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-bottom: 2rpx;
+}
+
+.term {
+  min-height: 52rpx;
+  line-height: 52rpx;
+  padding: 0 24rpx;
+  border-radius: 26rpx;
+  background: #fff2c8;
+  color: #8d6a1f;
+  font-size: 28rpx;
+  font-weight: 800;
+  box-shadow: 0 6rpx 12rpx rgba(212, 180, 102, 0.12);
+  text-decoration-line: underline;
+  text-decoration-style: double;
+  text-decoration-color: #c48624;
+}
+
+.option-group {
+  margin-top: 0;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 122rpx;
+  padding: 22rpx 24rpx;
+  margin-bottom: 18rpx;
+  border-radius: 30rpx;
+  border: 2rpx solid #edd9af;
+  background: rgba(255, 255, 255, 0.96);
+  box-sizing: border-box;
+  box-shadow: 0 10rpx 22rpx rgba(177, 147, 88, 0.08);
+}
+
+.option.active {
+  border-color: #e5c25d;
+  background: linear-gradient(180deg, #fffaf0 0%, #fff4dd 100%);
+  box-shadow: 0 14rpx 30rpx rgba(216, 177, 82, 0.16);
+}
+
+.option-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.option-letter {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: #f6de8f;
+  color: #7d5a16;
+  font-size: 38rpx;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: inset 0 -6rpx 12rpx rgba(213, 169, 59, 0.18);
+}
+
+.option-text {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.option-label {
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #63400d;
+  line-height: 1.42;
+}
+
+.option radio {
+  transform: scale(1.12);
+  transform-origin: center;
+}
+
+/* 三个功能按钮横排 */
+.tool-row {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 138rpx;
+  z-index: 40;
+  display: flex;
+  gap: 16rpx;
+}
+
+.tool-btn {
+  flex: 1;
+  height: 74rpx;
+  line-height: 74rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 37rpx;
+  background: rgba(255, 252, 245, 0.98);
+  border: 2rpx solid #ebd7a7;
+  color: #7a5a1a;
+  font-size: 34rpx;
+  font-weight: 800;
+  box-shadow: 0 8rpx 18rpx rgba(177, 147, 88, 0.1);
+}
+
+.tool-btn::after {
+  border: none;
+}
+
+/* 上一题下一题 */
+.footer-bar {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 30rpx;
+  z-index: 40;
+  display: flex;
+  gap: 20rpx;
+}
+
+.footer-btn {
+  flex: 1;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 46rpx;
+  padding: 0;
+  margin: 0;
+  font-size: 32rpx;
+  font-weight: 900;
+  box-shadow: 0 12rpx 22rpx rgba(177, 147, 88, 0.12);
+}
+
+.footer-btn::after {
+  border: none;
+}
+
+.prev-btn {
+  background: #fff;
+  border: 2rpx solid #ead7a7;
+  color: #7a5a1a;
+}
+
+.next-btn {
+  background: linear-gradient(180deg, #ffd86c, #f4c64c);
+  color: #4d320c;
+  font-weight: 900;
+}
+
+.disabled-btn {
+  opacity: 0.48;
+}
+
+/* 大字 / 超大字适配 */
+.font-global-large .q-no { font-size: 38rpx !important; }
+.font-global-large .q-title { font-size: 44rpx !important; }
+.font-global-large .q-desc { font-size: 36rpx !important; }
+.font-global-large .option { min-height: 100rpx; padding: 22rpx; font-size: 34rpx !important; }
+.font-global-large .option-letter { font-size: 38rpx !important; width: 60rpx; height: 60rpx; line-height: 60rpx; }
+.font-global-large .option-label { font-size: 34rpx !important; }
+.font-global-large .footer-btn { height: 100rpx; line-height: 100rpx; font-size: 36rpx !important; }
+.font-global-large .term { font-size: 30rpx !important; padding: 10rpx 22rpx; }
+.font-global-large .tool-btn { font-size: 36rpx !important; }
+
+.font-global-xlarge .q-no { font-size: 44rpx !important; }
+.font-global-xlarge .q-title { font-size: 52rpx !important; }
+.font-global-xlarge .q-desc { font-size: 42rpx !important; }
+.font-global-xlarge .option { min-height: 112rpx; padding: 26rpx; font-size: 40rpx !important; }
+.font-global-xlarge .option-letter { font-size: 44rpx !important; width: 68rpx; height: 68rpx; line-height: 68rpx; }
+.font-global-xlarge .option-label { font-size: 40rpx !important; }
+.font-global-xlarge .footer-btn { height: 108rpx; line-height: 108rpx; font-size: 42rpx !important; }
+.font-global-xlarge .term { font-size: 34rpx !important; padding: 12rpx 24rpx; }
+.font-global-xlarge .tool-btn { font-size: 42rpx !important; }

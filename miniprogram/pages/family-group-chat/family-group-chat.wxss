@@ -1,0 +1,540 @@
+.group-page {
+  position: relative;
+  width: 750rpx;
+  height: 100vh;
+  overflow: hidden;
+  background: #fff8ec;
+}
+
+/* 背景图只做背景，不挡按钮 */
+.group-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 750rpx;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 整个内容区域，比之前上移 -- flex列布局固定聊天卡片上边界 */
+.group-layer {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
+  padding: 170rpx 24rpx 176rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部区域 */
+.group-head {
+  position: relative;
+  min-height: 136rpx;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 左上角圆形返回键 */
+.back-btn {
+  position: fixed;
+  left: 24rpx;
+  top: 72rpx;
+  z-index: 9999;
+
+  width: 76rpx;
+  height: 76rpx;
+  min-width: 76rpx;
+  max-width: 76rpx;
+  min-height: 76rpx;
+  max-height: 76rpx;
+
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+
+  background: rgba(255, 253, 247, 0.98);
+  border: 2rpx solid #ead79f;
+  color: #6a4308;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 54rpx;
+  font-weight: 900;
+  line-height: 1;
+  box-sizing: border-box;
+  box-shadow: 0 8rpx 20rpx rgba(145, 101, 32, 0.14);
+
+  pointer-events: auto;
+}
+
+/* 记录和 @小享 按钮 */
+.top-tool-row {
+  display: flex;
+  gap: 18rpx;
+  margin: 20rpx 0 18rpx;
+}
+
+.family-chat-picker-wrap { flex: none; }
+.family-chat-picker {
+  margin: -22rpx 0 12rpx;
+  padding: 16rpx 22rpx;
+  border-radius: 32rpx;
+  background: rgba(255, 253, 247, 0.96);
+  border: 2rpx solid #ead7ae;
+  color: #6a4308;
+  font-size: 33rpx;
+  font-weight: 900;
+}
+
+.top-tool-btn {
+  flex: 1;
+  height: 78rpx;
+  line-height: 78rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 39rpx;
+  border: 2rpx solid #ead7ae;
+  color: #5d3a08;
+  font-size: 35rpx;
+  font-weight: 900;
+  box-sizing: border-box;
+}
+
+.history-btn {
+  background: linear-gradient(180deg, #ffe28a 0%, #ffc94a 100%);
+  border-color: rgba(255, 185, 45, 0.66);
+}
+
+.ask-btn {
+  background: linear-gradient(135deg, #eff9e8 0%, #d2edc4 100%);
+  border-color: #b8d99f;
+  color: #456234;
+}
+
+.history-btn::after,
+.ask-btn::after,
+.hold-speak-btn::after {
+  border: none;
+}
+
+.title-wrap {
+  width: 100%;
+  box-sizing: border-box;
+
+  /* 只移动"家庭群聊"位置 */
+  transform: translateY(-50rpx);
+
+  /* 靠左，但避开左上角返回键 */
+  padding-left: 76rpx;
+  padding-right: 280rpx;
+}
+
+.group-title {
+  font-size: 51rpx;
+  line-height: 1.2;
+  color: #4d320c;
+  font-weight: 900;
+
+  /* 改成靠左 */
+  text-align: left;
+}
+
+/* 聊天列表 -- 固定高度卡片，不撑满屏幕，下边界加高100px(200rpx) */
+.group-list {
+  height: calc(100vh - 660rpx);
+  margin: 0 12rpx 0;
+  padding: 24rpx 20rpx 24rpx;
+  box-sizing: border-box;
+  border-radius: 28rpx;
+  background: transparent;
+}
+
+.empty-card {
+  padding: 28rpx 24rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 253, 247, 0.96);
+  border: 2rpx solid rgba(232, 202, 134, 0.72);
+  color: #8d7448;
+  font-size: 39rpx;
+  line-height: 1.55;
+  font-weight: 800;
+}
+
+.chat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  margin-bottom: 20rpx;
+}
+
+.chat-row.mine {
+  justify-content: flex-end;
+}
+
+.chat-avatar {
+  flex-shrink: 0;
+  width: 62rpx;
+  height: 62rpx;
+  line-height: 62rpx;
+  border-radius: 31rpx;
+  background: #fff1c2;
+  color: #6a4308;
+  text-align: center;
+  font-size: 27rpx;
+  font-weight: 900;
+  border: 2rpx solid rgba(232, 202, 134, 0.78);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-avatar-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.assistant-avatar {
+  background: #ffe28a;
+}
+
+.chat-main {
+  max-width: 548rpx;
+}
+
+.mine .chat-main {
+  align-items: flex-end;
+}
+
+.chat-bubble {
+  padding: 20rpx 22rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 253, 247, 0.98);
+  border: 2rpx solid rgba(232, 202, 134, 0.72);
+  color: #4d320c;
+  font-size: 46rpx;
+  line-height: 1.55;
+  font-weight: 800;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.mine .chat-bubble {
+  background: #fff1c2;
+  border-color: #ffd56b;
+}
+
+.assistant .chat-bubble {
+  background: #fff7e5;
+}
+
+.image-bubble {
+  padding: 8rpx;
+}
+
+.chat-image {
+  width: 260rpx;
+  height: 180rpx;
+  border-radius: 18rpx;
+  display: block;
+  background: #fff8ec;
+}
+.term-inline-group {
+  text-decoration-line: underline;
+  text-decoration-style: double;
+  text-decoration-thickness: 4rpx;
+  text-underline-offset: 7rpx;
+  text-decoration-color: #c87d1e;
+  font-weight: 900;
+}
+
+/* 底部输入栏 -- 距离导航栏/安全区底边 15px(30rpx) */
+.group-input-bar {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(30rpx + env(safe-area-inset-bottom));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  height: 98rpx;
+  padding: 10rpx 14rpx;
+  border-radius: 50rpx;
+  background: rgba(255, 253, 247, 0.98);
+  border: 2rpx solid #ead79f;
+  box-shadow: 0 14rpx 32rpx rgba(145, 101, 32, 0.12);
+  box-sizing: border-box;
+}
+
+.mode-switch-btn {
+  flex-shrink: 0;
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  background: #f5edd8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(177, 123, 28, 0.08);
+}
+
+.image-mode-btn {
+  background: #fff4d8;
+}
+
+.mode-switch-icon {
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.hold-speak-btn {
+  flex: 1;
+  min-width: 0;
+  height: 70rpx;
+  border-radius: 35rpx;
+  background: #ffffff;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 10rpx rgba(177, 123, 28, 0.06);
+}
+
+.hold-speak-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+  box-shadow: 0 4rpx 16rpx rgba(200, 140, 30, 0.2);
+}
+
+.hold-speak-text {
+  font-size: 56rpx;
+  color: #d7b97b;
+  font-weight: 600;
+}
+
+.hold-speak-active .hold-speak-text {
+  color: #6e460a;
+}
+
+.input-box-v2 {
+  flex: 1;
+  min-width: 0;
+  height: 70rpx;
+  border-radius: 35rpx;
+  background: #fffaf0;
+  border: 2rpx solid #ead7ae;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.ask-input-v2 {
+  width: 100%;
+  height: 66rpx;
+  line-height: 66rpx;
+  padding: 0 64rpx 0 24rpx;
+  box-sizing: border-box;
+  font-size: 60rpx;
+  color: #69430d;
+  background: transparent;
+  font-weight: 800;
+}
+
+.clear-btn-v2 {
+  position: absolute;
+  right: 18rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 40rpx;
+  border-radius: 50%;
+  background: #efe5cf;
+  color: #8c6b38;
+  font-size: 34rpx;
+  text-align: center;
+  font-weight: 900;
+}
+
+.send-btn-v2 {
+  flex-shrink: 0;
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(177, 123, 28, 0.15);
+}
+
+.send-icon-v2 {
+  font-size: 32rpx;
+  line-height: 1;
+  color: #6e460a;
+  font-weight: 900;
+}
+
+.group-ph {
+  color: #b7a077;
+}
+
+/* 历史记录弹窗 */
+.history-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 80;
+  background: rgba(60, 39, 10, 0.34);
+  display: flex;
+  align-items: flex-end;
+}
+
+.history-panel {
+  width: 100%;
+  max-height: 74vh;
+  padding: 30rpx 30rpx calc(30rpx + env(safe-area-inset-bottom));
+  border-radius: 34rpx 34rpx 0 0;
+  background: #fffdf7;
+  border-top: 2rpx solid #ead79f;
+  box-sizing: border-box;
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.history-title {
+  color: #4d320c;
+  font-size: 36rpx;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+
+.history-close {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 60rpx;
+  border-radius: 32rpx;
+  background: #fff1c2;
+  color: #7c570e;
+  font-size: 42rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+
+.history-list {
+  margin-top: 18rpx;
+  height: 46vh;
+}
+
+.history-item {
+  padding: 20rpx 22rpx;
+  margin-bottom: 14rpx;
+  border-radius: 22rpx;
+  background: #fff8ec;
+  border: 2rpx solid rgba(232, 202, 134, 0.52);
+  box-sizing: border-box;
+}
+
+.history-empty {
+  color: #8d7448;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+
+.history-content {
+  color: #4d320c;
+  font-size: 38rpx;
+  line-height: 1.5;
+  font-weight: 800;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 全局字体适配：直接组合选择器 */
+.group-title.font-global-large { font-size: 60rpx !important; }
+
+.empty-card.font-global-large,
+.chat-bubble.font-global-large,
+.ask-input-v2.font-global-large,
+.history-content.font-global-large { font-size: 69rpx !important; }
+.top-tool-btn.font-global-large,
+.hold-speak-text.font-global-large { font-size: 58rpx !important; }
+
+.group-title.font-global-xlarge { font-size: 70rpx !important; }
+
+.empty-card.font-global-xlarge,
+.chat-bubble.font-global-xlarge,
+.ask-input-v2.font-global-xlarge,
+.history-content.font-global-xlarge { font-size: 81rpx !important; }
+.top-tool-btn.font-global-xlarge,
+.hold-speak-text.font-global-xlarge { font-size: 68rpx !important; }
+
+.family-chat-picker.font-global-large { font-size: 41rpx !important; }
+.family-chat-picker.font-global-xlarge { font-size: 49rpx !important; }
+
+/* 聊天气泡内 <text> 元素字号适配 */
+text.font-global-large,
+.term-inline-group.font-global-large { font-size: 69rpx !important; }
+
+text.font-global-xlarge,
+.term-inline-group.font-global-xlarge { font-size: 81rpx !important; }
+
+/* ========== 录音浮层 ========== */
+.record-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: rgba(28, 28, 15, 0.92);
+  padding: 48rpx 64rpx;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.record-pulse {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #ff9800;
+  animation: record-pulse-anim 1.5s infinite;
+}
+
+.record-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  text-align: center;
+}
+
+.record-hint {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+@keyframes record-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}

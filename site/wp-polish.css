@@ -1,0 +1,97 @@
+/* 颐享智财 · WordPress-inspired editorial polish v7
+   Inspired by Blocksy News, Blocksy Smile Dent, Kadence block typography.
+   No third-party template code copied; original business DOM and handlers unchanged. */
+:root{--wp-ink:#3c4138;--wp-sub:#636c61;--wp-orange:#f28c47;--wp-yellow:#ffd680;--wp-green:#91b58c;--wp-line:#eaece4;--wp-ease:cubic-bezier(.22,1,.36,1)}
+html,body,.site-layout,.content-column{background:#fafbf7!important;color:var(--wp-ink)!important}
+.content-column{background-image:radial-gradient(ellipse 30% 36% at 97% 8%,rgba(252,222,147,.16),transparent),radial-gradient(ellipse 25% 30% at 2% 75%,rgba(167,206,156,.13),transparent)!important}
+.premium-ambient{display:none!important}
+.side-nav{background:#fff!important;border-right:1px solid #eeeee8!important;box-shadow:none!important;padding:22px 13px!important}
+.identity{padding:3px 8px 17px!important}.identity-logo{background:#fff2e5!important;border-radius:17px!important}.identity strong{color:#d77431!important;font-size:25px!important}
+.identity small,.side-end,.top-tagline,.page-kicker{display:none!important}
+.side-deco{border:0!important;background:linear-gradient(125deg,#fff1d8 0%,#fff8e9 60%,#f1f7e9 100%)!important;border-radius:21px!important;box-shadow:none!important;min-height:128px!important}
+.side-deco strong{font-size:18px!important;color:#9c673a!important}
+.nav-search{background:#f8f8f4!important;border:1px solid #efeee8!important}
+.side-nav .nav-section{font-size:14px!important;letter-spacing:.03em!important;color:#93978e!important}
+.side-nav .nav-item{border-radius:13px!important;min-height:51px!important;font-weight:700!important;color:#596657!important}
+.side-nav .nav-item.active{background:#fff0e2!important;color:#ba6931!important}
+.side-nav .nav-item.active::before{width:3px!important;top:15px!important;bottom:15px!important}
+.side-nav .nav-item:hover{background:#f3f8ef!important;color:#52774f!important}
+.top-head{height:78px!important;background:rgba(255,255,255,.93)!important;border-bottom:1px solid #eceee7!important;box-shadow:none!important}
+.breadcrumbs strong{font-weight:800!important;font-size:23px!important;color:#41483d!important}.top-head .status-dot{font-size:15px!important}
+.role-pill{background:#fff1e6!important;color:#ae6a38!important;border:0!important;min-height:42px!important}
+.page-frame{max-width:1480px!important;padding:27px clamp(18px,3.2vw,51px) 50px!important}
+.yx-page{color:var(--wp-ink)!important;font-size:18px!important;line-height:1.65!important}
+.yx-page :is(button,[role=button]){font-size:17px!important;min-height:46px;cursor:pointer}
+.yx-page :is(input,textarea,select){font-size:18px!important}
+/* Editorial hero: clear contrast, original senior illustration and functioning CTA */
+.yx-page .greet-hello{isolation:isolate!important;min-height:360px!important;border-radius:30px!important;padding:54px 48px 110px!important;margin:0 0 26px!important;font-size:clamp(37px,4.5vw,64px)!important;line-height:1.17!important;letter-spacing:-1.25px!important;color:#744c29!important;box-shadow:0 22px 40px -36px #8b793e45!important;background-image:linear-gradient(94deg,#fff3d7 0%,rgba(255,246,221,.96) 29%,rgba(255,247,225,.73) 44%,rgba(253,244,224,.06) 74%),url('assets/cute/elderly.webp')!important;background-position:center,right center!important;background-size:cover,auto 112%!important;border:0!important;overflow:hidden!important}
+.yx-page .greet-hello::before{content:'美好生活，从安心开始'!important;color:#a66f40!important;font-size:19px!important;font-weight:700!important;letter-spacing:1px!important;margin:0 0 14px!important}
+.yx-page .greet-hello::after{content:'';position:absolute;z-index:-1;bottom:-64px;left:-48px;width:290px;height:150px;border-radius:50%;background:#ffcf7b70;filter:blur(32px);pointer-events:none}
+.yx-page .cute-hero-actions{left:48px!important;bottom:45px!important;gap:13px!important}
+.yx-page .cute-hero-actions button{min-height:53px!important;border:0!important;padding:12px 23px!important;border-radius:15px!important;font-size:18px!important;font-weight:800!important;box-shadow:0 8px 22px -15px rgba(157,80,31,.25)!important}
+.yx-page .cute-hero-actions button:first-child{background:linear-gradient(120deg,#fbaa65,#ec8346)!important;color:#fff!important}
+.yx-page .cute-hero-actions button:last-child{background:#fff!important;color:#638666!important;border:1px solid #e7eddb!important}
+/* Home layout: content-driven sections rather than repeated identical cards */
+.yx-page .home-scroll-inner{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;column-gap:23px!important;row-gap:23px!important;align-items:start!important}
+.yx-page .global-font-wrap{display:none!important}
+.yx-page .home-weather-card{grid-column:1!important;grid-row:1!important;min-height:168px!important;padding:31px 35px!important;background:linear-gradient(112deg,#fff0c5 0%,#fff6db 72%,#fff9e7 100%)!important;border:none!important;border-radius:25px!important;box-shadow:none!important}
+.yx-page .home-weather-card::after{opacity:.25!important;right:46px!important;top:32px!important;transform:scale(.75)!important;pointer-events:none}
+.yx-page .home-weather-city{font-size:30px!important;color:#644d31!important;font-weight:850!important}.yx-page .home-weather-temp{font-size:49px!important;color:#d47d32!important;font-weight:900!important;line-height:1.2!important}.yx-page .home-weather-date,.yx-page .home-weather-name{font-size:17px!important;color:#927755!important}
+.yx-page .home-news-card{grid-column:2!important;grid-row:1 / span 2!important;padding:29px 30px 16px!important;background:#fff!important;border:1px solid #eff0e9!important;box-shadow:0 16px 40px -34px rgba(41,58,44,.25)!important;border-radius:25px!important;min-height:414px!important;max-height:none!important}
+.yx-page .home-news-head{border-bottom:none!important;padding-bottom:14px!important;gap:12px!important}.yx-page .home-news-icon{display:none!important}.yx-page .home-news-title{color:#38463b!important;font-size:26px!important;font-weight:850!important}.yx-page .home-news-badge{display:none!important}
+.yx-page .home-news-refresh{width:44px!important;height:44px!important;border-radius:13px!important;background:#f3f7f0!important;color:#5d8064!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.yx-page .home-news-item{min-height:95px!important;display:grid!important;grid-template-columns:74px minmax(0,1fr)!important;gap:15px!important;align-items:center!important;border-bottom:1px solid #eef0e9!important;padding:12px 2px!important;transition:transform .25s var(--wp-ease),background .25s!important}
+.yx-page .home-news-item:last-child{border-bottom:0!important}.yx-page .home-news-item:hover{transform:translateX(3px)!important}
+.yx-page .home-news-num{width:74px!important;height:65px!important;min-width:74px!important;border-radius:14px!important;display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;padding:7px 10px!important;font-size:16px!important;font-weight:850!important;color:#fff!important;background:linear-gradient(130deg,#eec46c,#e78a5f)!important;background-size:cover!important;background-position:center!important;text-shadow:0 1px 5px #5239238c!important}
+.yx-page .home-news-item:nth-of-type(3n+2) .home-news-num{background-image:linear-gradient(135deg,#456c5399,#6fae8685),url('assets/ui/xinwen.jpg')!important}
+.yx-page .home-news-item:nth-of-type(3n+3) .home-news-num{background-image:linear-gradient(135deg,#d49d4e88,#a5c98955),url('assets/illustrations/classroom.svg')!important}
+.yx-page .home-news-name{font-size:18px!important;font-weight:750!important;line-height:1.48!important;color:#404b42!important;-webkit-line-clamp:3!important}
+.yx-page .home-news-empty{color:#788476!important;font-size:17px!important;padding:18px 0!important}
+.yx-page .lesson-card{grid-column:1!important;grid-row:2!important;border:1px solid #eeefe7!important;background:#fff!important;border-radius:25px!important;padding:27px 30px 30px!important;box-shadow:0 16px 40px -34px rgba(41,58,44,.25)!important}
+.yx-page .lesson-title{font-size:25px!important;color:#39483b!important;font-weight:850!important;line-height:1.45!important}
+.yx-page .lesson-video-shell{overflow:hidden!important;border-radius:18px!important;border:0!important;background:#f7f4eb!important}
+.yx-page .lesson-video-toolbar{padding:12px 16px!important;background:#f7f7f1!important;border-radius:14px 14px 0 0!important}.yx-page .lesson-current-title{font-size:17px!important;color:#4c5a4e!important}
+.yx-page .lesson-picker-open{border-radius:12px!important;min-height:43px!important;font-size:16px!important;padding:8px 13px!important}
+.yx-page .lesson-video-stage,.yx-page .lesson-video,.yx-page .lesson-fallback{min-height:245px!important}
+.yx-page .common-func-panel{grid-column:1/-1!important;grid-row:3!important;padding:30px!important;border:1px solid #eff0e9!important;background:#fff!important;box-shadow:0 16px 40px -34px rgba(41,58,44,.25)!important;border-radius:25px!important}
+.yx-page .common-func-title{font-size:26px!important;color:#39483b!important;font-weight:850!important;margin-bottom:19px!important}
+.yx-page .common-func-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:13px!important}
+.yx-page .common-func-item:nth-child(n){min-height:130px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:space-between!important;gap:13px!important;border:0!important;border-radius:19px!important;padding:17px!important;box-shadow:none!important;transition:transform .32s var(--wp-ease),box-shadow .32s var(--wp-ease)!important}
+.yx-page .common-func-item::after{display:none!important}.yx-page .common-func-item .quick-icon{width:53px!important;height:53px!important;min-width:53px!important;background:#ffffffaa!important;box-shadow:none!important;border-radius:15px!important}.yx-page .common-func-item-label{font-size:18px!important;line-height:1.3!important;font-weight:800!important;color:#455544!important}
+.yx-page .common-func-item:nth-child(5n+1){background:#fff0e0!important}.yx-page .common-func-item:nth-child(5n+2){background:#eaf4e8!important}.yx-page .common-func-item:nth-child(5n+3){background:#edf0fb!important}.yx-page .common-func-item:nth-child(5n+4){background:#fff5d8!important}.yx-page .common-func-item:nth-child(5n+5){background:#f9eefa!important}
+.yx-page .home-message-mini{grid-column:1/-1!important;grid-row:4!important;margin:0!important;background:#eff6ed!important;border:0!important;box-shadow:none!important;border-radius:19px!important;padding:21px 26px!important}
+/* All other pages: restrained component rhythm and readable copy */
+.yx-page :is(.form-card,.login-card,.question-card,.profile-card,.child-card,.finance-card,.health-life-card,.family-dashboard-card,.guard-card,.child-news-card,.m-summary){border-radius:22px!important;border-color:#eceee7!important;box-shadow:0 17px 35px -33px #4f654b55!important}
+.yx-page :is(.section-title,.panel-title,.card-title,.care-title,.q-title){font-size:clamp(23px,2vw,29px)!important;line-height:1.42!important;color:#394739!important}
+.yx-page .assistant-page .chat-scroll{background:#f8faf5!important;border:1px solid #ebefe7!important}
+.yx-page .assistant-page .msg-row.self .bubble{background:linear-gradient(120deg,#ffc575,#f5a35c)!important;color:#574223!important}
+.yx-page .assistant-tool-btn{color:#5c7f62!important;background:#eff6e9!important}
+body.is-auth .login-art{background:linear-gradient(145deg,#fff3d9,#fff9ed 65%,#eff7eb)!important}
+/* Intentional, gentle and functional animations */
+@keyframes wp-rise{from{opacity:0;transform:translateY(19px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wp-glow{0%,100%{box-shadow:0 0 0 0 rgba(246,161,95,.09)}55%{box-shadow:0 0 0 10px rgba(246,161,95,0)}}
+.yx-page .greet-hello{animation:wp-rise .75s var(--wp-ease) both!important}
+.yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel{animation:wp-rise .63s var(--wp-ease) both!important}
+.yx-page .home-news-card{animation-delay:.09s!important}.yx-page .lesson-card{animation-delay:.16s!important}.yx-page .common-func-panel{animation-delay:.2s!important}
+.yx-page .cute-hero-actions button:first-child{animation:wp-glow 3.2s ease-in-out infinite!important}
+@media(hover:hover){.yx-page .common-func-item:hover{transform:translateY(-5px)!important;box-shadow:0 14px 25px -19px #4c644b6d!important}.yx-page .home-news-item:hover .home-news-name{color:#c3773a!important}}
+@media(max-width:1120px){.yx-page .common-func-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.yx-page .home-news-card{grid-row:1 / span 2!important}}
+@media(max-width:860px){.page-frame{padding:18px 17px 38px!important}.yx-page .home-scroll-inner{display:flex!important;flex-direction:column!important;gap:17px!important}.yx-page .greet-hello{min-height:295px!important;padding:40px 29px 100px!important;font-size:clamp(34px,5vw,49px)!important;background-size:cover,auto 98%!important}.yx-page .cute-hero-actions{left:29px!important;bottom:30px!important}.yx-page :is(.home-weather-card,.home-news-card,.lesson-card,.common-func-panel,.home-message-mini){width:100%!important;grid-column:auto!important;grid-row:auto!important}.yx-page .home-news-card{min-height:unset!important}.yx-page .common-func-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:560px){.page-frame{padding:12px 12px 33px!important}.yx-page .greet-hello{border-radius:22px!important;min-height:255px!important;padding:28px 20px 90px!important;font-size:clamp(29px,7.5vw,38px)!important;letter-spacing:-.5px!important;background-image:linear-gradient(95deg,#fff4db 0%,rgba(255,244,218,.98) 33%,rgba(255,244,218,.65) 56%,transparent 100%),url('assets/cute/elderly.webp')!important;background-size:cover,auto 75%!important;background-position:center,right -45px bottom!important}.yx-page .greet-hello::before{font-size:16px!important;max-width:192px!important}.yx-page .cute-hero-actions{left:20px!important;bottom:20px!important}.yx-page .cute-hero-actions button{font-size:16px!important;min-height:46px!important;padding:9px 13px!important}.yx-page .home-weather-card{min-height:132px!important;padding:22px!important}.yx-page .home-weather-city{font-size:26px!important}.yx-page .home-weather-temp{font-size:40px!important}.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel{padding:20px!important;border-radius:20px!important}.yx-page .home-news-title,.yx-page .lesson-title,.yx-page .common-func-title{font-size:23px!important}.yx-page .home-news-item{grid-template-columns:62px 1fr!important;gap:11px!important;min-height:77px!important}.yx-page .home-news-num{width:62px!important;min-width:62px!important;height:57px!important}.yx-page .home-news-name{font-size:16.5px!important}.yx-page .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.yx-page .common-func-item:nth-child(n){min-height:113px!important;padding:14px!important;gap:8px!important}.yx-page .common-func-item-label{font-size:17px!important}.yx-page .lesson-video-stage,.yx-page .lesson-video,.yx-page .lesson-fallback{min-height:195px!important}}
+@media(prefers-reduced-motion:reduce){.yx-page .greet-hello,.yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel,.yx-page .cute-hero-actions button:first-child{animation:none!important;transform:none!important}.yx-page *{scroll-behavior:auto!important}}
+
+/* Acceptance fix: preserve warm style while keeping back/close hit areas >=44 CSS px. */
+.yx-page :is(.round-back-btn,.assistant-back,.back-btn,.abs.back,.back,.history-close,.panel-close){min-width:48px!important;min-height:48px!important;width:48px!important;height:48px!important}
+
+/* Keep the retained family cards inside each Web viewport, including 390px. */
+.yx-page .family-hero-space{display:none!important}
+.yx-page .family-analysis-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;width:100%!important}
+.yx-page .family-analysis-row .family-card{width:auto!important;min-width:0!important;margin:0!important;box-sizing:border-box!important}
+@media(max-width:600px){.yx-page .family-analysis-row{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Measured contrast fix: keep orange fills, use readable warm-brown labels. */
+.yx-page .finance-mode-tabs button.active{color:#4a2616!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+body[data-route="pages-finance-finance"] #yx-render .recognize-card .actions :is(.btn-primary,.btn-soft){color:#4a2616!important}
+@media(prefers-reduced-motion:reduce){html:root body #yx-render,html:root body #yx-render *,html:root body #yx-render *::before,html:root body #yx-render *::after{animation:none!important;transition:none!important}}

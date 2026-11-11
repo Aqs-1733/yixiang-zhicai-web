@@ -1,0 +1,130 @@
+/* ========== 底部输入栏模式 ========== */
+.voice-bar {
+  flex: 1;
+  min-width: 0;
+}
+
+.hold-speak-btn {
+  width: 100%;
+  height: 70rpx;
+  border-radius: 35rpx;
+  background: #ffffff;
+  border: 2rpx solid #ead7ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 10rpx rgba(177, 123, 28, 0.06);
+}
+
+.hold-speak-active {
+  background: linear-gradient(180deg, #ffe59c, #ffc64a);
+  border-color: #e6b422;
+  box-shadow: 0 4rpx 16rpx rgba(200, 140, 30, 0.2);
+}
+
+.hold-speak-text {
+  font-size: 50rpx;
+  color: #d7b97b;
+  font-weight: 600;
+}
+
+.hold-speak-active .hold-speak-text {
+  color: #6e460a;
+}
+
+/* ========== 悬浮按钮模式 ========== */
+.voice-fab-wrap {
+  position: fixed;
+  right: 36rpx;
+  bottom: 320rpx;
+  z-index: 99999;
+  pointer-events: auto;
+}
+
+.voice-fab {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffd86a, #ffbd35);
+  border: 3rpx solid #e6b422;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(177, 123, 28, 0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.voice-fab:active {
+  transform: scale(0.92);
+  box-shadow: 0 4rpx 12rpx rgba(177, 123, 28, 0.2);
+}
+
+.voice-fab-recording {
+  background: linear-gradient(180deg, #ff9800, #f44336);
+  border-color: #e53935;
+  animation: fab-pulse 1.2s infinite;
+}
+
+.voice-fab-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.voice-fab-icon {
+  font-size: 40rpx;
+  line-height: 1;
+  color: #6f4812;
+}
+
+.voice-fab-recording .voice-fab-icon {
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 900;
+}
+
+@keyframes fab-pulse {
+  0%, 100% { box-shadow: 0 8rpx 24rpx rgba(200, 50, 30, 0.28); }
+  50% { box-shadow: 0 8rpx 36rpx rgba(255, 80, 20, 0.5); }
+}
+
+/* ========== 录音浮层（通用） ========== */
+.record-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: rgba(28, 28, 15, 0.92);
+  padding: 48rpx 64rpx;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.record-pulse {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #ff9800;
+  animation: record-pulse-anim 1.5s infinite;
+}
+
+.record-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  text-align: center;
+}
+
+@keyframes record-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}
+.voice-fab-wrap.font-global-large .record-text,
+.voice-fab-wrap.font-global-large .voice-fab-icon,
+.voice-fab-wrap.font-global-large .hold-speak-text { font-size: 38rpx !important; }
+
+.voice-fab-wrap.font-global-xlarge .record-text,
+.voice-fab-wrap.font-global-xlarge .voice-fab-icon,
+.voice-fab-wrap.font-global-xlarge .hold-speak-text { font-size: 48rpx !important; }

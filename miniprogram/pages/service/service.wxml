@@ -1,0 +1,95 @@
+<view class="bg-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/service_bg.jpg" mode="heightFix" />
+
+  <view class="layer service-layer">
+    <!-- 左上角圆形返回按钮 -->
+    <view class="back-btn" bindtap="back">＜</view>
+
+    <!-- 标题 -->
+    <view class="service-title"></view>
+
+    <!-- 电话列表 -->
+    <scroll-view class="abs phone-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <view class="{{globalFontPageClass}}">
+      <view class="nearby-entry-card">
+        <view class="nearby-entry-title">查找附近服务点</view>
+        <view class="nearby-entry-desc">打开地图查找社区服务中心、银行、医院和药店。</view>
+        <button hover-class="none" bindtap="goNearbyService">去附近服务</button>
+      </view>
+
+      <view wx:for="{{phones}}" wx:key="id" class="phone-item card">
+        <view class="phone-row">
+          <!-- 联系人信息 — 点击语音播报 -->
+          <view class="phone-info" bindtap="speakContact" data-name="{{item.name}}" data-phone="{{item.phone}}">
+            <view class="phone-name">{{item.name}}</view>
+            <view class="phone-number">{{item.phone}}</view>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view class="phone-actions">
+            <button class="phone-speak-btn" hover-class="none" bindtap="speakContact" data-name="{{item.name}}" data-phone="{{item.phone}}">🔊</button>
+            <button class="phone-call-btn" hover-class="none" bindtap="callPhone" data-phone="{{item.phone}}">拨打</button>
+            <button class="phone-delete-btn" hover-class="none" bindtap="deletePhone" data-id="{{item.id}}">删除</button>
+          </view>
+        </view>
+      </view>
+
+      <!-- 添加按钮 -->
+      <button class="btn-soft add-phone" hover-class="none" bindtap="showAddPanel">+ 添加电话</button>
+      </view>
+    </scroll-view>
+
+    <!-- 底部提示 -->
+    <view class="abs service-tip">{{tip}}</view>
+  </view>
+</view>
+
+<!-- ========== 添加电话半屏面板 ========== -->
+<view class="panel-mask {{showPanel ? 'panel-show' : ''}}" bindtap="hideAddPanel"></view>
+<view class="add-panel {{globalFontPageClass}} {{showPanel ? 'panel-show' : ''}}">
+  <!-- 右上角关闭按钮 -->
+  <view class="panel-close" bindtap="hideAddPanel">✕</view>
+  <view class="panel-header">
+    <text class="panel-title">添加电话</text>
+  </view>
+
+  <view class="panel-body">
+    <!-- 联系人名称 -->
+    <view class="form-item">
+      <text class="form-label">联系人名称</text>
+      <view class="form-input-row">
+        <input class="form-input form-input-flex" placeholder="请输入联系人名称" placeholder-class="ph" value="{{form.name}}" bindinput="onNameInput" />
+        <view class="voice-input-btn {{recordingField === 'name' ? 'voice-input-active' : ''}}" bindtouchstart="startVoiceInput" bindtouchend="stopVoiceInput" data-field="name">🎤</view>
+      </view>
+    </view>
+
+    <!-- 电话号码 -->
+    <view class="form-item">
+      <text class="form-label">电话号码</text>
+      <view class="form-input-row">
+        <input class="form-input form-input-flex" type="number" placeholder="请输入电话号码" placeholder-class="ph" value="{{form.phone}}" bindinput="onPhoneInput" />
+        <view class="voice-input-btn {{recordingField === 'phone' ? 'voice-input-active' : ''}}" bindtouchstart="startVoiceInput" bindtouchend="stopVoiceInput" data-field="phone">🎤</view>
+      </view>
+    </view>
+
+    <!-- 按住说话大按钮 -->
+    <view class="form-voice-area">
+      <view class="hold-speak-btn {{recording ? 'hold-speak-active' : ''}}" bindtouchstart="startHoldSpeak" bindtouchend="stopHoldSpeak" bindtouchcancel="stopHoldSpeak">
+        <text class="hold-speak-text">{{recording ? '松开识别 · ' + recordingSeconds + '秒' : '按住说话 · 一次性说完姓名和号码'}}</text>
+      </view>
+      <text class="voice-hint"></text>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="panel-footer">
+    <button class="panel-btn panel-btn-cancel" hover-class="none" bindtap="hideAddPanel">取消</button>
+    <button class="panel-btn panel-btn-confirm" hover-class="none" bindtap="submitPhone">确认添加</button>
+  </view>
+</view>
+
+<!-- 录音浮层 -->
+<view wx:if="{{recording}}" class="record-overlay">
+  <view class="record-pulse"></view>
+  <text class="record-text">正在聆听…（{{recordingSeconds}}秒/{{recordingMax}}秒）松手结束</text>
+</view>

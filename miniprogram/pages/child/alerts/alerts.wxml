@@ -1,0 +1,15 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">风险提醒</view>
+  <view wx:if="{{items.length === 0}}" class="card">暂无未处理风险提醒。</view>
+  <view wx:for="{{items}}" wx:key="id" class="card {{item.level}}">
+    <view class="row"><text class="name">{{item.title}}</text><text class="tag">{{item.level}}</text></view>
+    <view class="sub">{{item.detail}}</view>
+    <view class="time">{{item.created_at}}</view>
+  </view>
+</view>
+<child-bottom-nav active="family" />
+

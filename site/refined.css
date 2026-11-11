@@ -1,0 +1,358 @@
+/* 颐享智财 · 全站精修设计系统 V4
+ * 保留所有原 WXML/JS 的业务节点、事件、接口；只改外观与响应式。
+ * 设计：奶油白画布 / 橘子暖色 / 低装饰 / 大字号 / 实用动效。
+ */
+:root{--ink:#51362e;--ink-soft:#74594f;--sub:#886d60;--line:#eee8df;--cream:#faf7f2;--paper:#fff;--orange:#ef7836;--orange-dark:#cf5c25;--peach:#fff0e3;--mint:#f9ebe3;--mint-dark:#bc5b37;--shadow:0 8px 25px rgba(105,65,40,.055);--radius:22px;--ease:cubic-bezier(.22,.8,.24,1);--font-s:1.15}
+:root[data-font=large]{--font-s:1.25}:root[data-font=xlarge]{--font-s:1.38}
+html,body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif!important;color:var(--ink)!important;background:#faf7f2!important}
+.premium-ambient{display:none!important}
+.site-layout{background:#faf7f2!important;max-width:2000px}
+.content-column{background:linear-gradient(135deg,#faf7f2,#fffaf6 72%)!important}
+.side-nav{background:#fffdfa!important;border-right:1px solid #f0e7dd!important;box-shadow:none!important;width:252px!important;min-width:252px!important;padding:27px 16px 18px!important}
+.side-deco{background:#fff0df!important;border:0!important;box-shadow:none!important;margin:0 0 16px!important;min-height:112px!important;padding:22px!important;border-radius:20px!important}
+.side-deco strong{color:#b2582e!important;font-size:18px!important;line-height:1.55!important}
+.side-deco .cute-side-mascot{right:-17px!important;bottom:-18px!important;width:103px!important;height:103px!important;mix-blend-mode:normal!important;object-fit:contain!important}
+.identity strong{font-size:23px!important;letter-spacing:0!important;color:#884022!important}
+.nav-search{border:0!important;background:#f7f2ec!important;min-height:52px!important;box-shadow:none!important}
+.nav-search input{font-size:16px!important}
+.side-nav .nav-section{font-size:14px!important;padding:18px 13px 7px!important;color:#ad8c78!important;letter-spacing:0!important}
+.side-nav .nav-item{padding:13px 14px!important;min-height:51px!important;font-size:17px!important;font-weight:650!important;color:#77574b!important;border-radius:14px!important;line-height:1.45!important}
+.side-nav .nav-item.active{background:#ffebdb!important;color:#bd5b2c!important;box-shadow:none!important;border:0!important}
+.side-nav .nav-item:hover,.side-nav .nav-item.active:hover{background:#fff0e4!important;color:#a84f2a!important;transform:translateX(2px)!important;box-shadow:none!important}
+.side-nav .nav-item.active .nav-icon{color:#d66732!important}
+.side-nav .nav-item .nav-icon{color:#c77a52!important}
+.top-head{height:76px!important;background:rgba(255,253,250,.94)!important;border-bottom:1px solid #f0e8df!important;box-shadow:none!important}
+.breadcrumbs strong{color:#594034!important;font-size:22px!important;font-weight:780!important}
+.circle-tool,.role-pill{background:#fffaf6!important;border:1px solid #ebded2!important;box-shadow:none!important;color:#985b42!important;min-height:45px!important;font-size:16px!important}
+.role-pill{padding:10px 16px!important}
+.page-frame{padding:28px clamp(20px,3vw,46px) 36px!important;max-width:1570px!important;margin:0 auto!important}
+.page-intro{padding:21px 28px!important;min-height:108px!important;margin-bottom:23px!important;background:#fff!important;border:0!important;border-radius:22px!important;box-shadow:var(--shadow)!important}
+.page-intro .page-kicker,.page-intro .intro-orb{display:none!important}
+.page-intro h1{font-size:clamp(27px,2.5vw,36px)!important;color:#683e2e!important;font-weight:780!important;line-height:1.3!important}
+.page-intro p{font-size:17px!important;color:#866c5a!important;margin-top:7px!important;line-height:1.55!important}
+.content-footer{font-size:14px!important;color:#a28372!important;padding:20px 0!important}
+.content-footer span{font-size:13px!important;color:#a28372!important}
+/* 所有页面共享的基本可读性，保留表单本来的排布和事件 */
+.yx-page{font-size:17px!important;color:#5d4035!important}
+.yx-page button,.yx-page [role="button"]{transition:transform .22s var(--ease),background .22s,box-shadow .22s!important}
+.yx-page button,.yx-page .btn-primary,.yx-page .btn-soft,.yx-page .panel-btn,.yx-page .primary-btn,.yx-page .soft-btn{font-size:17px!important;font-weight:700!important;min-height:46px!important;border-radius:13px!important}
+.yx-page input,.yx-page textarea,.yx-page select{font-size:17px!important;color:#604439!important;border-radius:13px!important;min-height:47px}
+.yx-page input::placeholder,.yx-page textarea::placeholder{color:#a79586!important;opacity:1!important}
+.yx-page .section-title,.yx-page .panel-title,.yx-page .dialog-title,.yx-page .child-section-head{font-size:clamp(22px,1.9vw,29px)!important;font-weight:770!important;color:#613d2e!important;line-height:1.38!important}
+.yx-page .card,.yx-page .child-card,.yx-page .feature-card,.yx-page .module-card,.yx-page .finance-card,.yx-page .recognize-card,.yx-page .track-card,.yx-page .advice-card,.yx-page .health-life-card,.yx-page .totals-card,.yx-page .ledger-scope-card,.yx-page .data-card,.yx-page .analysis-card,.yx-page .profile-card,.yx-page .family-dashboard-card{background:#fff!important;border:1px solid #f1ebe4!important;border-radius:21px!important;box-shadow:0 6px 22px #7b553e0b!important}
+.yx-page .page-bg,.yx-page .page-bg-image,.yx-page .child-bg,.yx-page .msg-bg,.yx-page .group-bg,.yx-page .news-bg,.yx-page .profile-bg,.yx-page .nearby-bg{background-image:none!important;background-color:transparent!important;display:none!important}
+.yx-page .btn-primary,.yx-page .submit-btn,.yx-page .primary-btn,.yx-page .panel-btn-confirm,.yx-page .footer-btn.next-btn{background:#f47e3f!important;border:1px solid #f47e3f!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,99,39,.15)!important}
+.yx-page .btn-primary:hover,.yx-page .submit-btn:hover,.yx-page .primary-btn:hover{background:#e26a31!important}
+.yx-page .btn-soft,.yx-page .soft-btn{background:#fff2e7!important;border-color:#f5e6d8!important;color:#985435!important}
+.yx-page .empty,.yx-page .empty-desc,.yx-page .track-empty,.yx-page .health-life-empty,.yx-page .member-empty,.yx-page .child-news-empty{font-size:17px!important;color:#8c7567!important;line-height:1.65!important}
+.yx-page .back-btn,.yx-page .round-back-btn{background:#fff8f0!important;border-color:#f0dfcf!important;color:#9b5a38!important}
+/* 首页单独排版：内容形式各不相同，不再是四块同款细边框 */
+body.is-home .page-frame{padding-top:26px!important}
+.yx-page .bg-page:has(.home-scroll-inner){padding:0!important;background:transparent!important;border:none!important;box-shadow:none!important}
+.yx-page .greet-hello{min-height:255px!important;padding:50px 45px 93px!important;border-radius:26px!important;margin:0 0 23px!important;border:0!important;box-shadow:0 10px 34px #c98a6020!important;background-image:linear-gradient(90deg,#fff0df 0%,#fff0df 30%,rgba(255,240,223,.95) 42%,rgba(255,240,223,.18) 66%),url('assets/cute/elderly.webp')!important;background-size:100% 100%,auto 112%!important;background-position:center,right 20px center!important;background-repeat:no-repeat!important;color:#783f2c!important;font-size:clamp(34px,3.5vw,48px)!important;line-height:1.22!important;font-weight:800!important;letter-spacing:0!important}
+.yx-page .greet-hello::before{content:'小享陪您，安心每一天'!important;font-size:18px!important;color:#ba704f!important;margin-bottom:17px!important;font-weight:650!important}
+.cute-hero-actions{left:45px!important;bottom:34px!important;gap:12px!important}
+.cute-hero-actions button{font-size:18px!important;min-height:50px!important;padding:9px 24px!important;box-shadow:0 8px 18px #ef915323!important}
+.cute-hero-actions button:last-child{background:#fffaf5!important;border:1px solid #f1d5be!important;box-shadow:none!important;color:#b55f35!important}
+.yx-page .home-scroll-inner{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr)!important;gap:20px 22px!important;align-items:stretch!important}
+.yx-page .home-grid{display:contents!important}
+.yx-page .home-grid-left,.yx-page .home-grid-right{display:contents!important}
+.yx-page .home-weather-card{grid-column:1!important;grid-row:1!important;min-height:133px!important;height:auto!important;padding:28px 33px!important;margin:0!important;border:0!important;border-radius:22px!important;background:linear-gradient(112deg,#ffedda,#fff4e8 80%)!important;box-shadow:none!important;animation:none!important}
+.yx-page .home-weather-card::after{content:''!important;width:100px!important;height:100px!important;border-radius:50%!important;background:radial-gradient(circle at 35% 35%,#ffe8a0 0%,#ffd17b 43%,#f7a956 72%,transparent 74%)!important;top:20px!important;right:32px!important;opacity:.55!important;box-shadow:none!important}
+.yx-page .home-weather-city{font-size:clamp(27px,2.5vw,34px)!important;font-weight:800!important;line-height:1.2!important}
+.yx-page .home-weather-date{font-size:17px!important;color:#9d745f!important;margin-top:10px!important}
+.yx-page .home-weather-temp{font-size:clamp(34px,3.5vw,46px)!important;color:#ed7d37!important;font-weight:750!important}
+.yx-page .home-weather-name{font-size:17px!important;color:#9d745f!important}
+.yx-page .home-news-card{grid-column:2!important;grid-row:1!important;min-height:133px!important;height:auto!important;max-height:360px!important;margin:0!important;padding:23px 27px!important;border:0!important;border-radius:22px!important;background:#fff!important;box-shadow:var(--shadow)!important;overflow-y:auto!important;animation:none!important}
+.yx-page .home-news-head{padding:0 0 14px!important;border:0!important;margin-bottom:4px!important}
+.yx-page .home-news-head-left{gap:9px!important}
+.yx-page .home-news-icon{display:none!important}
+.yx-page .home-news-title{font-size:22px!important;font-weight:790!important}
+.yx-page .home-news-badge{display:none!important}
+.yx-page .home-news-refresh{min-width:40px!important;min-height:40px!important;border-radius:12px!important;background:#fff3e9!important;color:#bd6338!important;font-size:19px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.yx-page .home-news-empty{font-size:17px!important;color:#927b70!important;line-height:1.5!important}
+.yx-page .home-news-item{padding:14px 0!important;border-bottom:1px solid #f3ede7!important;gap:14px!important}
+.yx-page .home-news-name{font-size:17px!important;line-height:1.55!important;color:#624437!important;font-weight:640!important}
+.yx-page .home-news-num{background:#fff0dc!important;color:#be6739!important;font-weight:700!important;min-width:29px!important;height:29px!important}
+.yx-page .lesson-card{grid-column:1!important;grid-row:2!important;margin:0!important;min-height:382px!important;padding:25px!important;border:0!important;border-radius:24px!important;background:#fff!important;box-shadow:var(--shadow)!important;animation:none!important}
+.yx-page .lesson-title{font-size:clamp(22px,1.85vw,27px)!important;font-weight:780!important;color:#624334!important;font-style:normal!important;line-height:1.45!important}
+.yx-page .lesson-title *{font-size:inherit!important;font-style:normal!important}
+.yx-page .lesson-video-shell{margin-top:17px!important;border:0!important;border-radius:17px!important;overflow:hidden!important;background:#fff7e9!important;box-shadow:none!important}
+.yx-page .lesson-video-toolbar{background:#fff7e9!important;color:#764c33!important;padding:13px 18px!important;min-height:57px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important}
+.yx-page .lesson-current-title{font-size:17px!important;color:#764c33!important;font-weight:650!important}
+.yx-page .lesson-picker-open{background:#fff!important;border:1px solid #f0dcca!important;border-radius:10px!important;font-size:16px!important;color:#c06332!important;min-height:38px!important;padding:5px 12px!important;writing-mode:horizontal-tb!important;white-space:nowrap!important;width:auto!important}
+.yx-page .lesson-video-stage{background:#fcf2e8!important;min-height:258px!important;max-height:380px!important}
+.yx-page .lesson-video{background:#efe7dc!important;min-height:245px!important;max-height:365px!important;object-fit:contain!important}
+.yx-page .lesson-fallback{min-height:248px!important;background:linear-gradient(130deg,#fff4e8,#fae3cc)!important}
+.yx-page .lesson-fallback-title{font-size:23px!important;font-weight:700!important;color:#8c5132!important}
+.yx-page .common-func-panel{grid-column:2!important;grid-row:2!important;margin:0!important;padding:25px 24px!important;min-height:382px!important;border:0!important;border-radius:24px!important;background:#fff!important;box-shadow:var(--shadow)!important;animation:none!important}
+.yx-page .common-func-head{margin-bottom:19px!important;display:flex!important;align-items:center!important}
+.yx-page .common-func-title{font-size:25px!important;font-weight:790!important;color:#604031!important}
+.yx-page .common-func-star{display:none!important}
+.yx-page .common-func-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:13px!important;justify-content:stretch!important;margin-top:0!important}
+.yx-page .common-func-item{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;min-width:0!important;width:100%!important;height:auto!important;min-height:92px!important;padding:14px!important;border:0!important;border-radius:16px!important;background:#faf6f1!important;box-shadow:none!important;transition:background .2s,transform .24s,box-shadow .2s!important}
+.yx-page .common-func-item:nth-child(n){background:#faf6f1!important;border:0!important}
+.yx-page .common-func-item:hover{background:#fff0e2!important;transform:translateY(-2px)!important;box-shadow:none!important}
+.yx-page .common-func-item-label{font-size:17px!important;font-weight:740!important;color:#62463a!important;line-height:1.4!important;white-space:normal!important;word-break:keep-all!important;min-width:0!important;flex:1}
+.yx-page .quick-icon{width:48px;height:48px;min-width:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#ffe7d4;color:#cc703b}
+.yx-page .quick-icon svg{width:25px;height:25px;stroke-width:2}
+.yx-page .common-func-item:nth-child(2) .quick-icon{background:#fce8e3;color:#cc6c6c}
+.yx-page .common-func-item:nth-child(3) .quick-icon{background:#efe9ff;color:#9271ce}
+.yx-page .common-func-item:nth-child(4) .quick-icon{background:#ffe8e8;color:#db7777}
+.yx-page .common-func-item:nth-child(5) .quick-icon{background:#edf1ff;color:#7a83ca}
+.yx-page .common-func-item::after{display:none!important}
+.yx-page .home-message-mini{grid-column:1/-1!important;grid-row:3!important;margin:0!important;min-height:85px!important;background:#fff7ed!important;padding:18px 24px!important;border:0!important;border-radius:18px!important;box-shadow:none!important;color:#795044!important}
+.yx-page .home-message-mini>div>text:first-child,.yx-page .home-message-mini .yx-text:first-child{font-size:20px!important;font-weight:750!important}
+.yx-page .home-message-mini .home-message-arrow{font-size:31px!important;color:#e18a52!important}
+/* 钱生钱：金融数据 / tab / 识别面板 */
+.yx-page .finance-layer{background:transparent!important}
+.yx-page .finance-mode-tabs,.yx-page .money-mode-tabs,.yx-page .ledger-scope-tabs{background:#f7f1eb!important;border:0!important;padding:6px!important;border-radius:15px!important;gap:4px!important}
+.yx-page .finance-mode-tabs button,.yx-page .money-mode-tabs button,.yx-page .ledger-scope-tabs button{font-size:17px!important;font-weight:700!important;min-height:45px!important;padding:9px 15px!important;border-radius:11px!important;color:#946b55!important}
+.yx-page .finance-mode-tabs .active,.yx-page .money-mode-tabs .active,.yx-page .ledger-scope-tabs .active{background:white!important;color:#ba5b32!important;box-shadow:0 3px 9px #985c3412!important}
+.yx-page .recognize-card,.yx-page .track-card{padding:28px!important}
+.yx-page .finance-layer .product-input{background:#faf8f4!important;border:1px solid #eae2da!important;border-radius:14px!important;padding:13px 17px!important;font-size:18px!important;min-height:53px!important}
+.yx-page .finance-layer .actions{display:flex!important;flex-wrap:wrap!important;gap:12px!important}
+/* 管钱钱：三张收入卡独立的浅色大数字，不用花边小圆 */
+.yx-page .money-layer .summary-mask{display:none!important}
+.yx-page .m-summary{background:#fff!important;border:0!important;border-radius:22px!important;box-shadow:var(--shadow)!important;padding:22px!important;min-height:115px!important}
+.yx-page .m-summary.s2{background:#fff1e6!important}
+.yx-page .m-summary.s3{background:#fff8ec!important}
+.yx-page .m-summary::before{display:none!important}
+.yx-page .summary-label{font-size:17px!important;color:#866959!important}
+.yx-page .summary-amount{font-size:clamp(27px,2.7vw,42px)!important;color:#733f2b!important;line-height:1.35!important}
+.yx-page .action-toolbar{gap:10px!important}
+.yx-page .action-btn{min-height:53px!important;padding:12px 19px!important;font-size:16px!important;letter-spacing:0!important}
+.yx-page .totals-card,.yx-page .ledger-scope-card{padding:26px!important}
+.yx-page .total-label,.yx-page .total-row{font-size:17px!important}
+/* 问小享：清爽的真实聊天体验 */
+.yx-page .assistant-page .assistant-layer{background:#fff!important;border:0!important;box-shadow:var(--shadow)!important;border-radius:23px!important}
+.yx-page .assistant-page .chat-scroll{background:#fffaf6!important;border:0!important;border-radius:18px!important;padding:24px!important}
+.yx-page .assistant-page .bubble{font-size:18px!important;line-height:1.75!important;border-radius:17px!important;box-shadow:none!important;padding:14px 18px!important}
+.yx-page .assistant-page .msg-row.self .bubble{background:#f08042!important;color:white!important}
+.yx-page .assistant-page .msg-row:not(.self) .bubble{background:white!important;color:#5d4135!important;border:1px solid #f2e9e1!important}
+.yx-page .assistant-page .msg-text{font-size:18px!important;line-height:1.75!important}
+.yx-page .assistant-tools{gap:8px!important}
+.yx-page .assistant-tool-btn{background:#fff6ed!important;border:0!important;min-width:85px!important;min-height:46px!important;font-size:16px!important;color:#975638!important}
+.yx-page .assistant-page .assistant-input-bar-v2{background:white!important;border:1px solid #eadfd4!important;border-radius:17px!important;min-height:64px!important;box-shadow:0 6px 18px #835b420b!important}
+.yx-page .assistant-page .hold-speak-text{font-size:17px!important}
+.yx-page .assistant-page .mode-switch-btn,.yx-page .assistant-page .image-pick-btn,.yx-page .assistant-page .auto-speak-toggle{background:#fff2e7!important;color:#ae5c37!important;border:0!important;border-radius:12px!important}
+.yx-page .voice-fab{background:#f38b4f!important;border:3px solid #fff!important;box-shadow:0 8px 20px #e6926050!important}
+/* 健康 / 服务 / 社交统一的非仪表盘卡片 */
+.yx-page .health-layer .meds,.yx-page .service-layer .phone-list{background:transparent!important}
+.yx-page .advice-card,.yx-page .health-life-card{padding:23px!important;margin-bottom:16px!important}
+.yx-page .advice-title,.yx-page .health-section-title{font-size:24px!important;color:#694433!important;font-weight:760!important}
+.yx-page .advice-text{font-size:18px!important;line-height:1.76!important;color:#604b3f!important}
+.yx-page .form-label{font-size:17px!important;color:#745142!important}
+.yx-page .form-input{border-color:#eaded1!important;background:#fff!important;font-size:18px!important}
+.yx-page .nearby-page .location-card{background:#fff!important;border:0!important;border-radius:21px!important;padding:23px!important;box-shadow:var(--shadow)!important}
+.yx-page .nearby-title{font-size:29px!important;color:#714635!important}
+.yx-page .category-chip{font-size:17px!important;border-radius:99px!important;padding:11px 19px!important;background:#fff!important;border:1px solid #f0e8dc!important;color:#785c4e!important}
+.yx-page .category-chip.active{background:#f38144!important;color:#fff!important;border-color:#f38144!important}
+.yx-page .location-address,.yx-page .address-input{font-size:17px!important}
+.yx-page .nearby-map{border-radius:18px!important;overflow:hidden!important}
+/* 家庭群聊 / 私信：边框不充当信息层级 */
+.yx-page .message-dialog,.yx-page .group-layer{background:#fff!important;border:0!important;border-radius:23px!important;box-shadow:var(--shadow)!important}
+.yx-page .dialog-title,.yx-page .group-title{font-size:27px!important;color:#693f30!important}
+.yx-page .dialog-sub,.yx-page .message-textarea{font-size:17px!important;line-height:1.7!important}
+.yx-page .group-input-bar{background:#fff!important;border-top:1px solid #f0e8df!important}
+.yx-page .top-tool-btn{background:#fff2e7!important;border:0!important;color:#995638!important;font-size:16px!important}
+/* 个人资料 / 风险测评 / 新闻详情 */
+.yx-page .profile-scroll{padding:10px!important}
+.yx-page .profile-page .top-card,.yx-page .profile-page .analysis-card,.yx-page .profile-page .data-card{background:#fff!important;border:0!important;box-shadow:var(--shadow)!important;border-radius:22px!important;padding:22px!important}
+.yx-page .profile-page .section-title{font-size:25px!important}
+.yx-page .profile-page .data-label,.yx-page .profile-page .data-value{font-size:18px!important}
+.yx-page .questionnaire-page .q-card{background:#fff!important;border:0!important;box-shadow:var(--shadow)!important;border-radius:23px!important;padding:28px!important}
+.yx-page .questionnaire-page .q-title{font-size:clamp(26px,2.35vw,34px)!important;color:#654234!important}
+.yx-page .questionnaire-page .q-desc{font-size:18px!important;line-height:1.7!important}
+.yx-page .questionnaire-page .option{background:#fcfaf7!important;border:1px solid #eee7df!important;border-radius:15px!important;min-height:63px!important;padding:13px!important}
+.yx-page .questionnaire-page .option.active{background:#fff0e2!important;border-color:#eda474!important;box-shadow:0 0 0 2px #f6d5ba!important}
+.yx-page .questionnaire-page .option-label{font-size:19px!important;line-height:1.55!important}
+.yx-page .news-scroll{padding:18px!important;background:#fff!important;border-radius:23px!important;box-shadow:var(--shadow)!important}
+.yx-page .news-title{font-size:clamp(27px,2.4vw,36px)!important;line-height:1.4!important;color:#583e31!important}
+.yx-page .news-paragraph{font-size:19px!important;line-height:1.92!important;color:#604c40!important}
+/* 子女端：家人关怀的整洁工作台 */
+.yx-page .child-page,.yx-page .child-page .top,.yx-page .page:has(.child-nav){background:transparent!important}
+.yx-page .child-page .title,.yx-page .page:has(.child-nav) .title,.yx-page .profile-page .profile-title{font-size:clamp(26px,2.4vw,34px)!important;color:#643e30!important;font-weight:790!important}
+.yx-page .child-page .desc,.yx-page .child-page .guard-desc{font-size:17px!important;line-height:1.65!important;color:#856b5e!important}
+.yx-page .guard-card{background:#fff0e0!important;border:0!important;border-radius:22px!important;padding:25px!important;box-shadow:none!important}
+.yx-page .guard-title{font-size:24px!important;color:#754834!important}
+.yx-page .child-weather-card{background:#fff2e6!important;border:0!important;border-radius:21px!important;box-shadow:none!important;padding:23px!important}
+.yx-page .child-news-card{background:white!important;border:0!important;border-radius:21px!important;box-shadow:var(--shadow)!important;padding:23px!important}
+.yx-page .child-weather-city,.yx-page .child-weather-value{font-size:25px!important;color:#805038!important;font-weight:720!important}
+.yx-page .child-section-head{font-size:24px!important}
+.yx-page .family-dashboard-card{border:0!important;padding:23px!important;border-radius:19px!important}
+.yx-page .family-dashboard-card .info-title{font-size:22px!important;color:#624335!important}
+.yx-page .family-dashboard-card .info-text{font-size:17px!important;line-height:1.55!important}
+.yx-page .page:has(.child-nav){padding:16px!important}
+.yx-page .page:has(.child-nav) .card,.yx-page .page:has(.child-nav) .safe,.yx-page .page:has(.child-nav) .summary{background:#fff!important;border:0!important;box-shadow:var(--shadow)!important;border-radius:20px!important;padding:22px!important;font-size:17px!important;line-height:1.65!important}
+.yx-page .page:has(.child-nav) .primary{min-height:50px!important;background:#f07d40!important;color:white!important;font-size:18px!important;border-radius:13px!important;border:0!important}
+.yx-page .child-bottom-nav{background:#fff!important;border-top:1px solid #f1e7de!important;box-shadow:none!important}
+.yx-page .child-bottom-nav .child-nav-item{font-size:15px!important;min-height:61px!important;color:#936b58!important}
+.yx-page .child-bottom-nav .child-nav-item.active{color:#d36b35!important;background:#fff0e5!important}
+/* 登录注册 / 密保：足够大，不覆盖表单本身 */
+.is-auth .login-art{background:linear-gradient(135deg,#fff0df,#ffe4cf)!important}
+.is-auth .login-graphic{right:0!important;top:30%!important;width:min(37vw,560px)!important;height:clamp(200px,29vw,440px)!important}
+.is-auth .login-graphic img{object-fit:cover!important;border-radius:25px!important;box-shadow:0 10px 30px #c18a5c18!important}
+.is-auth .login-art h1{font-size:clamp(42px,4.7vw,65px)!important;color:#7b4230!important}
+.is-auth .login-art p{font-size:18px!important;color:#845743!important}
+.is-auth .login-panel::before,.is-auth .register-panel::before{font-size:40px!important;color:#713e2c!important}
+.is-auth .role-switch{background:#f7f0e9!important;border:0!important}
+.is-auth .role-btn{font-size:19px!important}
+.is-auth .field input{min-height:59px!important;font-size:19px!important;background:white!important}
+.is-auth .login-action-row button{min-height:55px!important;font-size:18px!important}
+.is-auth .login-btn{background:#f17d3e!important;color:#fff!important}
+.is-auth .wechat-btn{background:#fff4e9!important;color:#a85b3a!important}
+.yx-page .register-card,.yx-page .forgot-card,.yx-page .security-card{border:0!important;background:#fff!important;box-shadow:var(--shadow)!important;border-radius:23px!important;padding:25px!important}
+.yx-page .register-title,.yx-page .forgot-page .page-title,.yx-page .security-page .page-title{font-size:30px!important;color:#673f30!important}
+.yx-page .register-subtitle,.yx-page .forgot-page .page-desc,.yx-page .security-page .page-desc{font-size:18px!important;line-height:1.65!important;color:#826758!important}
+/* 细节与动效：仅在可悬停设备上响应，绝不干扰阅读 */
+@media(hover:hover){.yx-page .common-func-item:hover,.yx-page .family-dashboard-card:hover,.yx-page .home-news-item:hover{transform:translateY(-2px)!important}}
+@keyframes gentleReveal{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+.yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel{animation:gentleReveal .45s var(--ease) both!important}
+.yx-page .home-news-card{animation-delay:.05s!important}.yx-page .lesson-card{animation-delay:.09s!important}.yx-page .common-func-panel{animation-delay:.13s!important}
+/* Tablet: single-column content, lesson + shortcuts remain distinct. */
+@media(max-width:1110px){.side-nav{width:220px!important;min-width:220px!important}.yx-page .home-scroll-inner{grid-template-columns:minmax(0,1fr) minmax(250px,.9fr)!important}.yx-page .greet-hello{background-size:100% 100%,auto 94%!important;padding-left:32px!important}.cute-hero-actions{left:32px!important}.yx-page .common-func-grid{grid-template-columns:1fr!important}.yx-page .common-func-item{min-height:69px!important}.yx-page .lesson-video-stage{min-height:210px!important}}
+@media(max-width:860px){
+ .side-nav{width:min(82vw,302px)!important;min-width:0!important}
+ .top-head{height:69px!important}
+ .page-frame{padding:17px 16px 28px!important}
+ .page-intro{padding:18px 20px!important;min-height:90px!important}
+ .page-intro h1{font-size:28px!important}.page-intro p{font-size:16px!important}
+ .mobile-nav{min-height:73px!important;background:rgba(255,253,249,.97)!important;border-top:1px solid #eee4db!important;box-shadow:0 -4px 19px #87684b13!important}
+ .mobile-nav button{color:#9a7460!important}.mobile-nav button.active{background:#ffeddf!important;color:#c46532!important}
+ .mobile-nav button small{font-size:13px!important}
+ .yx-page .home-scroll-inner{display:flex!important;flex-direction:column!important;gap:15px!important}
+ .yx-page .home-grid,.yx-page .home-grid-left,.yx-page .home-grid-right{display:contents!important}
+ .yx-page .home-weather-card,.yx-page .home-news-card,.yx-page .lesson-card,.yx-page .common-func-panel,.yx-page .home-message-mini{width:100%!important;grid-column:auto!important;grid-row:auto!important}
+ .yx-page .greet-hello{min-height:245px!important;font-size:clamp(32px,4.9vw,42px)!important;padding:33px 26px 82px!important;background-size:100% 100%,auto 94%!important}
+ .cute-hero-actions{left:26px!important;bottom:24px!important}
+ .yx-page .common-func-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .yx-page .lesson-video-stage{min-height:200px!important}
+ .yx-page .common-func-panel,.yx-page .lesson-card{min-height:0!important}
+ .yx-page .home-weather-card{min-height:120px!important}
+ .yx-page .home-news-card{min-height:120px!important;max-height:none!important}
+ .is-auth .login-chrome{display:none!important}
+}
+@media(max-width:540px){
+ .page-frame{padding:13px 12px 27px!important}
+ .breadcrumbs strong{font-size:19px!important}
+ .circle-tool{min-width:45px!important;height:45px!important}
+ .yx-page .greet-hello{min-height:243px!important;padding:30px 18px 82px!important;font-size:34px!important;background-size:100% 100%,auto 78%!important;background-position:center,right -65px top!important;background-image:linear-gradient(90deg,#fff0df 0%,rgba(255,240,223,.97) 43%,rgba(255,240,223,.5) 73%,rgba(255,240,223,.03) 100%),url('assets/cute/elderly.webp')!important}
+ .yx-page .greet-hello::before{font-size:16px!important;max-width:220px!important}
+ .cute-hero-actions{left:18px!important;bottom:21px!important;gap:8px!important}
+ .cute-hero-actions button{font-size:16px!important;min-height:46px!important;padding:8px 14px!important}
+ .yx-page .home-weather-card{padding:22px!important;min-height:112px!important}
+ .yx-page .home-weather-card::after{width:73px!important;height:73px!important;top:20px!important;right:80px!important;opacity:.42!important}
+ .yx-page .home-weather-city{font-size:28px!important}.yx-page .home-weather-date{font-size:16px!important}
+ .yx-page .home-weather-temp{font-size:36px!important}.yx-page .home-weather-name{font-size:16px!important}
+ .yx-page .home-news-card{padding:20px!important;min-height:116px!important}
+ .yx-page .home-news-title{font-size:22px!important}.yx-page .home-news-empty,.yx-page .home-news-name{font-size:17px!important}
+ .yx-page .lesson-card,.yx-page .common-func-panel{padding:20px!important}
+ .yx-page .lesson-title,.yx-page .common-func-title{font-size:23px!important}
+ .yx-page .lesson-video-toolbar{gap:8px!important;padding:10px!important}
+ .yx-page .lesson-current-title{font-size:16px!important;min-width:0!important}
+ .yx-page .lesson-picker-open{font-size:15px!important;padding:5px 9px!important}
+ .yx-page .lesson-video-stage{min-height:190px!important;max-height:270px!important}
+ .yx-page .lesson-video{min-height:188px!important;max-height:270px!important}
+ .yx-page .common-func-grid{gap:10px!important}
+ .yx-page .common-func-item{padding:11px!important;min-height:80px!important;gap:8px!important}
+ .yx-page .common-func-item-label{font-size:16px!important}
+ .yx-page .quick-icon{width:42px;height:42px;min-width:42px;border-radius:13px}
+ .yx-page .quick-icon svg{width:24px;height:24px}
+ .yx-page .home-message-mini{min-height:75px!important;padding:17px 20px!important}
+ .yx-page .m-summary{padding:17px 10px!important;min-height:95px!important}
+ .yx-page .summary-label{font-size:15px!important}.yx-page .summary-amount{font-size:clamp(20px,5vw,27px)!important}
+ .yx-page .action-btn{font-size:15px!important;min-width:0!important;min-height:49px!important;padding:9px!important}
+ .yx-page .assistant-page .chat-scroll{padding:13px!important}
+ .yx-page .assistant-page .msg-text{font-size:17px!important}
+ .yx-page .assistant-tool-btn{font-size:15px!important;min-width:0!important}
+ .yx-page .recognize-card,.yx-page .track-card,.yx-page .questionnaire-page .q-card{padding:19px!important}
+ .yx-page .questionnaire-page .option-label{font-size:18px!important}
+ .yx-page .child-page .title{font-size:28px!important}
+ .yx-page .child-news-card,.yx-page .child-weather-card,.yx-page .guard-card{padding:20px!important}
+ .yx-page .nearby-map{max-height:260px!important}
+ .yx-page .profile-scroll{padding:5px!important}
+ .yx-page .news-paragraph{font-size:18px!important}
+ .yx-page .register-card,.yx-page .forgot-card,.yx-page .security-card{padding:18px!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.yx-page .home-news-refresh svg{width:21px;height:21px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* High-specificity repairs for old mini-program styles: icons & video toolbar */
+#yx-render .home-news-card .home-news-refresh{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:9px!important;background:#fff0e4!important;color:#bc6337!important;border:0!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important}
+#yx-render .home-news-card .home-news-refresh svg{display:block!important;width:23px!important;height:23px!important;min-width:23px!important;flex:0 0 23px!important;stroke:currentColor!important;stroke-width:2.1!important}
+#yx-render .lesson-video-shell .lesson-video-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important;min-height:60px!important;height:auto!important;padding:11px 14px!important;background:#fff6e9!important}
+#yx-render .lesson-video-shell .lesson-current-title{display:block!important;width:auto!important;min-width:0!important;max-width:none!important;overflow:hidden!important;text-overflow:ellipsis!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;min-height:0!important;height:auto!important;color:#83543a!important;font-weight:720!important;font-size:17px!important;line-height:1.45!important}
+#yx-render .lesson-video-shell .lesson-picker-open{display:inline-flex!important;flex:0 0 auto!important;width:auto!important;min-width:99px!important;height:40px!important;min-height:40px!important;padding:7px 12px!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;word-break:keep-all!important;writing-mode:horizontal-tb!important;background:#fff!important;border:1px solid #f1dfcd!important;border-radius:11px!important;box-shadow:none!important;color:#b5653a!important;font-size:16px!important;line-height:1.25!important}
+#yx-render .lesson-head .lesson-title{max-width:100%!important;height:auto!important;min-height:0!important;overflow:visible!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.48!important}
+#yx-render .lesson-head .lesson-title .term-inline-home{background:transparent!important;color:inherit!important;text-decoration:underline dotted #d89b78 2px;text-underline-offset:5px!important}
+@media(max-width:540px){#yx-render .lesson-video-shell .lesson-video-toolbar{gap:7px!important;padding:9px 11px!important}#yx-render .lesson-video-shell .lesson-current-title{font-size:16px!important}#yx-render .lesson-video-shell .lesson-picker-open{min-width:90px!important;padding:7px 8px!important;font-size:15px!important}}
+/* Correct the pre-existing auth split-column overlap: functional form must be in right half. */
+@media(min-width:861px){
+ body.is-auth .page-frame{box-sizing:border-box!important;position:relative!important;width:50%!important;max-width:none!important;height:100%!important;min-height:100%!important;margin:0 0 0 50%!important;padding:48px clamp(30px,4vw,76px)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important}
+ body.is-auth #yx-render{position:relative!important;width:100%!important;max-width:590px!important;flex:0 1 auto!important}
+ body.is-auth .login-panel{width:100%!important;max-width:none!important;margin:0!important;left:auto!important;right:auto!important}
+ body.is-auth .login-graphic{top:46%!important;right:4%!important;width:min(33vw,490px)!important;height:min(24vw,350px)!important;z-index:1!important}
+ body.is-auth .login-graphic img{object-fit:cover!important}
+ body.is-auth .login-art p{max-width:550px!important;position:relative!important;z-index:3!important}
+}
+@media(max-width:860px){body.is-auth .page-frame{width:100%!important;max-width:570px!important;margin:0 auto!important;min-height:100%!important;padding:32px 18px!important}body.is-auth #yx-render{width:100%!important;max-width:550px!important}body.is-auth .login-chrome{display:none!important}}
+/* Bookkeeping and child safety: remove legacy green call-to-action fills. */
+#yx-render .money-layer .action-toolbar .action-btn{color:#fff!important;border:0!important;box-shadow:0 6px 17px rgba(180,95,49,.14)!important}
+#yx-render .money-layer .action-toolbar .action-btn-add{background:#ed7942!important}
+#yx-render .money-layer .action-toolbar .action-btn-smart{background:#e59a48!important}
+#yx-render .money-layer .action-toolbar .action-btn-import{background:#d8846e!important}
+#yx-render .money-layer .totals-card .total-item{background:#fffaf4!important;border:1px solid #f3e9dc!important;border-radius:17px!important}
+#yx-render .money-layer .total-row .income,#yx-render .money-layer .total-row .expense{color:#ac6b4e!important}
+#yx-render .money-layer .ledger-scope-tabs{border:0!important;background:#f7f1ea!important;padding:6px!important;border-radius:16px!important;box-shadow:none!important}
+#yx-render .money-layer .ledger-scope-tabs>*{border:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;color:#967566!important;border-radius:11px!important;font-size:18px!important}
+#yx-render .money-layer .ledger-scope-tabs>.active{background:#fff!important;color:#ba633c!important;box-shadow:0 3px 10px #b47e6021!important}
+#yx-render .child-page .child-news-card .yx-text,#yx-render .child-page .child-news-card .yx-view{color:#755345!important;font-size:16px!important;line-height:1.6!important}
+#yx-render .child-page .family-dashboard-card .yx-text,#yx-render .child-page .family-dashboard-card .yx-view{color:#704c3d!important}
+#yx-render .child-page .guard-card{background:#fff0df!important}
+/* Smooth details don't add visual noise. */
+#yx-render .home-message-mini:hover,#yx-render .common-func-item:hover{box-shadow:0 7px 20px #9b765516!important}
+/* Child dashboard baseline: remove empty mobile-canvas top padding. */
+#yx-render .child-page{padding:13px 14px 100px!important;min-height:0!important;background:transparent!important;overflow:visible!important}
+#yx-render .child-page .top{margin:0 0 20px!important;padding:0!important}
+#yx-render .child-page .top-main{padding:0 3px!important;margin:0 0 17px!important}
+#yx-render .child-page .top .title{font-size:clamp(28px,2.8vw,36px)!important;line-height:1.3!important}
+#yx-render .child-page .top .desc{font-size:17px!important}
+#yx-render .child-page .guard-card{margin:10px 0 16px!important;border:0!important;background:#fff0e0!important}
+#yx-render .child-page .child-news-card{background:white!important;border:0!important;box-shadow:var(--shadow)!important}
+#yx-render .child-page .child-news-card .child-section-head{font-size:24px!important;font-weight:750!important;color:#684537!important}
+#yx-render .child-page .child-news-card .child-news-item{font-size:18px!important;line-height:1.6!important;color:#765240!important;border-color:#f0eae1!important;font-weight:560!important;padding:12px 0!important}
+#yx-render .child-page .child-news-card .child-news-empty{font-size:18px!important;color:#8b7060!important}
+#yx-render .child-page .child-weather-tip{font-size:17px!important;color:#85624f!important}
+#yx-render .child-page .child-weather-value .yx-text{color:#a16a42!important;font-size:17px!important}
+#yx-render .family-dashboard-card.message{background:#fff5ea!important;border:0!important}
+@media(max-width:540px){#yx-render .child-page{padding:8px 4px 94px!important}#yx-render .child-page .top-main{margin-bottom:13px!important}#yx-render .child-page .guard-card,#yx-render .child-page .child-news-card{padding:20px!important}#yx-render .child-page .family-dashboard-grid{grid-template-columns:1fr!important;gap:12px!important}}
+/* V4.1 · final per-page polish after authenticated desktop and mobile review */
+.side-nav .nav-section{font-size:16px!important}
+/* The child dashboard already owns its welcome heading: avoid a second giant copy of the same title. */
+body.is-child-page:has(#yx-render .child-page) .page-intro{display:none!important}
+/* Recognition and bookkeeping: information hierarchy comes from space and type, not orange outlines. */
+#yx-render .finance-layer .recognize-card,#yx-render .finance-layer .track-card,
+#yx-render .money-layer .ledger-scope-card,#yx-render .money-layer .totals-card{
+ border:0!important;background:#fff!important;box-shadow:var(--shadow)!important;border-radius:21px!important
+}
+#yx-render .finance-layer .track-card{margin-top:16px!important}
+#yx-render .finance-layer .track-card .yx-text,#yx-render .finance-layer .track-card .yx-view{line-height:1.55!important}
+#yx-render .finance-layer .track-card .track-item,#yx-render .finance-layer .track-card .saved-item{
+ padding:14px 16px!important;margin-bottom:8px!important;background:#fff9f0!important;
+ border:0!important;border-radius:12px!important;font-size:17px!important
+}
+#yx-render .money-layer .ledger-scope-card{padding:10px 18px!important}
+#yx-render .money-layer .totals-card{padding:27px!important}
+#yx-render .money-layer .total-row,#yx-render .money-layer .total-label{font-size:18px!important}
+#yx-render .assistant-page .assistant-layer{border:0!important}
+/* Avoid legal/footer microprint in the middle of the login journey, without altering legal notices in finance. */
+body.is-auth .content-footer{margin-top:18px!important;font-size:15px!important;line-height:1.6!important;max-width:540px!important;text-align:center!important}
+/* Real focus states: keyboard and older users can find the active action. */
+#yx-render button:focus-visible,#yx-render input:focus-visible,#yx-render textarea:focus-visible,
+.side-nav button:focus-visible,.top-head button:focus-visible{outline:3px solid #eaa36a!important;outline-offset:3px!important}
+@media(max-width:540px){
+ .side-nav .nav-section{font-size:15px!important}
+ #yx-render .finance-layer .recognize-card,#yx-render .finance-layer .track-card{padding:19px!important}
+ #yx-render .money-layer .totals-card{padding:20px!important}
+}

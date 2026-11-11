@@ -1,0 +1,228 @@
+﻿﻿<view class="bg-page {{globalFontPageClass}}">
+  <view class="page-bg-top">
+    <image class="page-bg-image" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
+  </view>
+
+  <!-- 左上角问候语（绝对定位覆盖层） -->
+  <view class="greet-hello">您好，{{nickname}}</view>
+
+  <!-- 可滚动内容区：字体按钮 + 每日一课 + 贴心功能 -->
+  <scroll-view class="home-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <view class="home-scroll-inner {{globalFontPageClass}}">
+    <view class="global-font-wrap"><button class="global-font-btn {{globalFontPageClass}}" hover-class="none" bindtap="toggleGlobalFontSize">{{globalFontLabel}}</button></view>
+
+    <view class="home-weather-card" bindtap="refreshHomeWeather">
+      <view class="home-weather-left">
+        <view class="home-weather-city">{{weatherCard.city || '当前区域'}}</view>
+        <view class="home-weather-date">{{weatherCard.date || ''}}</view>
+      </view>
+      <view class="home-weather-right">
+        <view class="home-weather-temp">{{weatherCard.temp || '--'}}</view>
+        <view class="home-weather-name">{{weatherCard.weather || '--'}}</view>
+      </view>
+    </view>
+
+    <view class="home-news-card">
+      <view class="home-news-head">
+        <view class="home-news-head-left">
+          <view class="home-news-icon">📰</view>
+          <text class="home-news-title">今日资讯</text>
+          <view class="home-news-badge">实时</view>
+        </view>
+        <view class="home-news-refresh" bindtap="refreshNews">🔄</view>
+      </view>
+      <view wx:if="{{!articles.length}}" class="home-news-empty">{{newsMessage || '暂无实时新闻'}}</view>
+      <view wx:for="{{articles}}" wx:key="id" class="home-news-item" bindtap="openNews" data-index="{{index}}">
+        <view class="home-news-num">{{index + 1}}</view>
+        <view class="home-news-content">
+          <view class="home-news-name">{{item.title}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 每日一课 -->
+    <view class="home-grid">
+      <view class="home-grid-left">
+        <view class="lesson-card lesson-card-compact">
+          <view class="lesson-head" bindtap="readLesson">
+            <view class="lesson-title">
+              <text
+                wx:for="{{lessonTitleSegments}}"
+                wx:for-item="seg"
+                wx:key="*this"
+                class="{{seg.term ? 'term-inline-home' : ''}}"
+                data-term="{{seg.term}}"
+                catchtap="explainTerm"
+              >{{seg.text}}</text>
+            </view>
+          </view>
+          <view class="lesson-video-shell">
+            <view class="lesson-video-toolbar">
+              <view class="lesson-current-title">{{lesson.video_title || lesson.title || '今日理财课堂'}}</view>
+              <button class="lesson-picker-open" hover-class="none" catchtap="openLessonPicker">选集 {{lessonInfo.currentIndex}}/{{lessonInfo.totalCount}}</button>
+            </view>
+            <view wx:if="{{lesson.video_url && !homeLessonVideoBroken}}" class="lesson-video-stage">
+              <video
+                id="homeLessonVideo"
+                class="lesson-video"
+                src="{{lesson.video_url}}"
+                objectFit="contain"
+                controls="{{true}}"
+                page-gesture="{{true}}"
+                enable-auto-rotation="{{true}}"
+                binderror="onHomeLessonVideoError"
+                bindplay="onHomeLessonVideoPlay"
+                bindpause="onHomeLessonVideoPause"
+                bindended="onHomeLessonVideoEnded"
+                bindtimeupdate="onHomeLessonVideoTimeUpdate"
+                bindfullscreenchange="onHomeLessonVideoFullscreenChange"
+                bindloadedmetadata="onHomeLessonVideoLoaded"
+              />
+            </view>
+            <view wx:else class="lesson-fallback">
+              <view class="lesson-fallback-icon">▶</view>
+              <view class="lesson-fallback-text">
+                <view class="lesson-fallback-title">{{lesson.video_title || '今日推荐视频'}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 贴心功能 -->
+      <view class="home-grid-right">
+        <view class="common-func-panel common-func-panel-compact">
+          <view class="common-func-head">
+            <text class="common-func-title">贴心功能</text>
+            <text class="common-func-star">(●'◡'●)</text>
+          </view>
+          <view class="common-func-grid">
+            <view class="common-func-item" bindtap="readAndGo" data-label="记账助手" data-url="/pages/money/money">
+              <text class="common-func-item-label">🖊️记账助手</text>
+            </view>
+            <view class="common-func-item" bindtap="openFamilyPanel" data-label="找儿女">
+              <text class="common-func-item-label">🌸找儿女</text>
+            </view>
+            <view class="common-func-item" bindtap="readAndGo" data-label="家庭群聊" data-url="/pages/family-group-chat/family-group-chat">
+              <text class="common-func-item-label">👪家庭群聊</text>
+              <text wx:if="{{groupUnreadCount > 0}}" class="family-unread-badge">{{groupUnreadCount > 99 ? '99+' : groupUnreadCount}}</text>
+            </view>
+            <view class="common-func-item" bindtap="readAndGo" data-label="守护健康" data-url="/pages/health/health">
+              <text class="common-func-item-label">💖守护健康</text>
+            </view>
+            <view class="common-func-item" bindtap="readAndGo" data-label="附近服务" data-url="/pages/nearby/nearby">
+              <text class="common-func-item-label">📍附近服务</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="home-message-mini" bindtap="openMessageModal"><view><text>家庭留言</text><view>查看家人留言，也可以写一条</view></view><view class="home-message-arrow">›</view></view>
+    </view>
+  </scroll-view>
+
+  <!-- 家庭协同弹窗 -->
+  <view wx:if="{{showFamilyPanel}}" class="family-mask" bindtap="closeFamilyPanel">
+    <view class="family-panel" catchtap="stopTap">
+      <view class="family-panel-head">
+        <text class="family-panel-title">🌸 家庭协同</text>
+        <view class="family-panel-close" bindtap="closeFamilyPanel">✕</view>
+      </view>
+
+      <!-- 邀请码区域 -->
+      <view class="family-code-section">
+        <view class="family-section-label">邀请码</view>
+        <view class="family-section-desc">让子女在「子女端」输入此码，即可绑定协同</view>
+        <view class="family-code-row">
+          <view class="family-code-text">{{familyCode || '点击生成'}}</view>
+          <button class="family-code-btn" hover-class="none" bindtap="copyFamilyCode" wx:if="{{familyCode}}">复制</button>
+          <button class="family-code-btn" hover-class="none" bindtap="refreshFamilyCode">刷新</button>
+        </view>
+      </view>
+
+      <!-- 权限设置统一进入家庭协同页，避免首页出现两套开关。 -->
+      <view class="family-perm-section" wx:if="{{familyMembers.length}}">
+        <view class="family-section-label">已绑定家人</view>
+        <view wx:for="{{familyMembers}}" wx:key="id" class="family-member-row">
+          <view class="family-member-info">
+            <text class="family-member-name">{{item.name || '家人'}}</text>
+            <text class="family-member-phone">{{item.phone || ''}}</text>
+          </view>
+          <button class="family-code-btn" hover-class="none" data-id="{{item.id}}" catchtap="goFamilyFull">管理权限</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showHomePermissionPanel}}" class="home-permission-mask" catchtap="closeHomePermissionPanel">
+    <view class="home-permission-panel" catchtap="stopTap">
+      <view class="home-permission-title">设置子女权限</view>
+      <view class="home-permission-note">以下权限只由长辈本人设置，子女端只能查看授权结果。</view>
+      <label><text>理财记录</text><switch color="#7bc865" checked="{{permissionDraft.positions}}" data-key="positions" bindchange="toggleHomePermission" /></label>
+      <label><text>日常收支记录</text><switch color="#7bc865" checked="{{permissionDraft.ledger}}" data-key="ledger" bindchange="toggleHomePermission" /></label>
+      <label><text>风险提示</text><switch color="#f0a35c" checked="{{permissionDraft.risk}}" data-key="risk" bindchange="toggleHomePermission" /></label>
+      <label><text>留言</text><switch color="#7bc865" checked="{{permissionDraft.messages}}" data-key="messages" bindchange="toggleHomePermission" /></label>
+      <label><text>群聊</text><switch color="#f0a35c" checked="{{permissionDraft.groupChat}}" data-key="groupChat" bindchange="toggleHomePermission" /></label>
+      <label><text>健康</text><switch color="#7bc865" checked="{{permissionDraft.health}}" data-key="health" bindchange="toggleHomePermission" /></label>
+      <label><text>位置</text><switch color="#f0a35c" checked="{{permissionDraft.location}}" data-key="location" bindchange="toggleHomePermission" /></label>
+      <view class="home-permission-actions"><button hover-class="none" catchtap="closeHomePermissionPanel">取消</button><button class="save" hover-class="none" catchtap="saveHomePermissions">保存</button></view>
+    </view>
+  </view>
+
+  <!-- 底部导航栏（固定定位） -->
+  <view class="bottom-nav">
+    <view class="nav-item active" bindtap="readNav" data-label="首页">
+      <view class="nav-icon">🌳</view>
+      <view>首页</view>
+    </view>
+
+    <view class="nav-item" bindtap="goAssistant">
+      <view class="nav-icon">🤖</view>
+      <view>问小享</view>
+    </view>
+
+    <view class="nav-item" bindtap="goFinance">
+      <view class="nav-icon">🌱</view>
+      <view>钱生钱</view>
+    </view>
+
+    <view class="nav-item" bindtap="goProfile">
+      <view class="nav-icon">👀</view>
+      <view>我的画像</view>
+    </view>
+  </view>
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+  <family-message-modal visible="{{showMessageModal}}" peer-id="{{messagePeerId}}" bind:close="closeMessageModal"></family-message-modal>
+
+  <view wx:if="{{showLessonPicker}}" class="lesson-picker-mask" catchtap="closeLessonPicker">
+    <view class="lesson-picker-panel" catchtap="stopTap">
+      <view class="lesson-picker-head">
+        <view>
+          <view class="lesson-picker-title">理财课堂选集</view>
+          <view class="lesson-picker-sub">选择后在首页直接播放</view>
+        </view>
+        <button class="lesson-picker-close" hover-class="none" catchtap="closeLessonPicker">×</button>
+      </view>
+      <scroll-view class="lesson-picker-list" scroll-y="true" enhanced="true">
+        <button wx:for="{{lessonList}}" wx:key="id" class="lesson-picker-item {{lessonInfo.currentIndex === index + 1 ? 'active' : ''}}" data-index="{{index}}" hover-class="none" catchtap="switchLessonVideo">
+          <view class="lesson-picker-no">{{index + 1}}</view>
+          <view class="lesson-picker-name">{{item.video_title || item.title}}</view>
+          <view class="lesson-picker-state">{{lessonInfo.currentIndex === index + 1 ? '播放中' : '播放'}}</view>
+        </button>
+      </scroll-view>
+    </view>
+  </view>
+
+</view>
+
+<!-- 语音输入悬浮按钮 -->
+<voice-input
+  type="fab"
+  redirect-to-ask="{{false}}"
+  visible="{{true}}"
+  disabled="{{loading}}"
+  overlay-text="小享正在听，请说出您的问题…"
+  bind:result="onVoiceResult"
+  bind:empty="onVoiceEmpty"
+  bind:error="onVoiceError"
+/>

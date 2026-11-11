@@ -1,0 +1,430 @@
+﻿<view class="bg-page {{globalFontPageClass}}">
+  <image class="page-bg" src="/assets/ui/money_bg.jpg" mode="widthFix" />
+  
+  <view class="layer money-layer">
+    <!-- 返回按钮 -->
+    <button class="abs back round-back-btn" hover-class="none" bindtap="goBack">‹</button>
+    
+    <!-- 汇总区域遮罩 -->
+    <view class="abs summary-mask"></view>
+    
+    <!-- 收入 -->
+    <view class="abs m-summary s1">
+      <view class="summary-amount">{{summary.income_text || '0'}}</view>
+      <text class="summary-label" data-term="养老金" bindtap="explainTerm">养老金/补贴</text>
+    </view>
+    
+    <!-- 支出 -->
+    <view class="abs m-summary s2">
+      <view class="summary-amount">{{summary.expense_text || '0'}}</view>
+      <text class="summary-label" data-term="生活支出" bindtap="explainTerm">生活/医疗</text>
+    </view>
+    
+    <!-- 结余 -->
+    <view class="abs m-summary s3">
+      <view class="summary-amount">{{summary.balance_text || '0'}}</view>
+      <text class="summary-label" data-term="结余" bindtap="explainTerm">本月可结余</text>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="abs action-toolbar">
+      <button class="action-btn action-btn-add" bindtap="add">记一笔</button>
+      <button class="action-btn action-btn-smart" bindtap="smartAdd">智能记理财</button>
+      <button class="action-btn action-btn-import" bindtap="importWechatText">导入账单</button>
+    </view>
+    
+    <!-- 记录列表 -->
+    <scroll-view class="abs records" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <view class="{{globalFontPageClass}}">
+      <view class="ledger-scope-card card">
+        <view class="ledger-scope-tabs">
+          <button class="{{ledgerScope === 'own' ? 'active' : ''}}" data-scope="own" hover-class="none" bindtap="switchLedgerScope">我的账本</button>
+          <button class="{{ledgerScope === 'family' ? 'active' : ''}}" data-scope="family" hover-class="none" bindtap="switchLedgerScope">家庭账本</button>
+        </view>
+        <picker wx:if="{{ledgerScope === 'family' && familyLedgerOptions.length > 1}}" mode="selector" range="{{familyLedgerOptions}}" range-key="label" value="{{selectedFamilyIndex}}" bindchange="onFamilyLedgerChange">
+          <view class="family-ledger-picker">当前家庭：{{familyLedgerOptions[selectedFamilyIndex].label}} 〉</view>
+        </picker>
+        <view wx:if="{{ledgerScope === 'family' && !familyLedgerOptions.length}}" class="family-ledger-empty">暂无绑定家人，请先到家庭协同完成绑定。</view>
+      </view>
+      <view wx:if="{{ledgerTotals}}" class="totals-card card" bindtap="speakTotals">
+        <view class="section-title" data-term="收支总览" catchtap="explainTerm">收支总览</view>
+        <view class="totals-grid">
+          <view class="total-item">
+            <view class="total-label">总体收支</view>
+            <view class="total-row"><text>收入</text><text class="income">+{{ledgerTotals.overall.income_text}}</text></view>
+            <view class="total-row"><text>支出</text><text class="expense">-{{ledgerTotals.overall.expense_text}}</text></view>
+            <view class="total-balance">结余 {{ledgerTotals.overall.balance_text}} 元</view>
+          </view>
+          <view class="total-item">
+            <view class="total-label">日常收支</view>
+            <view class="total-row"><text>收入</text><text class="income">+{{ledgerTotals.daily.income_text}}</text></view>
+            <view class="total-row"><text>支出</text><text class="expense">-{{ledgerTotals.daily.expense_text}}</text></view>
+            <view class="total-balance">结余 {{ledgerTotals.daily.balance_text}} 元</view>
+          </view>
+          <view class="total-item total-item-wide">
+            <view class="total-label">理财收支</view>
+            <view class="total-row"><text>收益/赎回</text><text class="income">+{{ledgerTotals.finance.income_text}}</text></view>
+            <view class="total-row"><text>买入/支出</text><text class="expense">-{{ledgerTotals.finance.expense_text}}</text></view>
+            <view class="total-balance">净变化 {{ledgerTotals.finance.balance_text}} 元</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="money-mode-tabs money-mode-tabs-inline">
+        <button class="{{moneyMode === 'daily' ? 'active' : ''}}" hover-class="none" data-mode="daily" bindtap="switchMoneyMode">日常收支</button>
+        <button class="{{moneyMode === 'finance' ? 'active' : ''}}" hover-class="none" data-mode="finance" bindtap="switchMoneyMode">理财记录</button>
+      </view>
+
+      <view wx:if="{{showFinanceParsePanel && lastFinanceParse}}" class="finance-parse-card card">
+        <view class="finance-parse-head">
+          <view>
+            <view class="section-title">理财图片识别结果</view>
+            <view class="finance-parse-status">只展示图片实际识别内容，由您决定是否保存</view>
+          </view>
+          <button class="panel-round-close round-close-btn" hover-class="none" catchtap="closeFinanceParsePanel">×</button>
+        </view>
+        <view wx:if="{{lastFinanceParse.ledgerCards.length}}" class="recognized-ledger-section">
+          <view class="recognized-section-title">识别到的收支明细</view>
+          <view wx:for="{{lastFinanceParse.ledgerCards}}" wx:for-index="ledgerIndex" wx:key="key" class="recognized-ledger-card {{item.recordKind}}">
+            <view class="recognized-ledger-head">
+              <view>
+                <view class="recognized-ledger-title"><text wx:for="{{item.titleSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></view>
+                <view class="recognized-ledger-meta">{{item.kindLabel}} · {{item.category}}<text wx:if="{{item.date}}"> · {{item.date}}</text></view>
+              </view>
+              <view class="recognized-ledger-amount {{item.type === '收入' ? 'income' : 'expense'}}">{{item.type === '收入' ? '+' : '-'}}{{item.amountText}}元</view>
+            </view>
+            <view class="recognized-ledger-actions">
+              <button hover-class="none" data-index="{{ledgerIndex}}" catchtap="editRecognizedLedgerItem">修改</button>
+              <button class="delete" hover-class="none" data-index="{{ledgerIndex}}" catchtap="deleteRecognizedLedgerItem">删除</button>
+              <button class="save" hover-class="none" data-index="{{ledgerIndex}}" disabled="{{item.saved}}" catchtap="saveRecognizedLedgerItem">{{item.saved ? '已加入' : '加入收支'}}</button>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{!lastFinanceParse.products.length && !lastFinanceParse.ledgerCards.length}}" class="finance-no-product">没有整理出可保存的明细，请换一张更清晰的图片，或使用文字记账补充。</view>
+        <view wx:for="{{lastFinanceParse.products}}" wx:for-index="productIndex" wx:key="key" class="recognized-product-card">
+          <view class="recognized-product-head">
+            <view class="recognized-product-title">{{item.title}}</view>
+          </view>
+          <view class="finance-field-grid {{item.expanded ? 'expanded' : 'collapsed'}}">
+            <view wx:for="{{item.fields}}" wx:for-item="field" wx:for-index="fieldIndex" wx:key="key" class="finance-field editable-finance-field" data-product-index="{{productIndex}}" data-field-index="{{fieldIndex}}" catchtap="editRecognizedField">
+              <view class="finance-field-label">
+                <text wx:for="{{field.labelSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text>
+              </view>
+              <view class="finance-field-value">
+                <text wx:for="{{field.valueSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="recognized-edit-tip">点击任意信息可修改</view>
+          <button wx:if="{{item.fields.length > 6}}" class="product-expand-btn" hover-class="none" data-index="{{productIndex}}" catchtap="toggleFinanceProduct">{{item.expanded ? '收起详情' : '展开全部 ' + item.fields.length + ' 项'}}</button>
+          <view class="product-save-actions">
+            <button class="product-edit-result" hover-class="none" data-index="{{productIndex}}" catchtap="editRecognizedProduct">修改</button>
+            <button class="product-delete-result" hover-class="none" data-index="{{productIndex}}" catchtap="deleteRecognizedProduct">删除</button>
+            <button class="product-save-ledger" hover-class="none" data-index="{{productIndex}}" disabled="{{item.savedLedger}}" catchtap="saveFinanceParseToLedger">{{item.savedLedger ? '已加入收支' : '加入收支'}}</button>
+            <button class="product-save-finance" hover-class="none" data-index="{{productIndex}}" disabled="{{item.savedFinance}}" catchtap="saveFinanceParseRecord">{{item.savedFinance ? '已加入理财记录' : '加入理财记录'}}</button>
+            <button class="product-ask-assistant" hover-class="none" data-index="{{productIndex}}" catchtap="askRecognizedProduct">问小享解释</button>
+          </view>
+        </view>
+        <view wx:if="{{lastFinanceParse.suspicious_words.length}}" class="risk-word-row">
+          <text wx:for="{{lastFinanceParse.suspicious_words}}" wx:key="*this">{{item}}</text>
+        </view>
+        <view wx:for="{{lastFinanceParse.risk_tips}}" wx:key="*this" class="risk-tip">{{item}}</view>
+        <view class="finance-elder-text">{{lastFinanceParse.elder_explanation}}</view>
+        <view wx:if="{{financeParseAskOpen}}" class="position-ask-box inline-product-ask">
+          <view class="inline-ask-head">
+            <text>小享解释</text>
+            <button class="inline-ask-close" hover-class="none" catchtap="closeFinanceParseAsk">×</button>
+          </view>
+          <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
+            <view wx:for="{{financeParseAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
+            <view wx:if="{{financeParseAskLoading}}" class="position-ask-message assistant">小享正在认真看识别结果…</view>
+          </scroll-view>
+          <view class="position-ask-input-row">
+            <input value="{{financeParseAskInput}}" bindinput="onFinanceParseAskInput" bindconfirm="sendFinanceParseAsk" confirm-type="send" placeholder="继续问收益、期限或风险…" />
+            <button hover-class="none" catchtap="sendFinanceParseAsk">发送</button>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{showParsePanel && lastParse}}" class="parse-card card">
+        <view class="section-title">智能解析结果</view>
+        <view class="analysis-text">{{lastParse.message}}</view>
+        <view class="parse-stats">
+          <view>
+            <text class="parse-stat-label">日常收支</text>
+            <text class="parse-stat-number">{{lastParse.summary.daily_count || 0}} 条</text>
+          </view>
+          <view>
+            <text class="parse-stat-label">理财记录</text>
+            <text class="parse-stat-number">{{lastParse.summary.finance_count || 0}} 条</text>
+          </view>
+        </view>
+        <view wx:if="{{lastParse.daily_items.length}}" class="parse-block">
+          <view class="parse-title" data-term="日常收支" bindtap="explainTerm">日常购物/收入</view>
+          <view wx:for="{{lastParse.daily_items}}" wx:key="source_text" class="parse-item between">
+            <view>
+              <view class="rname">{{item.title}}</view>
+              <view class="small">分类：{{item.category}} · {{item.type}}</view>
+              <view class="parse-detail">{{item.detail}}</view>
+              <view wx:if="{{item.source_text}}" class="parse-source">原文：{{item.source_text}}</view>
+            </view>
+            <view class="amount {{item.type==='收入'?'income':'expense'}}">{{item.type==='收入'?'+':'-'}}{{item.amount}}</view>
+          </view>
+        </view>
+        <view wx:if="{{lastParse.finance_items.length}}" class="parse-block">
+          <view class="parse-title" data-term="理财收益" bindtap="explainTerm">理财买入/收益</view>
+          <view wx:for="{{lastParse.finance_items}}" wx:key="source_text" class="parse-item between">
+            <view>
+              <view class="rname">{{item.title}}</view>
+              <view class="small">分类：{{item.category}} · {{item.type}}</view>
+              <view class="parse-detail">{{item.detail}}</view>
+              <view wx:if="{{item.source_text}}" class="parse-source">原文：{{item.source_text}}</view>
+            </view>
+            <view class="amount {{item.type==='收入'?'income':'expense'}}">{{item.type==='收入'?'+':'-'}}{{item.amount}}</view>
+          </view>
+        </view>
+        <view wx:for="{{lastParse.warnings}}" wx:key="*this" class="risk-tip">{{item}}</view>
+        <view class="parse-actions">
+          <button class="parse-btn cancel" bindtap="cancelParsedImport">取消</button>
+          <button class="parse-btn ok" bindtap="confirmParsedImport">确认导入</button>
+        </view>
+      </view>
+
+      <!-- 理财持仓 -->
+      <view wx:if="{{moneyMode === 'finance' && positions.length}}" class="section-card card">
+        <view class="section-title" data-term="理财持仓" bindtap="explainTerm">理财记录明细</view>
+        <view wx:for="{{positions}}" wx:key="id" class="position-item" data-id="{{item.id}}" bindtap="openPositionDetail">
+          <view class="position-head">
+            <view class="position-main">
+              <view class="rname">{{item.product_name}}</view>
+            </view>
+            <button class="refresh-btn" data-id="{{item.id}}" catchtap="refreshPosition">刷新</button>
+          </view>
+          <view wx:if="{{item.status_label}}" class="position-status">{{item.status_label}}</view>
+        </view>
+      </view>
+      
+      <!-- 理财记录 -->
+      <view wx:if="{{moneyMode === 'finance' && financeRecords.length}}" class="section-card card">
+        <view class="section-title" data-term="理财收益" bindtap="explainTerm">理财收入/买入记录</view>
+        <view wx:for="{{financeRecords}}" wx:key="id" class="record-line" data-id="{{item.id}}" bindtap="openRecordDetail">
+          <view class="record-main">
+            <view class="rname">{{item.title}}</view>
+            <view class="small">{{item.category || '理财'}} · {{item.type}} · {{item.date}}<text wx:if="{{ledgerScope === 'family'}}"> · {{item.owner_name || '家人'}}</text></view>
+          </view>
+          <view class="record-right">
+            <view class="amount {{item.type==='收入'?'income':'expense'}}">
+              {{item.type==='收入'?'+':'-'}}{{item.amount_text || item.amount}}
+            </view>
+            <view wx:if="{{item.editable}}" class="record-actions">
+              <button data-id="{{item.id}}" catchtap="editRecord">修改</button>
+              <button data-id="{{item.id}}" catchtap="deleteRecord">删除</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 日常记录 -->
+      <view wx:if="{{moneyMode === 'daily' && dailyRecords.length}}" class="section-card card">
+        <view class="section-title" data-term="日常收支" bindtap="explainTerm">日常购物/收入记录</view>
+        <view wx:for="{{dailyRecords}}" wx:key="id" class="record-line" data-id="{{item.id}}" bindtap="openRecordDetail">
+          <view class="record-main">
+            <view class="rname">{{item.title}}</view>
+            <view class="small">{{item.category || '日常'}} · {{item.type}} · {{item.date}}<text wx:if="{{ledgerScope === 'family'}}"> · {{item.owner_name || '家人'}}</text></view>
+          </view>
+          <view class="record-right">
+            <view class="amount {{item.type==='收入'?'income':'expense'}}">
+              {{item.type==='收入'?'+':'-'}}{{item.amount_text || item.amount}}
+            </view>
+            <view wx:if="{{item.editable}}" class="record-actions">
+              <button data-id="{{item.id}}" catchtap="editRecord">修改</button>
+              <button data-id="{{item.id}}" catchtap="deleteRecord">删除</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view wx:if="{{(moneyMode === 'daily' && dailyRecords.length === 0) || (moneyMode === 'finance' && financeRecords.length === 0 && positions.length === 0)}}" class="empty-card card">
+        <view class="empty-title">暂无记录</view>
+        <view class="empty-desc">点击上方按钮，添加一笔收入、支出或理财记录。</view>
+      </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+<view wx:if="{{showDetailPanel && detailRecord}}" class="detail-mask" catchtap="closeRecordDetail">
+  <view class="detail-panel" catchtap="stopTap">
+    <view class="detail-head">
+      <view class="detail-title">收支明细</view>
+      <view class="detail-close" catchtap="closeRecordDetail">×</view>
+    </view>
+    <view class="detail-name">{{detailRecord.title}}</view>
+    <view class="detail-amount {{detailRecord.type==='收入'?'income':'expense'}}">{{detailRecord.type==='收入'?'+':'-'}}{{detailRecord.amount_text || detailRecord.amount}} 元</view>
+    <view class="detail-row"><text>收支类型</text><text>{{detailRecord.type}}</text></view>
+    <view class="detail-row"><text>具体类别</text><text>{{detailRecord.category_name || detailRecord.category || '未分类'}}</text></view>
+    <view class="detail-row"><text>日期</text><text>{{detailRecord.date}}</text></view>
+    <view class="detail-desc">{{detailRecord.detail || detailRecord.description || '暂无更多说明'}}</view>
+    <view wx:if="{{detailRecord.source_text || detailRecord.description}}" class="detail-source">识别原文：{{detailRecord.source_text || detailRecord.description}}</view>
+    <view class="detail-actions">
+      <button hover-class="none" data-id="{{detailRecord.id}}" catchtap="editRecord">修改</button>
+      <button hover-class="none" data-id="{{detailRecord.id}}" catchtap="deleteRecord">删除</button>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{showPocketDetail && selectedPocket}}" class="detail-mask" catchtap="closePocketDetail">
+  <view class="detail-panel pocket-detail-panel" catchtap="stopTap">
+    <view class="detail-head">
+      <view class="detail-title">{{selectedPocket.name}}</view>
+      <view class="detail-close" catchtap="closePocketDetail">×</view>
+    </view>
+    <view class="detail-amount income">{{selectedPocket.amount_text}} 元</view>
+    <view class="detail-row"><text>建议比例</text><text>{{selectedPocket.ratio}}%</text></view>
+    <view class="detail-row"><text>当前状态</text><text>{{selectedPocket.status}}</text></view>
+    <view class="detail-desc">{{selectedPocket.purpose}}</view>
+    <view class="detail-source">分账依据：总资产 {{pocketsSummary.total_asset_text || 0}} 元；月收入 {{pocketsSummary.monthly_income || 0}} 元；月支出 {{pocketsSummary.monthly_expense || 0}} 元。{{pocketsSummary.safe_boundary}}</view>
+    <view wx:if="{{selectedPocket.advice}}" class="risk-tip">{{selectedPocket.advice}}</view>
+    <view class="pocket-tags">
+      <text wx:for="{{selectedPocket.tags}}" wx:key="*this">{{item}}</text>
+    </view>
+    <view class="detail-actions">
+      <button hover-class="none" bindtap="askPocketAnalysis">问小享分析</button>
+      <button hover-class="none" bindtap="closePocketDetail">知道了</button>
+    </view>
+    <view wx:if="{{pocketAskOpen}}" class="position-ask-box inline-product-ask">
+      <view class="inline-ask-head">
+        <text>分账依据说明</text>
+        <button class="inline-ask-close" hover-class="none" catchtap="closePocketAsk">×</button>
+      </view>
+      <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
+        <view wx:for="{{pocketAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
+        <view wx:if="{{pocketAskLoading}}" class="position-ask-message assistant">小享正在结合您的收支分析…</view>
+      </scroll-view>
+      <view class="position-ask-input-row">
+        <input value="{{pocketAskInput}}" bindinput="onPocketAskInput" bindconfirm="sendPocketAsk" confirm-type="send" placeholder="继续问为什么这样分…" />
+        <button hover-class="none" catchtap="sendPocketAsk">发送</button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{showPositionDetail && selectedPosition}}" class="detail-mask" catchtap="closePositionDetail">
+  <view class="detail-panel position-detail-panel" catchtap="stopTap">
+    <view class="detail-head">
+      <view class="detail-title">理财持仓详情</view>
+      <view class="detail-close" catchtap="closePositionDetail">×</view>
+    </view>
+    <view class="position-action-bar">
+      <button hover-class="none" catchtap="editPositionRecord">修改</button>
+      <button class="danger" hover-class="none" catchtap="deletePositionRecord">删除</button>
+      <button class="assistant" hover-class="none" catchtap="togglePositionAsk">问小享</button>
+      <button hover-class="none" catchtap="closePositionDetail">关闭</button>
+    </view>
+    <view class="detail-name">{{selectedPosition.product_name}}</view>
+    <view class="detail-amount income">{{selectedPosition.amount_text || selectedPosition.amount}} 元</view>
+    <view class="detail-row"><text>记录状态</text><text>{{selectedPosition.status_label || selectedPosition.source_label}}</text></view>
+      <view wx:if="{{selectedPosition.institution}}" class="detail-row"><text>发行机构</text><text>{{selectedPosition.institution}}</text></view>
+      <view wx:if="{{selectedPosition.risk_level}}" class="detail-row"><text>风险等级</text><text>{{selectedPosition.risk_level}}</text></view>
+      <view wx:if="{{selectedPosition.benchmark}}" class="detail-row"><text>收益基准</text><text>{{selectedPosition.benchmark}}</text></view>
+      <view wx:if="{{selectedPosition.term}}" class="detail-row"><text>产品期限</text><text>{{selectedPosition.term}}</text></view>
+      <view wx:if="{{selectedPosition.min_amount}}" class="detail-row"><text>起购金额</text><text>{{selectedPosition.min_amount}}</text></view>
+      <view wx:if="{{selectedPosition.redeem_rule}}" class="detail-row"><text>赎回规则</text><text>{{selectedPosition.redeem_rule}}</text></view>
+      <view wx:if="{{selectedPosition.service_phone}}" class="detail-row"><text>客服电话</text><text>{{selectedPosition.service_phone}}</text></view>
+      <view wx:for="{{selectedPosition.detailFields}}" wx:key="label" class="detail-row">
+        <text><text wx:for="{{item.labelSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></text>
+        <text><text wx:for="{{item.valueSegments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'explainable-finance' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></text>
+      </view>
+      <view wx:if="{{selectedPosition.risk_summary}}" class="risk-tip">{{selectedPosition.risk_summary}}</view>
+      <view wx:if="{{selectedPosition.elder_explanation}}" class="detail-desc">{{selectedPosition.elder_explanation}}</view>
+      <view wx:if="{{positionAskOpen}}" class="position-ask-box">
+        <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
+          <view wx:for="{{positionAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
+          <view wx:if="{{positionAskLoading}}" class="position-ask-message assistant">小享正在认真想一想…</view>
+        </scroll-view>
+        <view class="position-ask-input-row">
+          <input value="{{positionAskInput}}" bindinput="onPositionAskInput" bindconfirm="sendPositionAsk" confirm-type="send" placeholder="继续问小享…" />
+          <button hover-class="none" catchtap="sendPositionAsk">发送</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+<!-- ========== 记账表单弹窗 ========== -->
+<view wx:if="{{showAddPanel}}" class="panel-mask" bindtap="closeAddPanel">
+  <view class="add-panel" catchtap="stopTap">
+    <!-- 头部 -->
+    <view class="panel-header">
+      <text class="panel-title">{{editingRecordId ? '修改记录' : (recordType === 'income' ? '记录收入' : '记录支出')}}</text>
+      <view class="panel-close" catchtap="closeAddPanel">×</view>
+    </view>
+    
+    <!-- 表单内容 -->
+    <scroll-view class="panel-body" scroll-y="true" enhanced="true" show-scrollbar="false">
+      <!-- 选择分类 -->
+      <view class="form-section">
+        <text class="form-label">选择分类</text>
+        <view class="category-grid">
+          <view
+            wx:for="{{categories}}"
+            wx:key="id"
+            class="category-item {{selectedCategory === item.id ? 'category-selected' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="selectCategory"
+          >
+            <text class="category-icon">{{item.icon}}</text>
+            <text class="category-name">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 金额输入 -->
+      <view class="form-section">
+        <text class="form-label">金额（元）</text>
+        <view class="amount-input-row">
+          <text class="amount-symbol">¥</text>
+          <input
+            class="amount-input"
+            type="digit"
+            placeholder="0.00"
+            placeholder-class="input-placeholder"
+            value="{{amount}}"
+            bindinput="onAmountInput"
+            focus
+          />
+        </view>
+      </view>
+      
+      <!-- 备注输入 -->
+      <view class="form-section">
+        <text class="form-label">备注（选填）</text>
+        <input
+          class="description-input"
+          placeholder="添加备注信息"
+          placeholder-class="input-placeholder"
+          value="{{description}}"
+          bindinput="onDescriptionInput"
+        />
+      </view>
+    </scroll-view>
+    
+    <!-- 底部按钮 -->
+    <view class="panel-footer">
+      <button class="panel-btn panel-btn-cancel" hover-class="none" bindtap="closeAddPanel">取消</button>
+      <button class="panel-btn panel-btn-confirm" hover-class="none" bindtap="submitRecord">{{editingRecordId ? '保存修改' : '确认'}}</button>
+    </view>
+  </view>
+</view>
+
+<!-- ========== 录音浮层（保留兼容旧的录音逻辑） ========== -->
+<view wx:if="{{recording}}" class="record-overlay">
+  <view class="record-pulse"></view>
+  <text class="record-text">正在聆听…（{{recordingSeconds}}秒/{{recordingMax}}秒）</text>
+  <text class="record-hint">松开结束录音</text>
+</view>
+
+<!-- 语音输入悬浮按钮：一键语音记账 -->
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{loading}}" overlay-text="请说出收支记录，如「今天买菜花了35元」…" bind:result="onVoiceInputResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />

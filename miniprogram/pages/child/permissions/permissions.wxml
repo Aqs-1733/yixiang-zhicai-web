@@ -1,0 +1,16 @@
+﻿<view class="page {{globalFontPageClass}}">
+  <view class="child-nav">
+    <button class="back-btn round-back-btn" hover-class="none" bindtap="back">‹</button>
+    <view class="nav-label">子女端</view>
+  </view>
+  <view class="title">我的授权范围</view>
+  <view wx:for="{{items}}" wx:for-item="elder" wx:key="id" class="card">
+    <view class="name">{{elder.nickname || '长辈'}}</view>
+    <view wx:for="{{elder.permissionRows}}" wx:for-item="perm" wx:key="key" class="perm">
+      <text>{{perm.label}}</text><text class="{{perm.enabled ? 'on' : 'off'}}">{{perm.enabled ? '已授权' : '未授权'}}</text>
+    </view>
+  </view>
+  <view class="safe">子女端权限由长辈确认和调整，未授权内容不会展示。</view>
+</view>
+<child-bottom-nav active="family" />
+

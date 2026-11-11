@@ -1,0 +1,139 @@
+<view class="group-page {{globalFontPageClass}}">
+  <image class="group-bg" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
+
+  <!-- 左上角圆形返回键：必须用 view，不要用 button -->
+  <view class="back-btn round-back-btn" bindtap="goBack">‹</view>
+
+  <view class="group-layer">
+    <view class="group-head">
+      <view class="title-wrap">
+        <view class="group-title {{globalFontPageClass}}">家庭群聊</view>
+      </view>
+    </view>
+
+    <picker wx:if="{{familyOptions.length > 1}}" class="family-chat-picker-wrap" mode="selector" range="{{familyOptions}}" range-key="label" value="{{selectedFamilyIndex}}" bindchange="switchFamilyChat">
+      <view class="family-chat-picker {{globalFontPageClass}}">当前家庭：{{familyOptions[selectedFamilyIndex].label}} 〉</view>
+    </picker>
+
+    <view class="top-tool-row">
+      <button class="top-tool-btn history-btn {{globalFontPageClass}}" hover-class="none" bindtap="openHistoryPanel">记录</button>
+      <button class="top-tool-btn ask-btn {{globalFontPageClass}}" hover-class="none" bindtap="insertXiaoXiang">@小享</button>
+    </view>
+
+    <scroll-view
+      class="group-list"
+      scroll-y="true"
+      enhanced="true"
+      show-scrollbar="false"
+      scroll-into-view="{{scrollTo}}"
+    >
+      <view wx:if="{{messages.length === 0}}" class="empty-card {{globalFontPageClass}}">{{emptyText}}</view>
+
+      <view
+        wx:for="{{messages}}"
+        wx:key="domId"
+        id="{{item.domId}}"
+        class="chat-row {{item.alignClass}} {{item.isAssistant ? 'assistant' : ''}}"
+      >
+        <view wx:if="{{!item.isMine}}" class="chat-avatar {{item.isAssistant ? 'assistant-avatar' : ''}}">
+          <image wx:if="{{item.avatar}}" class="chat-avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+          <text wx:else>{{item.avatarText}}</text>
+        </view>
+
+        <view class="chat-main">
+          <view wx:if="{{item.isImage}}" class="chat-bubble image-bubble {{globalFontPageClass}}" data-url="{{item.imageUrl}}" catchtap="previewImage">
+            <image class="chat-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
+          </view>
+          <view wx:else class="chat-bubble {{globalFontPageClass}}">
+            <text
+              wx:for="{{item.segments}}"
+              wx:for-item="seg"
+              wx:for-index="segIndex"
+              wx:key="segIndex"
+              class="{{seg.term ? 'term-inline-group' : ''}} {{globalFontPageClass}}"
+              data-term="{{seg.term}}"
+              catchtap="explainTerm"
+            >{{seg.text}}</text>
+          </view>
+
+        </view>
+      </view>
+
+      <view wx:if="{{assistantThinking}}" id="assistant-thinking" class="chat-row other assistant">
+        <view class="chat-avatar assistant-avatar">享</view>
+        <view class="chat-main">
+          <view class="chat-bubble thinking-bubble {{globalFontPageClass}}">小享正在认真想一想...</view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="group-input-bar">
+    <view class="mode-switch-btn" bindtap="switchInputMode">
+      <text class="mode-switch-icon">{{inputMode === 'voice' ? '⌨' : '🎤'}}</text>
+    </view>
+    <view class="mode-switch-btn image-mode-btn" bindtap="chooseGroupImage">
+      <text class="mode-switch-icon">图</text>
+    </view>
+
+    <button
+      wx:if="{{inputMode === 'voice'}}"
+      class="hold-speak-btn {{recording ? 'hold-speak-active' : ''}}"
+      hover-class="none"
+      bindtouchstart="startHoldSpeak"
+      bindtouchend="stopHoldSpeak"
+      bindtouchcancel="stopHoldSpeak"
+    >
+      <text class="hold-speak-text {{globalFontPageClass}}">{{recording ? '松开发送 ' + recordingSeconds + 's' : '按住 说话'}}</text>
+    </button>
+
+    <view wx:else class="input-box-v2">
+      <input
+        class="ask-input-v2 {{globalFontPageClass}}"
+        value="{{inputText}}"
+        placeholder="输入家庭群聊消息..."
+        placeholder-class="group-ph"
+        bindinput="onInput"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+        adjust-position="{{false}}"
+        focus="{{inputMode === 'text'}}"
+      />
+      <view wx:if="{{inputText}}" class="clear-btn-v2" bindtap="clearInput">×</view>
+    </view>
+
+    <view wx:if="{{inputMode === 'text'}}" class="send-btn-v2" bindtap="sendMessage">
+      <text class="send-icon-v2">➤</text>
+    </view>
+  </view>
+
+  <view wx:if="{{showHistoryPanel}}" class="history-mask" catchtap="closeHistoryPanel">
+    <view class="history-panel" catchtap="stopTap">
+      <view class="history-head">
+        <view class="history-title">群聊记录</view>
+        <view class="history-close round-close-btn" catchtap="closeHistoryPanel">×</view>
+      </view>
+
+      <scroll-view class="history-list" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view wx:if="{{historyMessages.length === 0}}" class="history-empty">暂无记录</view>
+
+        <view
+          wx:for="{{historyMessages}}"
+          wx:key="domId"
+          class="history-item"
+        >
+          <view class="history-content {{globalFontPageClass}}">{{item.content}}</view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+  <!-- 录音浮层：已有voice按钮，补充浮层动画 -->
+  <view wx:if="{{recording}}" class="record-overlay">
+    <view class="record-pulse"></view>
+    <text class="record-text">正在聆听…（{{recordingSeconds}}秒/30秒）</text>
+    <text class="record-hint">松开发送</text>
+  </view>
+</view>

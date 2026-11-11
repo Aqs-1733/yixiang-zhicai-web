@@ -1,0 +1,195 @@
+﻿<view class="profile-page {{globalFontPageClass}}">
+  <image class="profile-bg" src="/assets/ui/profile_bg.jpg" mode="widthFix"></image>
+
+  <scroll-view class="profile-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <view class="{{globalFontPageClass}}">
+    <!-- 头像 + 昵称（点击同步微信） -->
+    <view class="top-card">
+      <view class="avatar-ring">
+        <button
+          class="avatar-btn"
+          open-type="chooseAvatar"
+          bindchooseavatar="onChooseAvatar"
+        >
+          <image
+            class="avatar-img"
+            src="{{profile.avatar || profile.avatarUrl || '/assets/ui/default_avatar.png'}}"
+            mode="aspectFit"
+          ></image>
+        </button>
+      </view>
+
+      <view class="user-info">
+        <input
+          class="nick-input"
+          type="nickname"
+          value="{{profile.nickname || profile.nickName || ''}}"
+          placeholder="点击获取微信昵称"
+          placeholder-class="input-placeholder"
+          bindinput="onNicknameInput"
+          bindblur="onNicknameBlur"
+          maxlength="20"
+        />
+        <view class="nick-hint">点击上方修改头像和昵称</view>
+      </view>
+    </view>
+
+    <!-- 风险评估结果 -->
+    <view class="analysis-card" bindtap="readAnalysis">
+      <view class="section-head">
+        <view class="section-title">风险评估结果</view>
+      </view>
+
+      <view class="risk-row">
+        <view class="risk-score">
+          <view class="score">{{analysis.risk_score === '' ? '待填写' : analysis.risk_score + '分'}}</view>
+        </view>
+
+        <view class="risk-level">
+          <view class="level">{{analysis.risk_level}}</view>
+        </view>
+      </view>
+
+      <view class="highlight-list">
+        <view wx:for="{{analysis.highlights}}" wx:key="label" class="highlight-item">
+          <text class="highlight-icon">{{item.icon}}</text>
+          <text class="highlight-value">{{item.value}}</text>
+        </view>
+      </view>
+
+    </view>
+
+    <!-- 重新评估入口 -->
+    <view class="reassess-card" bindtap="editRisk">
+      <text class="reassess-icon">🔄</text>
+      <text class="reassess-text">重新评估风险</text>
+    </view>
+
+    <!-- 基础画像信息 -->
+    <view class="data-card">
+      <view class="section-head">
+        <view class="section-title">基础画像信息</view>
+      </view>
+
+      <view
+        wx:for="{{answers}}"
+        wx:key="key"
+        class="data-row"
+      >
+        <!-- 左边：点名词，跳转问小享解释 -->
+        <text
+          class="data-label explainable-text"
+          data-term="{{item.term || item.k}}"
+          catchtap="explainTerm"
+        >
+          {{item.k}}
+        </text>
+
+        <!-- 右边：点数值，直接修改画像 -->
+        <view
+          class="data-value"
+          data-key="{{item.key}}"
+          data-label="{{item.k}}"
+          data-value="{{item.rawValue}}"
+          catchtap="editProfileField"
+        >
+          {{item.v}}
+        </view>
+      </view>
+    </view>
+
+    <view class="family-bind-profile-card">
+      <view class="section-head"><view class="section-title">{{familyMembers.length ? '新建绑定' : '家庭绑定'}}</view></view>
+      <view class="family-bind-person">邀请 1 位家人</view>
+      <view class="family-bind-code">{{familyCode || '暂未生成'}}</view>
+      <view class="family-bind-actions">
+        <button hover-class="none" bindtap="copyFamilyCode">复制绑定码</button>
+        <button hover-class="none" bindtap="refreshFamilyCode">生成新码</button>
+      </view>
+      <button class="bind-existing-family" hover-class="none" bindtap="promptFamilyCode">输入家人绑定码</button>
+    </view>
+
+    <button class="logout-btn" hover-class="none" bindtap="logout">退出登录</button>
+
+    <view class="bottom-space"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 修改画像字段弹窗 -->
+  <view wx:if="{{showEditPanel}}" class="edit-mask" catchtap="cancelEditField">
+    <view class="edit-panel" catchtap="stopTap">
+      <view class="edit-title">修改{{editFieldLabel}}</view>
+
+      <input
+        wx:if="{{editFieldType === 'number' || editFieldType === 'text'}}"
+        class="edit-input"
+        type="{{editFieldType === 'number' ? 'digit' : 'text'}}"
+        value="{{editFieldValue}}"
+        placeholder="请输入新的内容"
+        placeholder-class="input-placeholder"
+        bindinput="onEditFieldInput"
+      />
+
+      <view wx:if="{{editFieldType === 'choice'}}" class="choice-list">
+        <view
+          wx:for="{{editFieldOptions}}"
+          wx:key="*this"
+          class="choice-item {{editFieldValue === item ? 'choice-active' : ''}}"
+          data-value="{{item}}"
+          bindtap="chooseEditOption"
+        >
+          {{item}}
+        </view>
+      </view>
+
+      <view class="edit-actions">
+        <button class="edit-cancel" hover-class="none" bindtap="cancelEditField">取消</button>
+        <button class="edit-confirm" hover-class="none" bindtap="confirmEditField">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showChildPermissionPanel}}" class="edit-mask" catchtap="closeChildPermissionPanel">
+    <view class="edit-panel child-permission-panel" catchtap="stopTap">
+      <view class="edit-title">设置子女权限</view>
+      <view class="permission-note">以下权限只由长辈本人设置，子女端只能查看授权结果。</view>
+      <label class="permission-row"><text>理财记录</text><switch color="#83c86b" checked="{{childPermissions.positions}}" data-key="positions" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>日常收支记录</text><switch color="#83c86b" checked="{{childPermissions.ledger}}" data-key="ledger" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>风险提示</text><switch color="#f0a65d" checked="{{childPermissions.risk}}" data-key="risk" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>留言</text><switch color="#83c86b" checked="{{childPermissions.messages}}" data-key="messages" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>群聊</text><switch color="#f0a65d" checked="{{childPermissions.groupChat}}" data-key="groupChat" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>健康</text><switch color="#83c86b" checked="{{childPermissions.health}}" data-key="health" bindchange="toggleChildPermission" /></label>
+      <label class="permission-row"><text>位置</text><switch color="#f0a65d" checked="{{childPermissions.location}}" data-key="location" bindchange="toggleChildPermission" /></label>
+      <view class="edit-actions"><button class="edit-cancel" bindtap="closeChildPermissionPanel">取消</button><button class="edit-confirm" bindtap="saveChildPermissions">保存</button></view>
+    </view>
+  </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view class="nav-item" bindtap="goHome">
+      <view class="nav-icon">🌳</view>
+      <view>首页</view>
+    </view>
+
+    <view class="nav-item" bindtap="goAssistant">
+      <view class="nav-icon">🤖</view>
+      <view>问小享</view>
+    </view>
+
+    <view class="nav-item" bindtap="goFinance">
+      <view class="nav-icon">🌱</view>
+      <view>钱生钱</view>
+    </view>
+
+    <view class="nav-item active" bindtap="readNav" data-label="我的画像">
+      <view class="nav-icon">👀</view>
+      <view>我的画像</view>
+    </view>
+  </view>
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+
+</view>
+
+<!-- 语音输入悬浮按钮 -->
+<voice-input type="fab" redirect-to-ask="{{false}}" visible="{{true}}" disabled="{{loading}}" overlay-text="请说出画像相关问题…" bind:result="onVoiceResult" bind:empty="onVoiceEmpty" bind:error="onVoiceError" />
+

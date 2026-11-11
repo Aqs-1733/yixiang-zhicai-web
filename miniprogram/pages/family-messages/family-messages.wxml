@@ -1,0 +1,38 @@
+<view class="msg-page {{globalFontPageClass}}">
+  <image class="msg-bg" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
+  <view class="message-overlay">
+    <view class="message-dialog">
+      <view class="dialog-close round-close-btn" catchtap="back">×</view>
+      <view class="dialog-title">家庭留言</view>
+      <view class="dialog-sub">选择家人，写下想说的话</view>
+
+      <picker wx:if="{{members.length}}" mode="selector" range="{{memberNames}}" value="{{selectedIndex}}" bindchange="chooseMember">
+        <view class="member-picker"><text>留言给</text><view>{{selectedName || '请选择家人'}} 〉</view></view>
+      </picker>
+      <view wx:else class="member-empty">{{emptyText || '正在读取已绑定家人…'}}</view>
+
+      <textarea class="message-textarea" value="{{inputText}}" maxlength="300" placeholder="请输入留言内容" placeholder-class="msg-ph" bindinput="onInput" disabled="{{!selectedPeerId}}"></textarea>
+
+      <view wx:if="{{isRecording}}" class="recording-inline"><text>正在录音 {{recordTime}}″</text><button catchtap="stopRecord">停止</button></view>
+      <view class="message-tools">
+        <button class="soft" disabled="{{!selectedPeerId}}" bindtap="{{isRecording ? 'stopRecord' : 'startRecord'}}">{{isRecording ? '停止录音' : '语音留言'}}</button>
+        <button class="soft history" disabled="{{!selectedPeerId}}" bindtap="toggleHistory">{{showHistory ? '收起往来' : '查看往来'}}</button>
+      </view>
+
+      <scroll-view wx:if="{{showHistory}}" class="compact-history" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="{{globalFontPageClass}}">
+        <view wx:if="{{!messages.length}}" class="history-empty">暂无往来留言</view>
+        <view wx:for="{{messages}}" wx:key="id" class="history-item {{item.isMine ? 'mine' : ''}}">
+          <view class="history-name">{{item.isMine ? '我' : item.fromName}}</view>
+          <view wx:if="{{item.isVoice}}" class="history-voice" bindtap="playVoice" data-id="{{item.id}}">{{playingId === item.id ? '暂停' : '播放语音'}} {{item.voiceDurationText}}</view>
+          <view wx:else class="history-content"><text wx:for="{{item.segments}}" wx:for-item="seg" wx:key="*this" class="{{seg.term ? 'term-inline-msg' : ''}}" data-term="{{seg.term}}" catchtap="explainTerm">{{seg.text}}</text></view>
+          <view class="history-time">{{item.timeText}}</view>
+        </view>
+        </view>
+      </scroll-view>
+
+      <view class="dialog-actions"><button class="cancel" catchtap="back">取消</button><button class="send" disabled="{{!selectedPeerId || !inputText}}" bindtap="sendMessage">发送留言</button></view>
+    </view>
+  </view>
+  <term-popups popups="{{termExplainPopups}}" bind:close="closeTermPopup"></term-popups>
+</view>
