@@ -4868,7 +4868,7 @@ function cleanDisplayText(value, fallback = '') {
     .replace(/\[object Object\]/g, '')
     .replace(/undefined|null|NaN/g, '')
     .replace(/^#{1,6}\s*/gm, '')
-    .replace(/^\s*\d+[、.]\s*/gm, '')
+    .replace(/^\s*\d+(?:、|\.(?!\d))\s*/gm, '')
     .replace(/\s{2,}/g, ' ')
     .trim()
   return text || fallback

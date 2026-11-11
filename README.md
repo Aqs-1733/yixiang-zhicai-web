@@ -61,7 +61,7 @@ SQLite 路径为 `backend/app/data/yixiang.db`；`DB_PATH=app/data/yixiang.db` �
 
 ## 验收与复现
 
-初轮自动功能检查 359/360 通过；唯一失败为交接包缺失课程 MP4，`/media/daily_lesson.mp4` 返回404。第三方烟雾测试独立计数，不计入本地功能通过数。新增Seed 2.1 Lite接入44/44检查通过，当前文字/图片/ASR已真实走Ark，播报保留百度TTS；旧的兜底记录不代表云模型成功。图片识别中的本地 OCR 成功不代表云视觉成功。
+初轮自动功能检查 359/360 通过；唯一失败为交接包缺失课程 MP4，`/media/daily_lesson.mp4` 返回404。第三方烟雾测试独立计数，不计入本地功能通过数。新增Seed 2.1 Lite接入51/51检查通过，当前文字/图片/ASR已真实走Ark，播报保留百度TTS；旧的兜底记录不代表云模型成功。图片识别中的本地 OCR 成功不代表云视觉成功。
 
 ```powershell
 .\.venv\Scripts\python.exe 验证工程.py
@@ -101,3 +101,5 @@ D:\Projects\YixiangZhicai_Local\.venv\Scripts\python.exe tests\local_acceptance\
 ## 当前Ark接入设置
 
 使用 `doubao-seed-2-1-lite-260915`，`ARK_THINKING_MODE=disabled`。本机私人配置启用 `ARK_ASR_ENABLED=1`；公共模板默认0，填写自己的ARK_API_KEY/模型后可自行启用。语音识别失败保留原有降级链路，TTS继续由百度提供。所有真实集成测试使用独立DB和合成媒体；原始凭证、录音和截图不提交。新增离线回归命令：`python tests/local_acceptance/test_seed21_adapters.py`。
+
+增量字段修复：修正财务页文本清理把小数误作列表编号的问题；`3.00%`、`1.05`、`12.50元`与点分日期保持原值，列表编号仍可清除。Node回归6/6通过，真实云图像上传后的前端收益字段实测为`3.00%`（另1项通过）。51项统计为直连4+后端4+浏览器3+适配器10+结构23+小数回归6+浏览器字段1，不代表所有页面业务重跑。
