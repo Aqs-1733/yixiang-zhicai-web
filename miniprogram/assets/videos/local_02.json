@@ -1,0 +1,54 @@
+{
+  "title": "投资方式的种类及区别（二）",
+  "source_url": "https://investor.amac.org.cn/investread/tzbdjczs/202006/t20200603_9657.html",
+  "source": "中国证券投资基金业协会《证券投资基金与股权、债券的差异是什么？》; 中国证券监督管理委员会广东监管局《如何对基金产品进行分类？》; 中国证券监督管理委员会《证券期货投资者适当性管理办法》",
+  "sources": [
+    {
+      "title": "证券投资基金与股权、债券的差异是什么？",
+      "url": "https://investor.amac.org.cn/investread/tzbdjczs/202006/t20200603_9657.html",
+      "publisher": "中国证券投资基金业协会"
+    },
+    {
+      "title": "如何对基金产品进行分类？",
+      "url": "https://www.csrc.gov.cn/guangdong/c105589/c31725464ec11439cadd8e6496673031f/content.shtml",
+      "publisher": "中国证券监督管理委员会广东监管局"
+    },
+    {
+      "title": "证券期货投资者适当性管理办法",
+      "url": "https://www.csrc.gov.cn/csrc/c106256/c1653849/content.shtml",
+      "publisher": "中国证券监督管理委员会"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "股票代表对公司的所有权。股东可能取得分红，也要承担经营和市场波动的风险，价格下跌可能带来损失。\n\n基金汇集多位投资者的资金，由管理人按合同投资。股票型、债券型和货币型基金的投资对象与风险不同。\n\n基金分散投资，也不代表本金有保证。比较股票和基金，要看投资对象、波动、费用，以及交易和赎回条件。",
+  "summary": "理解股票的所有权与基金的集合投资，认识波动、费用和赎回条件。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 44.319,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_02.mp4",
+  "poster": "local_02_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "股票代表所有权",
+      "speech": "股票代表对公司的所有权。股东可能取得分红，也要承担经营和市场波动的风险，价格下跌可能带来损失。",
+      "duration_seconds": 14.456
+    },
+    {
+      "n": "02",
+      "title": "基金是集合投资",
+      "speech": "基金汇集多位投资者的资金，由管理人按合同投资。股票型、债券型和货币型基金的投资对象与风险不同。",
+      "duration_seconds": 14.344
+    },
+    {
+      "n": "03",
+      "title": "分散不等于保本",
+      "speech": "基金分散投资，也不代表本金有保证。比较股票和基金，要看投资对象、波动、费用，以及交易和赎回条件。",
+      "duration_seconds": 15.473
+    }
+  ]
+}

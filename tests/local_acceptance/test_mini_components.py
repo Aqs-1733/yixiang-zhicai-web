@@ -16,7 +16,9 @@ with sync_playwright() as pw:
   go('pages/family-messages/family-messages');wait('!!YX.getPage().data.selectedPeerId');text='家庭留言复刻验收'+str(time.time_ns())[-6:]
   page.locator('.message-textarea').fill(text);wait("!!YX.getPage().data.inputText");check('留言输入后发送按钮可用',page.get_by_text('发送留言',exact=True).is_enabled());page.get_by_text('发送留言',exact=True).click();page.wait_for_timeout(400)
   check('家庭留言真实保存',page.evaluate('t=>getApp().request({url:"/family/messages",loading:false}).then(r=>JSON.stringify(r).includes(t))',text))
-  page.wait_for_timeout(500);go('pages/family-messages/family-messages');wait('!!YX.getPage().data.selectedPeerId');page.get_by_text('查看往来',exact=True).click();page.wait_for_timeout(250);check('留言历史查看',text in page.locator('.compact-history').inner_text())
+  page.wait_for_timeout(500);go('pages/family-messages/family-messages');wait('!!YX.getPage().data.selectedPeerId');
+  if page.get_by_text('查看往来',exact=True).count():page.get_by_text('查看往来',exact=True).click()
+  page.wait_for_timeout(250);check('留言历史查看',text in page.locator('.compact-history').inner_text())
  run('family_message',messages)
  def group():
   go('pages/family-group-chat/family-group-chat')

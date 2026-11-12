@@ -483,11 +483,12 @@ async def assistant_chat(req: AssistantChatRequest):
 
     urls=re.findall(r'https?://[A-Za-z0-9._~:/?=&%#-]+',req.message)
     if urls:
-        from app.services.live_news import find_article
+        from app.services.news_reader import lookup,read
         for url in urls[:3]:
-            article=await asyncio.to_thread(find_article,url=url)
+            article=await asyncio.to_thread(lookup,url=url)
+            if article:article=await asyncio.to_thread(read,url=url)
             if article:
-                req.context={**req.context,"verified_article":article,"reference_limit":"仅核验标题、来源和发布日期，没有提供全文；不得补写未核验政策细节。"}
+                req.context={**req.context,"verified_article":article,"reference_limit":"仅依据已核验的来源和正文节选，不代表完整政策全文；不得补写未提供政策细节。"}
                 break
     if re.search(r'(最新|今天|最近|近期|现在|今日).*(新闻|资讯|政策|动态)|(新闻|资讯|政策).*(最新|今天|最近)', req.message):
         from app.services.live_news import news_context

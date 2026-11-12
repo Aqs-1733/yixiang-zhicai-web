@@ -29,6 +29,6 @@
   for(const input of root.querySelectorAll('input[type=text]'))if(input.placeholder==='点击获取微信昵称')input.placeholder='请输入昵称';
  }
  function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(enhance)}}
- new MutationObserver(schedule).observe(root,{childList:true});addEventListener('resize',schedule);
+ root.addEventListener("yx:render",schedule);addEventListener('resize',schedule);
  window.YXPatterns={names:Object.keys(patterns),refresh:schedule};schedule();
 })();

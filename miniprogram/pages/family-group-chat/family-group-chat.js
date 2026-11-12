@@ -102,7 +102,7 @@ Page({
 
   loadMessages(familyId) {
     const selectedId = familyId || this.data.familyId || 0
-    app.request({
+    return app.request({
       url: '/family/group-chat' + (selectedId ? `?elder_id=${encodeURIComponent(selectedId)}` : ''),
       loading: false
     }).then(res => {
@@ -117,7 +117,8 @@ Page({
       if (!familyOptions.length && res.family_id) familyOptions.push({ familyId: res.family_id, label: '我的家庭' })
       const selectedFamilyIndex = Math.max(0, familyOptions.findIndex(item => String(item.familyId) === String(res.family_id)))
 
-      this.setData({
+      const signature=JSON.stringify({messages,members:res.members,familyId:res.family_id})
+      if(signature!==this._messageSignature){this._messageSignature=signature;this.setData({
         familyId: res.family_id || 0,
         members: res.members || [],
         familyOptions,
@@ -127,15 +128,18 @@ Page({
         scrollTo: messages.length ? messages[messages.length - 1].domId : '',
         historyMessages: this.filterHistory(messages, this.data.historyKeyword)
       })
+      }
+      this._messageDenied=false
       app.checkFamilyGroupUnread(false)
     }).catch(err => {
+      this._messageSignature=null
       const denied = Number(err && err.statusCode) === 403 || /未开放/.test(String(err && err.data && err.data.detail || ''))
       this.setData({
         messages: [],
         historyMessages: [],
         emptyText: denied ? '长辈暂未开放该权限' : '暂时无法读取家庭群聊，请稍后再试'
       })
-      if (denied) wx.showModal({ title: '暂时无法查看', content: '长辈暂未开放该权限', showCancel: false, confirmText: '知道了' })
+      if(denied&&!this._messageDenied)wx.showModal({ title: '暂时无法查看', content: '长辈暂未开放该权限', showCancel: false, confirmText: '知道了' });this._messageDenied=denied
     })
   },
 

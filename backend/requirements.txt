@@ -10,3 +10,6 @@ websockets>=12.0
 imageio-ffmpeg>=0.5.1
 rapidocr==3.9.0
 onnxruntime>=1.24.0
+
+beautifulsoup4==4.15.0
+pypdf==7.0.1

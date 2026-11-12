@@ -11,81 +11,119 @@ function fmtDate() {
 // 每日一课视频库 - 8个视频循环播放
 const LESSON_VIDEOS = [
   {
-    id: 1,
-    title: '每日一课：别被高收益话术带着走',
-    summary: '每日一课 · 防诈骗和稳健理财',
-    content: '看产品时先看机构、风险等级和到账方式，不被高收益话术带节奏。',
-    video_title: '防诈骗第一课：识别高收益陷阱',
-    video_url: 'https://resource.lndx.edu.cn/media/c936c606792da54629b9d925181d26d3/play/760e34622d985d8ba4f2e6c7bbfea422.m3u8'
+    "id": "daily_lesson",
+    "title": "理财基础：先看懂，再决定",
+    "video_title": "理财基础：先看懂，再决定",
+    "content": "欢迎来到颐享智财每日一课。看理财产品时，记住三个检查点：一看机构，二看风险，三看期限。\\n第一，看清楚产品由谁发行，通过正规渠道核实机构和产品信息。陌生人催您转账时，先停下来，不要着急操作。\\n第二，看风险等级。第三，看钱什么时候可以取出来。不要只盯着收益数字，也要看清风险、费用和赎回条件。\\n如果有人同时承诺高收益、稳赚不赔，又让您马上转账，先不要操作。记住：谁发行，有什么风险，何时能取。看清楚，再作决定。",
+    "summary": "理财课堂",
+    "video_url": "/media/lesson-videos/daily_lesson.mp4",
+    "video_poster": "/site/assets/videos/daily_lesson_poster.png",
+    "license": "原创课程",
+    "source_url": ""
   },
   {
-    id: 2,
-    title: '每日一课：如何识别正规金融机构',
-    summary: '每日一课 · 金融知识科普',
-    content: '选择正规持牌机构，保护您的养老钱安全。',
-    video_title: '如何识别正规金融机构',
-    video_url: 'https://resource.lndx.edu.cn/media/44ebd9c760715a869fc6ca4a4771f635/play/93614a77272373765040e5077d597f2f.m3u8'
+    "id": "local_01",
+    "title": "投资方式的种类及区别（一）",
+    "video_title": "投资方式的种类及区别（一）",
+    "content": "存款是把资金存入银行，按约定计息。活期和定期的期限不同，提前支取可能影响利息，先看清约定。\n\n债券体现债权债务关系，发行人按约定还本付息。国债和企业债的发行主体不同，信用与价格风险也不同。\n\n存款、债券和银行理财不是同一回事。理财并非存款，投资产品可能亏损，先核实发行机构和产品性质。",
+    "summary": "认识存款与债券，分清产品性质、期限和发行主体。",
+    "video_url": "/media/lesson-videos/local_01.mp4",
+    "video_poster": "/site/assets/videos/local_01_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568"
   },
   {
-    id: 3,
-    title: '每日一课：养老理财怎么选',
-    summary: '每日一课 · 理财知识',
-    content: '根据风险偏好选择适合自己的养老理财产品。',
-    video_title: '养老理财产品选择指南',
-    video_url: 'https://resource.lndx.edu.cn/media/280da38b97ae1dd0d72a0c404c525781/play/8edd2344885ada7fad1633f612e6d8c8.m3u8'
+    "id": "local_02",
+    "title": "投资方式的种类及区别（二）",
+    "video_title": "投资方式的种类及区别（二）",
+    "content": "股票代表对公司的所有权。股东可能取得分红，也要承担经营和市场波动的风险，价格下跌可能带来损失。\n\n基金汇集多位投资者的资金，由管理人按合同投资。股票型、债券型和货币型基金的投资对象与风险不同。\n\n基金分散投资，也不代表本金有保证。比较股票和基金，要看投资对象、波动、费用，以及交易和赎回条件。",
+    "summary": "理解股票的所有权与基金的集合投资，认识波动、费用和赎回条件。",
+    "video_url": "/media/lesson-videos/local_02.mp4",
+    "video_poster": "/site/assets/videos/local_02_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://investor.amac.org.cn/investread/tzbdjczs/202006/t20200603_9657.html"
   },
   {
-    id: 4,
-    title: '每日一课：警惕养老诈骗新套路',
-    summary: '每日一课 · 防诈骗专题',
-    content: '了解常见的养老诈骗套路，保护财产安全。',
-    video_title: '养老诈骗常见套路解析',
-    video_url: 'https://resource.lndx.edu.cn/media/89ff25977e30513df8295be3982643bf/play/d7b4ae97078097b2e12af96011cd2944.m3u8'
+    "id": "local_03",
+    "title": "投资方式的种类及区别（三）",
+    "video_title": "投资方式的种类及区别（三）",
+    "content": "银行理财按合同约定管理投资者的资金，可能投向债券等资产。银行销售不等于保本，也不等于银行存款。\n\n保险主要提供合同约定的风险保障。要看保障范围、责任免除、缴费期限和退保条件，退保可能产生损失。\n\n存款、理财和保险承担的功能不同。比较时别只看一个收益数字，还要理解风险由谁承担、资金何时可用。",
+    "summary": "分清银行理财与保险的功能，比较风险、期限和合同安排。",
+    "video_url": "/media/lesson-videos/local_03.mp4",
+    "video_poster": "/site/assets/videos/local_03_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=268592&itemId=4214"
   },
   {
-    id: 5,
-    title: '每日一课：银行存款知识科普',
-    summary: '每日一课 · 存款知识',
-    content: '了解存款类型、利率计算和安全保障。',
-    video_title: '银行存款基础知识',
-    video_url: 'https://resource.lndx.edu.cn/media/f1dcb14dc114aeef97edc81744c766db/play/b6475abac28986d9023ce52d982bed75.m3u8'
+    "id": "local_04",
+    "title": "互联网金融与理财",
+    "video_title": "互联网金融与理财",
+    "content": "互联网金融借助网络技术提供支付、投资等服务。操作便捷，不代表产品没有风险，金融的本质没有改变。\n\n在手机上看到理财产品，先核实机构资质和官方渠道，再读产品合同。平台名气大，也不代表本金有保证。\n\n遇到保本高息、陌生群荐股或催促转账，先停下来核实。不要随意点击陌生链接，也不要向他人透露验证码。",
+    "summary": "线上渠道不改变金融风险；核实机构、合同与信息安全。",
+    "video_url": "/media/lesson-videos/local_04.mp4",
+    "video_poster": "/site/assets/videos/local_04_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.csrc.gov.cn/csrc/c100028/c1001900/content.shtml"
   },
   {
-    id: 6,
-    title: '每日一课：如何看懂理财说明书',
-    summary: '每日一课 · 理财技巧',
-    content: '教您读懂产品说明书，了解风险等级和收益规则。',
-    video_title: '理财说明书解读',
-    video_url: 'https://resource.lndx.edu.cn/media/68ab41f7dbfbf4f822d3fe98101b6ac1/play/6131349d6b8a3ba4a8cce1b4acf640d5.m3u8'
+    "id": "local_05",
+    "title": "七天年化收益率和年利率的区别",
+    "video_title": "七天年化收益率和年利率的区别",
+    "content": "常说的七天年化收益率，也叫七日年化收益率，是把最近七天的收益折算成年化指标，不是未来收益承诺。\n\n年利率是以一年为单位表示的计息比例。利率可能固定，也可能浮动，实际利息还取决于本金、期限和规则。\n\n七日年化反映近期表现，年利率说明计息比例，两者含义不同。比较时还要看风险、费用和资金可用的时间。",
+    "summary": "七日年化是历史收益的年化折算；年利率是以年为单位的计息比例。",
+    "video_url": "/media/lesson-videos/local_05.mp4",
+    "video_poster": "/site/assets/videos/local_05_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=1239473"
   },
   {
-    id: 7,
-    title: '每日一课：家庭财务规划入门',
-    summary: '每日一课 · 财务规划',
-    content: '合理规划家庭收支，为养老生活做好准备。',
-    video_title: '家庭财务规划基础',
-    video_url: 'https://resource.lndx.edu.cn/media/35edadf4cff7c4875fa120a176949f39/play/31a60b0de05686c6313d4fe0083d6790.m3u8'
+    "id": "local_06",
+    "title": "外汇投资与结算",
+    "video_title": "外汇投资与结算",
+    "content": "结汇是把持有的外币换成人民币；购汇是用人民币购买外币。结算通常服务于真实收付，不等于投资获利。\n\n外汇投资涉及汇率变动，可能产生收益，也可能产生损失。使用杠杆还会放大风险，不能把换汇当作稳赚。\n\n办理外汇业务，应通过具备相应资格的机构，按真实用途提供资料。不要借用他人额度或参与陌生平台交易。",
+    "summary": "分清结汇、购汇与外汇投资；认识汇率风险及正规办理渠道。",
+    "video_url": "/media/lesson-videos/local_06.mp4",
+    "video_poster": "/site/assets/videos/local_06_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.safe.gov.cn/tianjin/2024/0430/2465.html"
   },
   {
-    id: 8,
-    title: '每日一课：保护个人金融信息',
-    summary: '每日一课 · 信息安全',
-    content: '学会保护银行卡、密码等重要金融信息。',
-    video_title: '个人金融信息安全',
-    video_url: 'https://resource.lndx.edu.cn/media/c893ead36014fd48004e87c0aa53be6e/play/7bae48bab6e844b9360cb420fdd2b105.m3u8'
+    "id": "local_07",
+    "title": "如何选择适合的投资方式",
+    "video_title": "如何选择适合的投资方式",
+    "content": "选择投资方式，先明确这笔钱的用途和需要使用的时间，再了解自己的收入、支出与可能承受的损失。\n\n产品风险、期限和流动性，应与自身情况相匹配。风险测评要如实填写，测评结果和销售意见都不是收益保证。\n\n比较时核实机构资质，读懂费用、赎回条件和风险说明。没有适合所有人的产品，基础知识不能替代独立判断。",
+    "summary": "用目标、期限、风险承受能力及产品信息进行基础自查。",
+    "video_url": "/media/lesson-videos/local_07.mp4",
+    "video_poster": "/site/assets/videos/local_07_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://www.csrc.gov.cn/csrc/c106256/c1653849/content.shtml"
+  },
+  {
+    "id": "local_08",
+    "title": "个人所得税",
+    "video_title": "个人所得税",
+    "content": "个人所得税与个人取得的应税所得有关。工资薪金、劳务报酬、经营所得等类别不同，计算和申报方式也不同。\n\n居民个人的工资薪金、劳务报酬、稿酬和特许权使用费属于综合所得。符合条件的扣除，要按规定如实填报。\n\n年度汇算是核对全年综合所得应纳税额和已预缴税额，可能退税，也可能补税。具体事项以税务机关最新指引为准。",
+    "summary": "认识所得分类、综合所得与年度汇算；不涉及具体税率。",
+    "video_url": "/media/lesson-videos/local_08.mp4",
+    "video_poster": "/site/assets/videos/local_08_poster.png",
+    "license": "CC BY 4.0",
+    "source_url": "https://fgk.chinatax.gov.cn/zcfgk/c100010/c5194444/content.html"
+  },
+  {
+    "id": "open_compound",
+    "title": "开放课堂：看懂复利，不迷信收益",
+    "video_title": "开放课堂：看懂复利，不迷信收益",
+    "content": "这一课，我们一起弄清复利。复利就是把利息加入本金，再参与下一次计算。这个计算方法不是收益承诺。\\n假设本金一千元，年利率固定百分之三，按年计息，不考虑费用。一年后是一千零三十元。第二年把利息也加入计算，两年后是一千零六十点九零元。\\n这个公式假设利率固定，利息再投入。实际理财产品可能亏损，也可能收取费用，不要把计算结果当成产品承诺。\\n学会公式是为了看懂说明，不是为了追逐高收益。遇到稳赚不赔、催促转账的说法，先停下来核实。这一课参考维基教科书金融原理，按知识共享署名相同方式共享四点零协议开放。",
+    "summary": "理财课堂",
+    "video_url": "/media/lesson-videos/open_compound.mp4",
+    "video_poster": "/site/assets/videos/open_compound_poster.png",
+    "license": "CC BY-SA 4.0",
+    "source_url": "https://en.wikibooks.org/wiki/Principles_of_Finance/Section_1/Chapter_2/Time_Value_of_Money/Compounding_and_FV"
   }
 ]
 
 // 获取今日课程（根据日期计算，8天循环）
-function getTodayLesson() {
-  const today = new Date()
-  // 计算从某个固定日期开始的天数，用于确定播放哪个视频
-  const startDate = new Date('2024-01-01')
-  const diffTime = today.getTime() - startDate.getTime()
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-  const index = diffDays % LESSON_VIDEOS.length
-  return LESSON_VIDEOS[index]
-}
+function getTodayLesson() { return LESSON_VIDEOS[0] }
 
 function getDefaultLessonVideoUrl() {
   return getTodayLesson().video_url
@@ -367,7 +405,6 @@ Page({
       return
     }
     this.syncGlobalFont()
-    this.resetHomeLessonVideoState()
     this.load()
     getApp().checkFamilyGroupUnread(true).then(count => this.setData({ groupUnreadCount: count }))
     if (wx.getStorageSync('openElderPermissionPanel')) {
@@ -380,15 +417,16 @@ Page({
   },
 
   onHide() {
-    this.resetHomeLessonVideoState()
+    this._resumeAt=Number(this.data.lessonCurrentTime||0)
+    this.saveLessonProgress()
+    try { wx.createVideoContext('homeLessonVideo',this).pause() } catch(e) {}
   },
 
-  onUnload() {
-    this.resetHomeLessonVideoState()
-  },
+  onUnload() { this.onHide() },
 
   load() {
     const app = getApp()
+    const shouldLoadLesson=!this._catalogLoaded&&!this._catalogLoading
 
     const localProfile = getLocalProfile()
     const nickname = cleanNickname(localProfile.nickname || localProfile.nickName)
@@ -411,32 +449,36 @@ Page({
       todayText: fmtDate(),
       overview: buildOverviewFromProfile(localProfile),
       recommend: buildRecommendFromProfile(localProfile),
-      homeLessonVideoBroken: false,
-      lesson,
+      ...(shouldLoadLesson ? {homeLessonVideoBroken: false,lesson,
       lessonTitleSegments: termHelper.buildTermSegments(lesson.title || ''),
       lessonInfo: {
         currentIndex: currentIndex + 1,
         totalCount: LESSON_VIDEOS.length
-      }
+      }} : {})
     })
 
     this.loadHomeWeather()
     this.loadFamilyMemberCache()
 
     // 尝试从服务器获取课程（服务器优先级更高）
-    app.request({
+    if(shouldLoadLesson){this._catalogLoading=true;app.request({
       url: '/lesson/today'
     }).then(res => {
       const remoteOptions = (res.video_options || []).map((item, idx) => ({
         ...item,
         id: item.id || idx + 1,
         title: item.title || `课程${idx + 1}`,
-        summary: '理财课堂 · 视频学习',
-        content: item.title || '理财课堂视频',
+        summary: item.summary || '理财课堂 · 视频学习',
+        content: item.content || item.title || '理财课堂视频',
+        video_poster:item.poster||item.video_poster||'',
         video_title: item.title || `课程${idx + 1}`,
         video_url: item.url || item.video_url || ''
       })).filter(item => item.video_url)
-      const remoteLesson = mergeLessonData(this.data.lesson, res)
+      const saved=wx.getStorageSync('lesson_progress_'+(wx.getStorageSync('user')||{}).id)||{}
+      const selected=remoteOptions.find(x=>x.id===saved.id)
+      const remoteLesson=selected||mergeLessonData(this.data.lesson,res)
+      this._catalogLoaded=true;this._catalogLoading=false
+      this._resumeAt=selected?Number(saved.position||0):0
       this.setData({
         lesson: remoteLesson,
         lessonTitleSegments: termHelper.buildTermSegments(remoteLesson.title || ''),
@@ -445,8 +487,8 @@ Page({
         homeLessonVideoBroken: false
       })
     }).catch(() => {
-      // 使用本地循环课程，不显示错误
-    })
+      this._catalogLoading=false
+    })}
 
     app.request({
       url: '/profile/me'
@@ -646,6 +688,7 @@ Page({
     const lessonList = this.data.lessonList || LESSON_VIDEOS
     if (Number.isNaN(index) || !lessonList[index]) return
     const nextLesson = lessonList[index]
+    this._resumeAt=0
     this.resetHomeLessonVideoState()
     this.setData({
       lesson: {
@@ -659,6 +702,7 @@ Page({
       },
       homeLessonVideoBroken: false
     })
+    this.saveLessonProgress(0)
     this.closeLessonPicker()
   },
 
@@ -757,7 +801,7 @@ Page({
   
 
   onHomeLessonVideoLoaded(e) {
-    console.log('视频加载完成:', e.detail)
+    if(this._resumeAt>0){const t=this._resumeAt;this._resumeAt=0;wx.createVideoContext('homeLessonVideo',this).seek(t)}
   },
 
   onHomeLessonVideoFullscreenChange(e) {
@@ -768,15 +812,17 @@ Page({
   },
 
   onHomeLessonVideoPlay() {
-    this.setData({ lessonVideoPlaying: true })
+    if(!this.data.lessonVideoPlaying)this.setData({ lessonVideoPlaying: true })
   },
 
   onHomeLessonVideoPause() {
-    this.setData({ lessonVideoPlaying: false })
+    if(this.data.lessonVideoPlaying)this.setData({ lessonVideoPlaying: false })
+    this.saveLessonProgress()
   },
 
   onHomeLessonVideoEnded() {
-    this.setData({ lessonVideoPlaying: false })
+    if(this.data.lessonVideoPlaying)this.setData({ lessonVideoPlaying: false })
+    this.saveLessonProgress()
   },
 
   seekHomeLessonVideo(e) {
@@ -790,11 +836,25 @@ Page({
   onHomeLessonVideoTimeUpdate(e) {
     const currentTime = e.detail.currentTime || 0
     const duration = e.detail.duration || 0
+    if(Math.floor(currentTime)===Math.floor(this.data.lessonCurrentTime||0)&&duration===this.data.lessonDuration)return
     this.setData({
       lessonCurrentTime: currentTime,
       lessonDuration: duration,
       lessonTimeText: `${formatVideoTime(currentTime)} / ${formatVideoTime(duration)}`
     })
+    if(Date.now()-(this._lastProgressSave||0)>4000)this.saveLessonProgress()
+  },
+
+  saveLessonProgress(position) {
+    const lesson=this.data.lesson||{}
+    if(!lesson.id)return
+    this._lastProgressSave=Date.now()
+    wx.setStorageSync('lesson_progress_'+(wx.getStorageSync('user')||{}).id,{id:lesson.id,position:position===undefined?Number(this.data.lessonCurrentTime||0):position,updated_at:Date.now()})
+  },
+
+  retryLessonVideo() {
+    this.setData({homeLessonVideoBroken:false})
+    if(typeof document!=='undefined')setTimeout(()=>document.querySelector('#homeLessonVideo')?.load(),0)
   },
 
   resetHomeLessonVideoState() {

@@ -15,7 +15,7 @@
  };
  document.addEventListener('DOMContentLoaded',()=>{
   const render=document.getElementById('yx-render');
-  if(render){const obs=new MutationObserver(clean);obs.observe(render,{childList:true,subtree:false});}
+  if(render){const obs=new MutationObserver(clean);render.addEventListener("yx:render",clean);}
   clean();
  });
 })();

@@ -1721,8 +1721,10 @@ Page({
   },
 
   confirmParsedImport() {
+    if(this._importSubmitting)return
     const parsed = this.data.lastParse
     if (!parsed) return
+    this._importSubmitting=true
     app.request({
       url: '/ledger/import/confirm',
       method: 'POST',
@@ -1734,12 +1736,12 @@ Page({
       loading: true
     }).then(res => {
       this.setData({ showParsePanel: false, lastParse: null })
-      this.speak('已导入' + (res.imported_count || 0) + '条记录')
+      this.speak(res.already_imported?'这批记录已经导入':('已导入'+(res.imported_count||0)+'条记录'))
       wx.showToast({ title: `已导入${res.imported_count || 0}条`, icon: 'success' })
       this.load()
     }).catch(() => {
       wx.showToast({ title: '暂时没有导入成功，请稍后再试', icon: 'none' })
-    })
+    }).finally(()=>{this._importSubmitting=false})
   },
 
   cancelParsedImport() {

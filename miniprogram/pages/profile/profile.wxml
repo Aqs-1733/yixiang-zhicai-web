@@ -32,6 +32,7 @@
         />
         <view class="nick-hint">点击上方修改头像和昵称</view>
       </view>
+      <image class="profile-senior-art" src="/site/assets/flow/elder-couple.png" mode="aspectFit" aria-hidden="true" />
     </view>
 
     <!-- 风险评估结果 -->

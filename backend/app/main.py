@@ -225,13 +225,18 @@ def build_local_lesson_video_options(base_url: str) -> List[Dict[str, str]]:
     ]
 
     local = [{"id": video.stem, "title": build_lesson_video_title(video), "url": base_url + "/media/lesson-videos/" + quote(video.name)} for video in get_local_lesson_video_files()]
+    external={item['title']:item['url'] for item in remote}
     for item in local:
-        try:metadata=json.loads((LOCAL_LESSON_VIDEO_DIR / (item["id"]+".json")).read_text(encoding="utf-8"))
+        try:metadata=json.loads((LOCAL_LESSON_VIDEO_DIR / (item['id']+'.json')).read_text(encoding='utf-8'))
         except Exception:metadata={}
-        item.update({k:metadata.get(k,"") for k in ("license","license_url","source_url","attribution","updated_at")})
-        item["source"]=metadata.get("attribution") or "颐享智财原创课程"
-    for item in remote:item.update(source="国家老年大学 · 外部课程",license="未标注开放授权，仅保留原来源播放链接",source_url="https://www.lndx.edu.cn/")
-    return local + remote
+        item.update({k:metadata.get(k,'') for k in ('license','license_url','source_url','attribution','updated_at','summary','content')})
+        item['source']=metadata.get('source') or metadata.get('attribution') or '颐享智财原创课程'
+        item['poster']=base_url+'/site/assets/videos/'+item['id']+'_poster.png'
+        item['original_source_url']=external.get(item['title'],'')
+    # Main playlist is fully local. Original external streams remain attribution links,
+    # not playback dependencies and are never silently substituted into a local lesson.
+    return local
+
 
 
 @app.api_route("/media/lesson-videos/{filename:path}", methods=["GET", "HEAD"])
@@ -1719,11 +1724,9 @@ def public_http_url(value: str) -> bool:
 
 
 @app.get("/news/article-content")
-def news_article_content(url: str = Query(default="")) -> Dict[str, Any]:
-    from app.services.live_news import find_article
-    article=find_article(url=unquote(url))
-    if not article:raise HTTPException(400,detail="仅支持资讯列表中已核验的来源链接")
-    return {"ok":True,"title":article['title'],"source":article['source'],"date":article['time'],"paragraphs":[article['summary']],"url":article['url'],"content_kind":"publisher_headline"}
+def news_article_content(url: str = Query(default=''), id: str = Query(default='')) -> Dict[str, Any]:
+    from app.services.news_reader import read
+    return read(identifier=id,url=unquote(url))
 
 
 def normalize_product(raw: Dict[str, Any], source: str, idx: int) -> Dict[str, Any]:
@@ -4592,6 +4595,14 @@ def ledger_import_confirm(data: Dict[str, Any], user=Depends(current_user)) -> D
     import_id = int(data.get("import_id") or 0)
     items = data.get("items")
     with conn() as c:
+        if not USE_MYSQL:c.execute('BEGIN IMMEDIATE')
+        if import_id:
+            sql='SELECT * FROM ledger_imports WHERE id=? AND user_id=?'+(' FOR UPDATE' if USE_MYSQL else '')
+            imported=c.execute(sql,(import_id,user['id'])).fetchone()
+            if not imported:raise HTTPException(404,detail='未找到这批导入记录，请重新识别')
+            if int(imported['imported_count'] or 0)>0:
+                c.commit()
+                return {'ok':True,'already_imported':True,'imported_count':int(imported['imported_count']),'position_ids':[]}
         if not items and import_id:
             row = c.execute("SELECT parsed_json FROM ledger_imports WHERE id=? AND user_id=?", (import_id, user["id"])).fetchone()
             parsed = parse_json_value(row["parsed_json"], {}) if row else {}
@@ -4600,15 +4611,18 @@ def ledger_import_confirm(data: Dict[str, Any], user=Depends(current_user)) -> D
         position_ids = []
         for item in items or []:
             amount = float(item.get("amount") or 0)
-            if amount <= 0:
+            if not __import__("math").isfinite(amount) or amount <= 0:
                 continue
+            record_date=str(item.get('date') or item.get('time') or date.today().isoformat())[:10]
+            try:date.fromisoformat(record_date)
+            except ValueError:record_date=date.today().isoformat()
             insert_ledger_record(
                 c,
                 user["id"],
                 item.get("type") or "支出",
                 item.get("title") or "微信账单",
                 amount,
-                date.today().isoformat(),
+                record_date,
                 item.get("category", ""),
                 item.get("source_text", ""),
                 data.get("source") or "ledger_import",
@@ -6430,12 +6444,13 @@ def family_messages(
             JOIN users tu ON tu.id=m.to_user_id
             WHERE m.elder_user_id=?
               AND ((m.from_user_id=? AND m.to_user_id=?) OR (m.from_user_id=? AND m.to_user_id=?))
-            ORDER BY m.id ASC LIMIT 100
+            ORDER BY m.id DESC LIMIT 100
             """,
             (family_id, user["id"], int(peer_id), int(peer_id), user["id"]),
         ).fetchall()
+        rows=list(reversed(rows))
         unread = c.execute("SELECT COUNT(*) AS n FROM family_messages WHERE to_user_id=? AND status='unread'", (user["id"],)).fetchone()["n"]
-        c.execute("UPDATE family_messages SET status='read' WHERE to_user_id=? AND status='unread'", (user["id"],))
+        c.execute("UPDATE family_messages SET status='read' WHERE to_user_id=? AND from_user_id=? AND elder_user_id=? AND status='unread'", (user["id"],int(peer_id),family_id))
         c.commit()
     items = []
     for r in rows:
@@ -6446,6 +6461,12 @@ def family_messages(
         d["sender_name"] = d.get("from_name") or ""
         d["receiver_name"] = d.get("to_name") or ""
         d["read_status"] = d.get("status") or "unread"
+        if d.get('message_type')=='voice':
+            meta=parse_json_value(d.get('content'),{})
+            if not isinstance(meta,dict):meta={}
+            d['voice_url']=meta.get('voice_url') or d.get('content','')
+            d['voice_duration']=safe_int(meta.get('duration'))
+            d['content']=d['voice_url']
         items.append(d)
     return {"success": True, "items": items, "unread_count": int(unread), "members": members, "peer_id": int(peer_id)}
 
@@ -6517,7 +6538,7 @@ async def send_family_voice_message(
         elder_user_id = int(binding["elder_user_id"])
         c.execute(
             "INSERT INTO family_messages(elder_user_id,from_user_id,to_user_id,content,message_type,status,created_at) VALUES(?,?,?,?,?,?,?)",
-            (elder_user_id, user["id"], receiver_id, voice_url, "voice", "unread", now_iso()),
+            (elder_user_id, user["id"], receiver_id, json.dumps({"voice_url":voice_url,"duration":duration}), "voice", "unread", now_iso()),
         )
         msg_id = c.execute("SELECT last_insert_rowid() AS id").fetchone()[0]
         c.commit()
@@ -6664,9 +6685,10 @@ def family_group_chat(elder_id: Optional[int] = Query(default=None), user=Depend
                 return {"success": True, "items": [], "messages": [], "message": "暂无绑定家人，请先添加家人"}
             raise
         rows = c.execute(
-            "SELECT * FROM family_group_messages WHERE family_id=? ORDER BY id ASC LIMIT 200",
+            "SELECT * FROM family_group_messages WHERE family_id=? ORDER BY id DESC LIMIT 200",
             (family_id,),
         ).fetchall()
+        rows=list(reversed(rows))
         members = family_bound_members(c, user)
         last_message_id = max((int(row["id"]) for row in rows), default=0)
         mark_family_group_read(c, int(user["id"]), int(family_id), last_message_id)
@@ -7331,16 +7353,17 @@ def lesson_today(request: Request, user=Depends(current_user)) -> Dict[str, Any]
             "url": lesson_video_url
         }] + [item for item in video_options if item["url"] != lesson_video_url]
 
+    selected=next((x for x in video_options if x['url']==lesson_video_url),video_options[0] if video_options else {})
     return {
-        "title": "每日理财课堂：保本高收益可信吗？",
-        "summary": "每日一课 · 防诈骗和稳健理财",
-        "content": "正规理财不会承诺“稳赚不赔”。如果有人说收益很高、又让您马上转账，先不要操作。\n\n看产品时记住三句话：一看发行机构是否正规，二看风险等级，三看钱什么时候能取出来。",
-        "video_title": lesson_video_title,
-        "video_url": lesson_video_url,
-        "video_poster": DAILY_LESSON_VIDEO_POSTER or "/site/assets/videos/daily_lesson_poster.png",
-        "video_tip": "可在下方切换视频课程；若播放失败，则自动显示文字课程。",
-        "video_options": video_options
+        'title':selected.get('title') or lesson_video_title,
+        'summary':selected.get('summary') or '理财课堂 · 视频学习',
+        'content':selected.get('content') or '先看清发行机构、风险和赎回条件，再作决定。',
+        'video_title':selected.get('title') or lesson_video_title,
+        'video_url':lesson_video_url,
+        'video_poster':selected.get('poster') or DAILY_LESSON_VIDEO_POSTER or '/site/assets/videos/daily_lesson_poster.png',
+        'video_options':video_options
     }
+
 
 @app.post("/lesson/explain")
 async def lesson_explain(data: Dict[str, Any], user=Depends(current_user)) -> Dict[str, Any]:
@@ -7379,11 +7402,15 @@ def extract_document_text(filename: str, content: bytes) -> Dict[str, Any]:
             method = "docx_xml"
         except Exception:
             text = ""
-    elif suffix == ".pdf":
-        raw = content[:200000].decode("latin-1", errors="ignore")
-        fragments = re.findall(r"\(([^\(\)]{2,200})\)", raw)
-        text = "\n".join(fragments[:200])
-        method = "pdf_best_effort" if text.strip() else "metadata_only"
+    elif suffix == '.pdf':
+        try:
+            from io import BytesIO
+            from pypdf import PdfReader
+            reader=PdfReader(BytesIO(content),strict=False)
+            text='\n'.join((page.extract_text() or '') for page in list(reader.pages)[:40])[:12000]
+            method='pypdf_text' if text.strip() else 'scanned_pdf_needs_ocr'
+        except Exception:
+            text='';method='unreadable_pdf'
     return {
         "filename": filename,
         "type": doc_type,
@@ -7709,6 +7736,7 @@ app.mount("/web", StaticFiles(directory=str(BASE_DIR.parent / "site"), html=True
 from fastapi.staticfiles import StaticFiles
 WEB_SITE_DIR = PROJECT_DIR / "site"
 if WEB_SITE_DIR.is_dir():
+    app.mount("/site/assets/videos", StaticFiles(directory=str(LOCAL_LESSON_VIDEO_DIR)), name="lesson_asset_files")
     app.mount("/site", StaticFiles(directory=str(WEB_SITE_DIR), html=True), name="yixiang_site")
 
 
@@ -7727,3 +7755,20 @@ def convert_coordinates(latitude: float = Query(ge=-85,le=85), longitude: float 
 def walking_route(start_latitude: float = Query(ge=-85,le=85), start_longitude: float = Query(ge=-180,le=180), latitude: float = Query(ge=-85,le=85), longitude: float = Query(ge=-180,le=180), user=Depends(current_user)):
     from app.services.geo_gateway import walking
     return walking(start_latitude,start_longitude,latitude,longitude)
+
+
+@app.get('/app/release')
+def app_release():
+    return {'application':'yixiang-zhicai','release':'20261112-reliable','local_port':8004}
+
+
+@app.get('/family/messages/unread')
+def family_message_unread(user=Depends(current_user)):
+    total=0;items=[]
+    with conn() as c:
+        for member in family_bound_members(c,user):
+            if user.get('role')=='child' and not (member.get('permissions') or {}).get('view_messages'):continue
+            peer=int(member.get('peer_id') or member.get('id') or 0)
+            count=int(c.execute("SELECT COUNT(*) AS n FROM family_messages WHERE to_user_id=? AND from_user_id=? AND status='unread'",(user['id'],peer)).fetchone()['n'])
+            if count:items.append({'peer_id':peer,'count':count});total+=count
+    return {'ok':True,'count':total,'items':items}

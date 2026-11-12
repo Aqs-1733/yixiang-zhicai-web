@@ -1,0 +1,49 @@
+{
+  "title": "如何选择适合的投资方式",
+  "source_url": "https://www.csrc.gov.cn/csrc/c106256/c1653849/content.shtml",
+  "source": "中国证券监督管理委员会《证券期货投资者适当性管理办法》; 国家金融监督管理总局《金融监管总局：防范虚假网络投资理财类诈骗的风险提示》",
+  "sources": [
+    {
+      "title": "证券期货投资者适当性管理办法",
+      "url": "https://www.csrc.gov.cn/csrc/c106256/c1653849/content.shtml",
+      "publisher": "中国证券监督管理委员会"
+    },
+    {
+      "title": "金融监管总局：防范虚假网络投资理财类诈骗的风险提示",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568",
+      "publisher": "国家金融监督管理总局"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "选择投资方式，先明确这笔钱的用途和需要使用的时间，再了解自己的收入、支出与可能承受的损失。\n\n产品风险、期限和流动性，应与自身情况相匹配。风险测评要如实填写，测评结果和销售意见都不是收益保证。\n\n比较时核实机构资质，读懂费用、赎回条件和风险说明。没有适合所有人的产品，基础知识不能替代独立判断。",
+  "summary": "用目标、期限、风险承受能力及产品信息进行基础自查。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 43.551,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_07.mp4",
+  "poster": "local_07_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "先厘清目标和期限",
+      "speech": "选择投资方式，先明确这笔钱的用途和需要使用的时间，再了解自己的收入、支出与可能承受的损失。",
+      "duration_seconds": 13.072
+    },
+    {
+      "n": "02",
+      "title": "风险与期限要匹配",
+      "speech": "产品风险、期限和流动性，应与自身情况相匹配。风险测评要如实填写，测评结果和销售意见都不是收益保证。",
+      "duration_seconds": 15.429
+    },
+    {
+      "n": "03",
+      "title": "看懂后再作决定",
+      "speech": "比较时核实机构资质，读懂费用、赎回条件和风险说明。没有适合所有人的产品，基础知识不能替代独立判断。",
+      "duration_seconds": 15.008
+    }
+  ]
+}

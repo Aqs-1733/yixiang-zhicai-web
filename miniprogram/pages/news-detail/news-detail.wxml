@@ -3,7 +3,15 @@
 
   <view class="back-btn" bindtap="back">←</view>
 
-  <scroll-view class="news-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <view wx:if="{{isListing}}" class="news-list-wrap">
+    <view class="news-list-heading"><view>政策与资讯</view><button bindtap="loadNewsList">刷新资讯</button></view>
+    <view wx:if="{{newsListLoading}}" class="news-loading">正在读取官方资讯…</view>
+    <view wx:for="{{newsItems}}" wx:key="id" class="news-list-item" data-id="{{item.id}}" bindtap="openNewsItem">
+      <view class="news-list-index">{{index+1}}</view><view><view class="news-list-title">{{item.title}}</view><view class="news-list-meta">{{item.source}} · {{item.published_at || item.time}}</view></view><view>›</view>
+    </view>
+    <view wx:if="{{articleError}}" class="news-reader-message">{{articleError}}</view>
+  </view>
+  <scroll-view wx:else class="news-scroll" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="news-title {{globalFontPageClass}}">{{article.title || '养老理财资讯'}}</view>
 
     <view wx:if="{{article.source || article.date || article.created_at}}" class="news-meta {{globalFontPageClass}}">
@@ -11,6 +19,7 @@
     </view>
 
     <view class="news-body">
+      <view wx:if="{{article.content_kind === 'official_excerpt'}}" class="news-reader-label">官方正文{{article.truncated ? '节选' : ''}}</view>
       <view wx:if="{{articleLoading}}" class="news-loading">
         <view class="news-loading-text {{globalFontPageClass}}">正在核对资讯来源…</view>
       </view>
@@ -26,6 +35,7 @@
       </view>
     </view>
 
+    <view wx:if="{{articleError}}" class="news-reader-message">{{articleError}}<button bindtap="retryArticle">重新读取</button><button bindtap="goNewsList">返回资讯列表</button></view>
     <view class="news-actions">
       <button wx:if="{{article.url}}" class="{{globalFontPageClass}}" hover-class="none" bindtap="openOriginal">查看原文 ↗</button>
       <button class="{{globalFontPageClass}}" hover-class="none" bindtap="readArticle">语音朗读</button>

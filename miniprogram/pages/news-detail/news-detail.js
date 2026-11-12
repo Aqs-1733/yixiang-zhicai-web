@@ -38,12 +38,16 @@ Page({
     globalFontPageClass: 'font-global-normal',
     article: decorateArticle(null),
     articleLoading: false,
+    isListing:true,
+    newsItems:[],
+    newsListLoading:false,
+    articleError:'',
     termExplainPopups: []
   },
 
   onLoad(options = {}) {
     this.syncGlobalFont()
-    this.loadArticle(options)
+    if(options.id||options.index!==undefined||options.url){this.setData({isListing:false});this.loadArticle(options)}else this.loadNewsList()
   },
 
   onShow() {
@@ -58,56 +62,35 @@ Page({
     }
   },
 
-  loadArticle(options) {
-    const list = wx.getStorageSync('home_articles') || []
-    const idx = Number(options.index)
-    const id = safeDecode(options.id)
-    let item = null
-
-    if (!Number.isNaN(idx) && list[idx]) {
-      item = list[idx]
-    } else if (id) {
-      item = list.find(news => String(news.id || news.title || '') === id)
-    }
-
-    // 先用基础信息渲染（标题、来源、日期可见）
-    this.setData({
-      article: decorateArticle(item),
-      articleLoading: false
-    })
-
-    // 如果有 URL，抓取完整文章
-    const articleUrl = item && (item.url || item.link || item.share_url)
-    if (articleUrl) {
-      this.setData({ articleLoading: true })
-      const app = getApp()
-      if (app && app.request) {
-        app.request({
-          url: '/news/article-content',
-          data: { url: articleUrl },
-          loading: false
-        }).then(res => {
-          if (res && res.ok && res.paragraphs && res.paragraphs.length) {
-            const fullArticle = {
-              ...item,
-              title: res.title || item.title,
-              source: res.source || item.source,
-              date: res.date || item.time,
-              content: res.paragraphs.join('\n')
-            }
-            this.setData({
-              article: decorateArticle(fullArticle),
-              articleLoading: false
-            })
-          } else {
-            this.setData({ articleLoading: false })
-          }
-        }).catch(() => {
-          this.setData({ articleLoading: false })
-        })
-      }
-    }
+  loadNewsList() {
+    this.setData({newsListLoading:true})
+    getApp().request({url:'/market/daily',loading:false}).then(res=>{
+      const items=res.items||[];wx.setStorageSync('home_articles',items)
+      this.setData({newsItems:items,newsListLoading:false,articleError:items.length?'':'暂未取得官方资讯，请稍后刷新'})
+    }).catch(()=>this.setData({newsListLoading:false,articleError:'网络暂时不可用，请稍后刷新'}))
   },
+
+  openNewsItem(e) {
+    wx.navigateTo({url:'/pages/news-detail/news-detail?id='+encodeURIComponent(e.currentTarget.dataset.id)})
+  },
+
+  loadArticle(options) {
+    this._articleOptions=options
+    const list=wx.getStorageSync('home_articles')||[]
+    const id=safeDecode(options.id)
+    const index=options.index===undefined?-1:Number(options.index)
+    const item=list.find(x=>String(x.id)===id)||list[index]||null
+    this.setData({article:decorateArticle(item),articleLoading:true,articleError:''})
+    const url=(item&&item.url)||safeDecode(options.url)
+    getApp().request({url:'/news/article-content',data:{id:(item&&item.id)||id,url},loading:false}).then(res=>{
+      if(!res.ok)throw Error('article')
+      const article={...item,...res,content:(res.paragraphs||[]).join('\n')}
+      this.setData({article:decorateArticle(article),articleLoading:false,articleError:res.reader_message||''})
+    }).catch(()=>this.setData({articleLoading:false,articleError:'这条资讯暂时未能读取，请重试或返回资讯列表'}))
+  },
+
+  retryArticle(){this.loadArticle(this._articleOptions||{})},
+  goNewsList(){wx.navigateTo({url:'/pages/news-detail/news-detail'})},
 
   explainTerm(e) {
     const term = e.currentTarget.dataset.term || ''
@@ -118,7 +101,7 @@ Page({
 
   readArticle() {
     const article = this.data.article
-    getApp().readText(`资讯：${article.title}。${article.summary || article.content}`)
+    getApp().readText(`资讯：${article.title}。${article.content || article.summary}`)
   },
 
   openOriginal() {
@@ -131,7 +114,7 @@ Page({
   askXiang() {
     const article = this.data.article
     wx.navigateTo({
-      url: `/pages/assistant/assistant?ask=${encodeURIComponent(`请依据这条官方资讯的标题和出处解释，未核对正文的细节请明确说明，不要补写政策条件：${article.title}。发布：${article.date}；来源：${article.source}；原文：${article.url||''}。${article.summary || article.content}`)}`
+      url: `/pages/assistant/assistant?ask=${encodeURIComponent(`请依据这条官方资讯的标题和出处解释，未核对正文的细节请明确说明，不要补写政策条件：${article.title}。发布：${article.date}；来源：${article.source}；原文：${article.url||''}。${article.content || article.summary}`)}`
     })
   },
 

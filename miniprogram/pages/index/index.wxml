@@ -85,6 +85,8 @@
               <view class="lesson-fallback-icon">▶</view>
               <view class="lesson-fallback-text">
                 <view class="lesson-fallback-title">{{lesson.video_title || '今日推荐视频'}}</view>
+                <button bindtap="retryLessonVideo">重新加载课程</button>
+                <button bindtap="openLessonPicker">选择其他课程</button>
               </view>
             </view>
           </view>

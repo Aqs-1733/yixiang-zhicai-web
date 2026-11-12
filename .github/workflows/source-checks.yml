@@ -1,0 +1,28 @@
+name: Source and adapter checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      YX_EVIDENCE_DIR: ${{ runner.temp }}/yixiang-evidence
+      LLM_PROVIDER_ORDER: local
+      ARK_ASR_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: mkdir -p "$YX_EVIDENCE_DIR"
+      - run: node scripts/check_browser_sources.cjs
+      - run: python tests/local_acceptance/test_seed21_adapters.py
+      - run: python tests/local_acceptance/test_news_geo.py
+      - run: node tests/local_acceptance/test_finance_decimals.cjs

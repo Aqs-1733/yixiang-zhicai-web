@@ -1,0 +1,54 @@
+{
+  "title": "投资方式的种类及区别（一）",
+  "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568",
+  "source": "国家金融监督管理总局《金融监管总局：防范虚假网络投资理财类诈骗的风险提示》; 中国证券投资基金业协会《证券投资基金与股权、债券的差异是什么？》; 国家金融监督管理总局《商业银行理财业务监督管理办法》",
+  "sources": [
+    {
+      "title": "金融监管总局：防范虚假网络投资理财类诈骗的风险提示",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568",
+      "publisher": "国家金融监督管理总局"
+    },
+    {
+      "title": "证券投资基金与股权、债券的差异是什么？",
+      "url": "https://investor.amac.org.cn/investread/tzbdjczs/202006/t20200603_9657.html",
+      "publisher": "中国证券投资基金业协会"
+    },
+    {
+      "title": "商业银行理财业务监督管理办法",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=268592&itemId=4214",
+      "publisher": "国家金融监督管理总局"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "存款是把资金存入银行，按约定计息。活期和定期的期限不同，提前支取可能影响利息，先看清约定。\n\n债券体现债权债务关系，发行人按约定还本付息。国债和企业债的发行主体不同，信用与价格风险也不同。\n\n存款、债券和银行理财不是同一回事。理财并非存款，投资产品可能亏损，先核实发行机构和产品性质。",
+  "summary": "认识存款与债券，分清产品性质、期限和发行主体。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 44.086,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_01.mp4",
+  "poster": "local_01_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "存款看期限",
+      "speech": "存款是把资金存入银行，按约定计息。活期和定期的期限不同，提前支取可能影响利息，先看清约定。",
+      "duration_seconds": 14.292
+    },
+    {
+      "n": "02",
+      "title": "债券看发行人",
+      "speech": "债券体现债权债务关系，发行人按约定还本付息。国债和企业债的发行主体不同，信用与价格风险也不同。",
+      "duration_seconds": 14.532
+    },
+    {
+      "n": "03",
+      "title": "产品名称不是保证",
+      "speech": "存款、债券和银行理财不是同一回事。理财并非存款，投资产品可能亏损，先核实发行机构和产品性质。",
+      "duration_seconds": 15.234
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "title": "七天年化收益率和年利率的区别",
+  "source_url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=1239473",
+  "source": "国家金融监督管理总局《银行保险机构资产管理产品信息披露管理办法》; 中国建设银行官方网站《七日年化收益率》; 中国人民银行《存款数据元（试行）：利率信息》",
+  "sources": [
+    {
+      "title": "银行保险机构资产管理产品信息披露管理办法",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=1239473",
+      "publisher": "国家金融监督管理总局"
+    },
+    {
+      "title": "七日年化收益率",
+      "url": "https://finance3.ccb.com/cn/fund/guide/20160913_1473758275.html",
+      "publisher": "中国建设银行官方网站"
+    },
+    {
+      "title": "存款数据元（试行）：利率信息",
+      "url": "https://www.pbc.gov.cn/eportal/fileDir/image_public/UserFiles/diaochatongjisi/upload/File/存款数据元（试行）.pdf",
+      "publisher": "中国人民银行"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "常说的七天年化收益率，也叫七日年化收益率，是把最近七天的收益折算成年化指标，不是未来收益承诺。\n\n年利率是以一年为单位表示的计息比例。利率可能固定，也可能浮动，实际利息还取决于本金、期限和规则。\n\n七日年化反映近期表现，年利率说明计息比例，两者含义不同。比较时还要看风险、费用和资金可用的时间。",
+  "summary": "七日年化是历史收益的年化折算；年利率是以年为单位的计息比例。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 42.949,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_05.mp4",
+  "poster": "local_05_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "七日年化看过去",
+      "speech": "常说的七天年化收益率，也叫七日年化收益率，是把最近七天的收益折算成年化指标，不是未来收益承诺。",
+      "duration_seconds": 13.559
+    },
+    {
+      "n": "02",
+      "title": "年利率看计息约定",
+      "speech": "年利率是以一年为单位表示的计息比例。利率可能固定，也可能浮动，实际利息还取决于本金、期限和规则。",
+      "duration_seconds": 14.465
+    },
+    {
+      "n": "03",
+      "title": "同样百分比也不同",
+      "speech": "七日年化反映近期表现，年利率说明计息比例，两者含义不同。比较时还要看风险、费用和资金可用的时间。",
+      "duration_seconds": 14.885
+    }
+  ]
+}

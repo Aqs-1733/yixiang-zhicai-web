@@ -1,0 +1,20 @@
+"""Real Ark screenshot -> preview -> user confirmation -> persisted ledger -> idempotent retry."""
+import os,json,time,sys,httpx
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+OUT=Path(os.environ['YX_EVIDENCE_DIR']);F=json.loads((OUT/'real_fixture.json').read_text(encoding='utf-8'));BASE='http://127.0.0.1:8005';c=httpx.Client(base_url=BASE,headers={'Authorization':'Bearer '+F['token']},timeout=100);rows=[]
+def record(name,ok,**kw):rows.append({'test':name,'passed':bool(ok),**kw});(OUT/'receipt_fullflow_results.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8');print(('PASS ' if ok else 'FAIL ')+name,flush=True)
+with sync_playwright() as pw:
+ b=pw.chromium.launch(executable_path=r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',headless=True);ctx=b.new_context(viewport={'width':1440,'height':1000});p=ctx.new_page();p.set_default_timeout(110000)
+ p.set_viewport_size({'width':900,'height':650});p.set_content('<html><meta charset="utf-8"><body style="margin:0;background:#fff;font:28px Microsoft YaHei;color:#222;padding:35px"><h2>合成测试账单 '+str(time.time_ns())+'</h2><p>本图片为软件验收数据，无真实交易</p><table style="width:100%;border-collapse:collapse;line-height:2.6"><tr><th>日期</th><th>项目</th><th>收支</th><th>金额</th></tr><tr><td>2026-11-12</td><td>买菜</td><td>支出</td><td>12.50元</td></tr><tr><td>2026-11-12</td><td>买药</td><td>支出</td><td>28.80元</td></tr><tr><td>2026-11-12</td><td>养老金</td><td>收入</td><td>3500.00元</td></tr></table></body></html>');p.screenshot(path=str(OUT/'receipt_fixture.png'));p.set_viewport_size({'width':1440,'height':1000});p.goto(BASE+'/site/');p.wait_for_function('window.YX&&YX.getPage()');p.evaluate('f=>{for(const k of ["token","user","profile"])wx.setStorageSync(k,f[k]);wx.setStorageSync("role","elder");Object.assign(getApp().globalData,{token:f.token,user:f.user,profile:f.profile,role:"elder"});getApp()._familyUnreadPrompted=true}',F);p.evaluate('YX.goto("pages/money/money")');p.wait_for_timeout(500);before=c.get('/ledger/summary').json();ids={x['id'] for x in before.get('records',[])}
+ p.get_by_text('导入账单',exact=True).click()
+ with p.expect_file_chooser() as chooser:p.get_by_text('上传账单/小票图片',exact=True).click()
+ with p.expect_response(lambda r:'/ledger/import/wechat-image' in r.url and r.request.method=='POST') as response:chooser.value.set_files(str(OUT/'receipt_fixture.png'))
+ j=response.value.json();vision=j.get('vision') or {};record('扫描图片调用真实视觉模型',response.value.status==200 and vision.get('provider')=='ark' and not vision.get('fallback'),provider=vision.get('provider'),items=j.get('items'))
+ p.wait_for_function('YX.getPage().data.showParsePanel===true');parsed=p.evaluate('YX.getPage().data.lastParse');amounts=sorted(round(float(x['amount']),2) for x in parsed['items']);record('自动提取三笔金额与收支方向',amounts==[12.5,28.8,3500.0] and sum(x.get('type')=='收入' for x in parsed['items'])==1,amounts=amounts)
+ p.screenshot(path=str(OUT/'receipt_preview.png'),animations='disabled')
+ with p.expect_response(lambda r:'/ledger/import/confirm' in r.url and r.request.method=='POST') as confirmed:p.get_by_text('确认导入',exact=True).click()
+ result=confirmed.value.json();after=c.get('/ledger/summary').json();new=[x for x in after.get('records',[]) if x['id'] not in ids];record('确认后写入真实账本',confirmed.value.status==200 and result.get('imported_count')==3 and len(new)==3,records=[{k:x.get(k) for k in ['id','title','amount','type','date']} for x in new])
+ retry=c.post('/ledger/import/confirm',json={'import_id':parsed['import_id'],'items':parsed['items']});record('重复确认不重复入账',retry.status_code==200 and retry.json().get('already_imported')==True and len([x for x in c.get('/ledger/summary').json().get('records',[]) if x['id'] not in ids])==3)
+ p.reload();p.wait_for_function('window.YX&&YX.getPage()');p.wait_for_timeout(1000);record('整页刷新后账本记录仍存在',all(x['id'] in {y['id'] for y in c.get('/ledger/summary').json().get('records',[])} for x in new));p.screenshot(path=str(OUT/'receipt_saved.png'),animations='disabled');b.close()
+print('RECEIPT_FULLFLOW',sum(x['passed'] for x in rows),'/',len(rows));sys.exit(0 if all(x['passed'] for x in rows) else 1)

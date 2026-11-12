@@ -46,7 +46,8 @@ App({
   onLaunch() {
     const rememberUntil = Number(wx.getStorageSync('rememberLoginUntil') || 0)
     let token = wx.getStorageSync('token') || ''
-    if (token && (!rememberUntil || rememberUntil <= Date.now())) {
+    const activeBrowserSession = typeof wx.hasActiveBrowserSession === 'function' && wx.hasActiveBrowserSession(token)
+    if (token && ((rememberUntil > 0 && rememberUntil <= Date.now()) || (!rememberUntil && !activeBrowserSession))) {
       token = ''
       wx.removeStorageSync('token')
       wx.removeStorageSync('rememberLoginUntil')

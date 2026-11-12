@@ -8,6 +8,7 @@ function formatTime(value) {
 
 function formatVoiceDuration(seconds) {
   const s = Math.round(Number(seconds) || 0)
+  if(s<=0)return ''
   if (s < 60) return `${s}″`
   const m = Math.floor(s / 60)
   const sec = s % 60
@@ -35,7 +36,7 @@ Page({
     title: '家庭留言',
     subtitle: '选择已绑定家人，一对一留言。留言会保存到数据库，刷新后仍能看到。',
     emptyText: '暂无绑定家人，请先添加家人',
-    showHistory: false,
+    showHistory: true,
     // 语音相关
     isRecording: false,
     recordTime: 0,
@@ -148,7 +149,7 @@ Page({
       this.setData({ messages: [] })
       return
     }
-    getApp().request({ url: `/family/messages?peer_id=${encodeURIComponent(this.data.selectedPeerId)}` }).then(res => {
+    return getApp().request({ url: `/family/messages?peer_id=${encodeURIComponent(this.data.selectedPeerId)}`,loading:false }).then(res => {
       const user = wx.getStorageSync('user') || {}
       const messages = (res.items || []).reverse().map(item => ({
         ...item,
@@ -157,14 +158,15 @@ Page({
         fromName: item.sender_name || item.from_name || '家人',
         segments: termHelper.buildTermSegments(item.content || ''),
         isVoice: item.message_type === 'voice',
-        voiceFullUrl: resolveVoiceUrl(item.voice_url),
+        voiceFullUrl: resolveVoiceUrl(item.voice_url || (item.message_type==='voice'?item.content:'')),
         voiceDurationText: formatVoiceDuration(item.voice_duration),
       }))
-      this.setData({ messages })
+      const signature=JSON.stringify(messages)
+      if(signature!==this._messageSignature){this._messageSignature=signature;this.setData({ messages })}
+      this._messageDenied=false
     }).catch(err => {
       const denied = Number(err && err.statusCode) === 403 || /未开放/.test(String(err && err.data && err.data.detail || ''))
-      if (denied) wx.showModal({ title: '暂时无法查看', content: '长辈暂未开放该权限', showCancel: false, confirmText: '知道了' })
-      else wx.showToast({ title: '暂时无法读取留言', icon: 'none' })
+      if(denied){this._messageSignature=null;this.setData({messages:[],emptyText:'长辈暂未开放该权限'});if(!this._messageDenied)wx.showModal({ title: '暂时无法查看', content: '长辈暂未开放该权限', showCancel: false, confirmText: '知道了' });this._messageDenied=true}
     })
   },
 
@@ -198,7 +200,7 @@ Page({
       this.setData({ inputText: '' })
       this.loadMessages()
       wx.showToast({ title: '留言已发送', icon: 'success' })
-      setTimeout(() => this.back(), 450)
+
     }).catch(err => {
       wx.showModal({
         title: '暂时发不了',
@@ -251,10 +253,11 @@ Page({
       filePath: tempFilePath,
       name: 'file',
       header: { Authorization: `Bearer ${token}` },
-      success: () => {
+      success: (res) => {
+        if(res.statusCode<200||res.statusCode>=300){wx.showToast({title:'语音未发送，请确认家庭授权后重试',icon:'none'});return}
         wx.showToast({ title: '语音已发送', icon: 'success' })
         this.loadMessages()
-        setTimeout(() => this.back(), 450)
+
       },
       fail: err => {
         wx.showModal({

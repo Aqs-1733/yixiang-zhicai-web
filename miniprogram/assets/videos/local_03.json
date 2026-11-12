@@ -1,0 +1,54 @@
+{
+  "title": "投资方式的种类及区别（三）",
+  "source_url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=268592&itemId=4214",
+  "source": "国家金融监督管理总局《商业银行理财业务监督管理办法》; 国家金融监督管理总局《保险销售行为管理办法》; 国家金融监督管理总局《金融监管总局：防范虚假网络投资理财类诈骗的风险提示》",
+  "sources": [
+    {
+      "title": "商业银行理财业务监督管理办法",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=268592&itemId=4214",
+      "publisher": "国家金融监督管理总局"
+    },
+    {
+      "title": "保险销售行为管理办法",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/rulesDetail.html?docId=1129945",
+      "publisher": "国家金融监督管理总局"
+    },
+    {
+      "title": "金融监管总局：防范虚假网络投资理财类诈骗的风险提示",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568",
+      "publisher": "国家金融监督管理总局"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "银行理财按合同约定管理投资者的资金，可能投向债券等资产。银行销售不等于保本，也不等于银行存款。\n\n保险主要提供合同约定的风险保障。要看保障范围、责任免除、缴费期限和退保条件，退保可能产生损失。\n\n存款、理财和保险承担的功能不同。比较时别只看一个收益数字，还要理解风险由谁承担、资金何时可用。",
+  "summary": "分清银行理财与保险的功能，比较风险、期限和合同安排。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 44.202,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_03.mp4",
+  "poster": "local_03_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "理财看底层资产",
+      "speech": "银行理财按合同约定管理投资者的资金，可能投向债券等资产。银行销售不等于保本，也不等于银行存款。",
+      "duration_seconds": 14.459
+    },
+    {
+      "n": "02",
+      "title": "保险先看保障",
+      "speech": "保险主要提供合同约定的风险保障。要看保障范围、责任免除、缴费期限和退保条件，退保可能产生损失。",
+      "duration_seconds": 14.91
+    },
+    {
+      "n": "03",
+      "title": "不同功能分别比较",
+      "speech": "存款、理财和保险承担的功能不同。比较时别只看一个收益数字，还要理解风险由谁承担、资金何时可用。",
+      "duration_seconds": 14.79
+    }
+  ]
+}

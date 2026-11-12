@@ -43,7 +43,10 @@ def get_news(limit=8,force=False):
             today=datetime.now(SHANGHAI).date().isoformat();seen=set();valid=[]
             for x in sorted(results,key=lambda x:x['time'],reverse=True):
                 if x['url'] not in seen and x['time']<=today:seen.add(x['url']);valid.append(x)
-            if valid:_items=valid[:60];_fetched_at=datetime.now(SHANGHAI).isoformat(timespec='seconds')
+            if valid:
+                _items=valid[:60];_fetched_at=datetime.now(SHANGHAI).isoformat(timespec='seconds')
+                from app.services.news_reader import remember
+                remember(_items)
             _last=time.monotonic();_errors=errors;_stale=not bool(valid)
         stale=_stale or bool(_items) and not _fetched_at.startswith(datetime.now(SHANGHAI).date().isoformat())
         return {'success':bool(_items),'items':_items[:max(1,min(limit,60))],'source':'public_official_feeds','real_time':bool(_items) and not stale,'fallback':False,'stale':bool(stale),'fetched_at':_fetched_at,'message':'已获取官方公开资讯' if _items else '暂未取得可核实的资讯，请稍后刷新','sources':[{'name':'中国政府网','url':GOV_FEED},{'name':'中国人民银行','url':PBC_FEED}],'errors':list(_errors)}

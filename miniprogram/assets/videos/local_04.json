@@ -1,0 +1,49 @@
+{
+  "title": "互联网金融与理财",
+  "source_url": "https://www.csrc.gov.cn/csrc/c100028/c1001900/content.shtml",
+  "source": "中国人民银行等十部门；中国证监会刊载《关于促进互联网金融健康发展的指导意见》; 国家金融监督管理总局《金融监管总局：防范虚假网络投资理财类诈骗的风险提示》",
+  "sources": [
+    {
+      "title": "关于促进互联网金融健康发展的指导意见",
+      "url": "https://www.csrc.gov.cn/csrc/c100028/c1001900/content.shtml",
+      "publisher": "中国人民银行等十部门；中国证监会刊载"
+    },
+    {
+      "title": "金融监管总局：防范虚假网络投资理财类诈骗的风险提示",
+      "url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1128568",
+      "publisher": "国家金融监督管理总局"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "互联网金融借助网络技术提供支付、投资等服务。操作便捷，不代表产品没有风险，金融的本质没有改变。\n\n在手机上看到理财产品，先核实机构资质和官方渠道，再读产品合同。平台名气大，也不代表本金有保证。\n\n遇到保本高息、陌生群荐股或催促转账，先停下来核实。不要随意点击陌生链接，也不要向他人透露验证码。",
+  "summary": "线上渠道不改变金融风险；核实机构、合同与信息安全。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 44.039,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_04.mp4",
+  "poster": "local_04_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "线上只是服务渠道",
+      "speech": "互联网金融借助网络技术提供支付、投资等服务。操作便捷，不代表产品没有风险，金融的本质没有改变。",
+      "duration_seconds": 14.063
+    },
+    {
+      "n": "02",
+      "title": "先核实机构和合同",
+      "speech": "在手机上看到理财产品，先核实机构资质和官方渠道，再读产品合同。平台名气大，也不代表本金有保证。",
+      "duration_seconds": 14.936
+    },
+    {
+      "n": "03",
+      "title": "守住信息与资金",
+      "speech": "遇到保本高息、陌生群荐股或催促转账，先停下来核实。不要随意点击陌生链接，也不要向他人透露验证码。",
+      "duration_seconds": 14.992
+    }
+  ]
+}

@@ -41,7 +41,7 @@ let pending=false;
 function schedule(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;decorate();});}
 function init(){
  const render=document.getElementById('yx-render');
- if(render){new MutationObserver(schedule).observe(render,{childList:true,subtree:false});}
+ if(render){render.addEventListener("yx:render",schedule);}
  const subtitle=document.getElementById('page-subtitle');if(subtitle)new MutationObserver(schedule).observe(subtitle,{childList:true});
  schedule();
 }

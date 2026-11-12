@@ -28,15 +28,15 @@ with sync_playwright() as pw:
  except Exception as e:record('本地课程播放流程',False,error=str(e)[:400])
  try:
   page.evaluate('()=>{window.__nativeCanPlay=HTMLMediaElement.prototype.canPlayType;HTMLMediaElement.prototype.canPlayType=function(t){return t==="application/vnd.apple.mpegurl"?"":window.__nativeCanPlay.call(this,t)}}');page.locator('.lesson-picker-open').click();page.wait_for_timeout(150)
-  # First remote original episode follows the local fallback in the original picker.
+  # Local replacement preserves the original curriculum title without an external playback dependency.
   candidates=page.locator('.lesson-picker-item').filter(has_text='投资方式的种类及区别（一）')
   if not candidates.count():candidates=page.locator('.lesson-picker-item').nth(1)
   candidates.first.click();page.wait_for_timeout(200);video=page.locator('#homeLessonVideo');video.evaluate('v=>{v.muted=true;return v.play()}')
   page.wait_for_function('document.querySelector("#homeLessonVideo")?.currentTime>1',timeout=40000)
-  state=video.evaluate('v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration,hls:!!v.__yxMedia?.hls,source:v.dataset.yxSource})');record('原版HLS课程真实播放',state['hls'] and state['width']>0 and state['duration']>30,**state)
-  video.evaluate('v=>{v.pause();v.currentTime=30}');page.wait_for_function('YX.getPage().data.lessonCurrentTime>=29',timeout=15000);record('HLS进度与暂停',True)
-  page.screenshot(path=str(OUT/'actual_hls_playback.png'),animations='disabled')
- except Exception as e:record('原版HLS播放流程',False,error=str(e)[:600])
+  state=video.evaluate('v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration,hls:!!v.__yxMedia?.hls,source:v.dataset.yxSource})');record('同主题本地课程真实播放',not state['hls'] and '/media/lesson-videos/local_' in state['source'] and state['width']>0 and state['duration']>30,**state)
+  video.evaluate('v=>{v.pause();v.currentTime=30}');page.wait_for_function('YX.getPage().data.lessonCurrentTime>=29',timeout=15000);record('本地课程进度与暂停',True)
+  page.screenshot(path=str(OUT/'local_curriculum_playback.png'),animations='disabled')
+ except Exception as e:record('本地课程播放流程',False,error=str(e)[:600])
  # Animated tabs retain original click handlers and real mode state.
  go(page,'pages/finance/finance');page.locator('[data-mode=learn]').click();page.wait_for_timeout(100);record('分段标签动效及原版切换',page.evaluate("YX.getPage().data.financeMode==='learn'") and page.locator('.pattern-active-indicator').count()>0)
  page.emulate_media(reduced_motion='reduce');page.wait_for_timeout(120);record('减少动画立即停止',page.evaluate('YXMotion.reduced&&YXMotion.activeCount===0'))

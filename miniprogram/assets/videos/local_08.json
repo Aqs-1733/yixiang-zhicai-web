@@ -1,0 +1,49 @@
+{
+  "title": "个人所得税",
+  "source_url": "https://fgk.chinatax.gov.cn/zcfgk/c100010/c5194444/content.html",
+  "source": "国家税务总局政策法规库《中华人民共和国个人所得税法实施条例》; 国家税务总局《个人所得税综合所得汇算清缴管理办法》",
+  "sources": [
+    {
+      "title": "中华人民共和国个人所得税法实施条例",
+      "url": "https://fgk.chinatax.gov.cn/zcfgk/c100010/c5194444/content.html",
+      "publisher": "国家税务总局政策法规库"
+    },
+    {
+      "title": "个人所得税综合所得汇算清缴管理办法",
+      "url": "https://fgk.chinatax.gov.cn/zcfgk/c100011/c5238560/content.html",
+      "publisher": "国家税务总局"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "个人所得税与个人取得的应税所得有关。工资薪金、劳务报酬、经营所得等类别不同，计算和申报方式也不同。\n\n居民个人的工资薪金、劳务报酬、稿酬和特许权使用费属于综合所得。符合条件的扣除，要按规定如实填报。\n\n年度汇算是核对全年综合所得应纳税额和已预缴税额，可能退税，也可能补税。具体事项以税务机关最新指引为准。",
+  "summary": "认识所得分类、综合所得与年度汇算；不涉及具体税率。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 45.039,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_08.mp4",
+  "poster": "local_08_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "先认清所得类别",
+      "speech": "个人所得税与个人取得的应税所得有关。工资薪金、劳务报酬、经营所得等类别不同，计算和申报方式也不同。",
+      "duration_seconds": 14.667
+    },
+    {
+      "n": "02",
+      "title": "综合所得按年核算",
+      "speech": "居民个人的工资薪金、劳务报酬、稿酬和特许权使用费属于综合所得。符合条件的扣除，要按规定如实填报。",
+      "duration_seconds": 14.823
+    },
+    {
+      "n": "03",
+      "title": "汇算是年度对账",
+      "speech": "年度汇算是核对全年综合所得应纳税额和已预缴税额，可能退税，也可能补税。具体事项以税务机关最新指引为准。",
+      "duration_seconds": 15.496
+    }
+  ]
+}

@@ -1,112 +1,85 @@
 # 颐享智财 Web
 
-微信小程序迁移的完整 Web 项目：FastAPI + SQLite + 原页面兼容运行层。保留 **30 个业务页面、5 个原组件**及暖黄、薄荷绿、橙色适老化视觉；没有用简化网站替换原项目。
+FastAPI + SQLite + 小程序页面兼容层。保留30个业务页面、5个原组件，以及奶油黄、浅绿、橙色的适老化配色。
 
 ## 当前版本 · 2026-11-12
 
-- 本机新版入口：`http://127.0.0.1:8004/site/`。
-- 保留奶油/橙/浅绿配色，八类任务区块与操作动效；网页不做微信登录。
-- 8 个原在线 HLS 课程 + 1 个原创本地基础课，均经过真实播放检查。
-- 本轮：接口 130/130、UI 201/201；详见 [功能恢复与视觉记录](docs/PREMIUM_RESTORE_20261112.md)。
+- 本机入口：<http://127.0.0.1:8004/site/>。旧8000入口在确认新版服务后跳转到8004。
+- 播放器和卡片节点在数据更新时保持连接；不再反复触发整卡透明度动画。课程支持选集、进度保存、返回续播、重试。
+- 10门主课堂均为本地MP4，附本地海报与来源/授权元数据，不依赖外部HLS播放服务。
+- 新闻有独立列表、可直接访问的详情、官方正文节选、出处和发布日期；AI获取已核验的官方资讯，不补造最新内容。
+- 家庭群聊/私信在前台约1.5秒轮询自动同步；语音留言可跨账号播放，权限撤销与恢复由后端核验。
+- 图片账单识别→核对→确认入账→刷新保持；同批导入重复确认不会重复记账。
+- 模块插画、个人画像卡片、地图控件与移动端排版已调整。网页不提供微信登录。
 
-## 结构
+本轮实际验收、已修问题与复现方式见 [可靠性验收](docs/RELIABILITY_RELEASE_20261112.md)。旧验收记录保留作历史记录，不代表当前版本状态。
 
-- `backend/app/main.py`：账户、画像、理财、账本、持仓、家庭协同、健康和生活服务。
-- `backend/app/routers/assistant.py`：问答、图片、ASR、TTS。
-- `backend/app/services/`：AI 网关、OCR、语音、风险与资金分配。
-- `miniprogram/`：全部原始页面、组件、业务逻辑与素材。
-- `site/`：Web 页面模板、业务模块、兼容层与原视觉/动效资源。
-- `tests/local_acceptance/`：HTTP、Edge/Playwright、回归和暂存区审计脚本。
-- `LOCAL_ACCEPTANCE.md`、`FUNCTION_ACCEPTANCE_MATRIX.md`：本轮事实性验收记录与边界。
+## 分享与贡献
 
-## 本地启动（Windows / Python 3.12）
+项目仓库：<https://github.com/Aqs-1733/yixiang-zhicai-web>。
 
-在 D 盘项目目录运行，依赖和缓存留在项目盘，不改变全局 Python 设置：
+Fork → 自己的功能分支 → Pull Request 到main。无需上游写权限；维护者审核后合并。步骤见 [CONTRIBUTING.md](CONTRIBUTING.md)。PR自动运行不读取云API密钥的源码/适配器检查。素材授权分别见课程JSON，不将原来源外链视频宣称为开源素材。
+
+## 本地启动
+
+Python 3.12；修改/校验浏览器源代码另需Node.js 22。
 
 ```powershell
-py -3.12 -m venv .venv
-$env:PIP_CACHE_DIR="$PWD\.cache\pip"
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 Copy-Item backend\.env.example backend\.env
-# 在本地编辑 backend\.env，填写自己的配置；不要粘贴到聊天或前端代码。
-.\启动网站.bat
-```
-
-网站 `http://127.0.0.1:8004/site/`；文档 `/docs`；本地状态 `/healthz`；配置状态 `/integrations/status`。后两项只反映服务/配置状态，不证明外部 API 已成功。
-
-手动启动：
-
-```powershell
+# 按需在本机填写自己的API配置
 Set-Location backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8004 --no-access-log
 ```
 
-SQLite 路径为 `backend/app/data/yixiang.db`；`DB_PATH=app/data/yixiang.db` 相对于 backend 解析。首次初始化会建立表和演示内容。演示账户仅供本机测试；正式部署前更换默认密码、JWT_SECRET 与各服务凭证。
+也可双击项目根目录的`启动网站.bat`。API文档为`/docs`，健康状态为`/healthz`，集成配置状态为`/integrations/status`，发布标识为`/app/release`。
 
-## 两种角色和功能
+配置状态不等于真实调用成功。未配置云API时可开发基础账户、账本、家庭协同与本地课堂；云端问答、识别、TTS与腾讯路线需要自己的配置。密钥仅放在被Git忽略的`backend/.env`，不要放在前端、PR或截图中。
 
-- 长辈：注册、密码登录、密保找回、问小享、多模态识别、风险问卷、理财认知/核验、账本/导入、持仓/画像、健康、生活服务、家庭授权和消息。
-- 子女：用长辈的六位绑定码注册或绑定，在授权范围内读取资产、账本、健康、位置、预警和周报；参与家庭私信/群聊。权限由后端核验，前端隐藏按钮不代替权限检查。
-- 网页手机号登录与微信小程序 `wx.login` 不等同。浏览器版微信按钮保留明确提示；没有假装实现网页微信 OAuth。
+## 结构与同步
 
-## API 配置
+- `backend/app/main.py`：账户、画像、理财知识、账本、家庭、健康、课程与生活服务。
+- `backend/app/routers/assistant.py`、`services/`：AI、图像、ASR、TTS、新闻与位置服务。
+- `miniprogram/`：原始页面、组件和业务逻辑，以及本地课程素材。
+- `site/`：浏览器运行层、DOM增量更新、样式与插画。
+- `tests/local_acceptance/`：本地隔离验收与离线回归。
 
-所有凭证仅填在被忽略的 `backend/.env`：
+修改原JS/WXML后在根目录运行：
 
-| 服务 | 配置字段 | 本轮实测 |
-|---|---|---|
-| 豆包/方舟 | ARK_API_KEY、ARK_BASE_URL、ARK_MODEL | Seed 2.1 Lite文字、图片、音频真实联网及浏览器接入通过 |
-| vivo 蓝心 | BLUELM_BASE_URL、BLUELM_ENDPOINT_PATH、BLUELM_TEXT_MODEL、授权模式及对应凭证 | 当前 URL 返回404；需核对控制台对应产品的接口与授权方式 |
-| 百度语音 | BAIDU_API_KEY、BAIDU_SECRET_KEY | OAuth、TTS、ASR及后端上传链路成功 |
-| 聚合资讯 | JUHE_BULLETIN_KEY、JUHE_BULLETIN_URL | 10001：请求 Key 错误，重新获取对应资讯产品 Key |
-| 聚合金融 | JUHE_FINANCE_KEY、JUHE_FINANCE_URL | 10020：接口维护；先核对服务恢复/可用接口，不据此判定 Key 过期 |
-| 腾讯位置服务 | TENCENT_MAP_KEY | 地址解析、附近服务后端链路成功；天气返回真实来源 |
-| 银行产品数据 | BANK_PRODUCTS_URL、BANK_API_KEY | 缺失，保持未启用；本地检索不等于银行官方数据 |
-| 微信支付 | 商户号、API v3 密钥、证书序列号 | 配置缺失，WECHAT_PAY_ENABLED=0 |
+```sh
+python scripts/sync_browser_sources.py
+node scripts/check_browser_sources.cjs
+```
 
-模型名称、端点路径和授权模式以本人服务控制台为准，模板中的示例不是可用性保证。不要把小程序 AppSecret 当作 Web OAuth 凭证。
+## API与数据
 
-## 验收与复现
+本机真实联网验收使用Ark Seed 2.1 Lite处理文字、图片与ASR，百度TTS处理播报，腾讯位置服务处理转换与路线。公共模板不附带任何可用密钥。
 
-初轮自动功能检查 359/360 通过；唯一失败为交接包缺失课程 MP4，`/media/daily_lesson.mp4` 返回404。第三方烟雾测试独立计数，不计入本地功能通过数。新增Seed 2.1 Lite接入51/51检查通过，当前文字/图片/ASR已真实走Ark，播报保留百度TTS；旧的兜底记录不代表云模型成功。图片识别中的本地 OCR 成功不代表云视觉成功。
+新闻当前来自中国政府网和中国人民银行公开源，保留原始发布日期、抓取时间与过期状态；详情为有来源的有限正文节选，可打开官方原文。不是覆盖全网的新闻服务。
+
+产品目录为知识参考，不是银行官方实时在售产品。银行授权数据、实际资金交易与支付未接入；微信网站登录按需求不做。
+
+## 测试
+
+所有业务写入使用隔离数据库，不能把验收脚本指向私人运行数据库。Windows浏览器验收使用本机Edge和Playwright；麦克风与定位为可重复的合成音频/已知坐标夹具，另有真实云API链路核验。
 
 ```powershell
-.\.venv\Scripts\python.exe 验证工程.py
-# 业务测试只指向独立测试数据库服务器8001，禁止改为私人运行服务8000。
+# 另开终端，在backend目录启动独立8001测试服务，数据库路径须为新建的验收副本
+$env:DB_PATH='D:\YOUR_TEST_DIR\acceptance.db'
+$env:DATABASE_URL=''
+$env:LLM_PROVIDER_ORDER='local'
+$env:ARK_ASR_ENABLED='0'
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+# 回到项目根目录，在同一证据目录顺序生成夹具并做浏览器验收
+$env:YX_EVIDENCE_DIR='D:\YOUR_TEST_DIR'
 .\.venv\Scripts\python.exe tests\local_acceptance\api_acceptance.py
 .\.venv\Scripts\python.exe tests\local_acceptance\browser_acceptance.py
-.\.venv\Scripts\python.exe tests\local_acceptance\regression.py
-.\.venv\Scripts\python.exe tests\local_acceptance\term_acceptance.py
+.\.venv\Scripts\python.exe tests\local_acceptance\test_family_realtime.py
+.\.venv\Scripts\python.exe tests\local_acceptance\test_browser_session.py
+.\.venv\Scripts\python.exe tests\local_acceptance\test_course_lifecycle.py
 ```
 
-浏览器测试另需 `pip install playwright`，本轮使用本机 Edge，无需下载另一套浏览器。测试脚本用 `YX_EVIDENCE_DIR` 指定隔离证据目录，合成账号与 Token 仅保存在该目录，截图被 Git 忽略。`api_acceptance.py` 先产生合成夹具，其余脚本随后运行。第三方联网测试另行在私人环境执行，不自动批量调用计费接口。
+家人测试使用已生成的双角色夹具；课程生命周期测试将10门本地视频以4倍速播放到自然结束。云端识别与语音测试需要单独配置，不把离线Mock成功当成云服务成功。
 
-测试服务器示例（仅用于副本，不要指向真实数据库）：
-
-```powershell
-$env:DB_PATH='D:\Projects\YixiangZhicai_Execution_20261111\acceptance.db'
-$env:DATABASE_URL='sqlite:///acceptance.db'
-$env:LLM_PROVIDER_ORDER='local'
-Set-Location backend
-D:\Projects\YixiangZhicai_Local\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --no-access-log
-```
-
-该模式明确只核验本地业务/兜底链路。运行前先复制要测试的数据库并备份，测试结束后关闭测试服务。
-
-## 凭证与提交隔离
-
-`.gitignore` 排除 `.env`、SQLite、虚拟环境、生成媒体、录音、日志、私人小程序配置、压缩包和私钥文件；保留空白 `.env.example`。首次提交前运行暂存区审计，扫描已知私人配置值、常见令牌格式、私钥头、SQLite 文件头及禁用文件名：
-
-```powershell
-git add -n .
-git add .
-D:\Projects\YixiangZhicai_Local\.venv\Scripts\python.exe tests\local_acceptance\audit_staged.py --private-env D:\Projects\YixiangZhicai_Local\backend\.env
-```
-
-私人运行副本和安全源码副本严格分离；没有将网站发布到公网托管服务。尚未完整验收所有页面的每个细分按钮、移动实机、物理麦克风、方言识别和全站对比度；完整边界见验收报告。
-
-## 当前Ark接入设置
-
-使用 `doubao-seed-2-1-lite-260915`，`ARK_THINKING_MODE=disabled`。本机私人配置启用 `ARK_ASR_ENABLED=1`；公共模板默认0，填写自己的ARK_API_KEY/模型后可自行启用。语音识别失败保留原有降级链路，TTS继续由百度提供。所有真实集成测试使用独立DB和合成媒体；原始凭证、录音和截图不提交。新增离线回归命令：`python tests/local_acceptance/test_seed21_adapters.py`。
-
-增量字段修复：修正财务页文本清理把小数误作列表编号的问题；`3.00%`、`1.05`、`12.50元`与点分日期保持原值，列表编号仍可清除。Node回归6/6通过，真实云图像上传后的前端收益字段实测为`3.00%`（另1项通过）。51项统计为直连4+后端4+浏览器3+适配器10+结构23+小数回归6+浏览器字段1，不代表所有页面业务重跑。
+历史报告：[初轮](LOCAL_ACCEPTANCE.md) · [视觉恢复](docs/PREMIUM_RESTORE_20261112.md) · [本轮可靠性](docs/RELIABILITY_RELEASE_20261112.md)。

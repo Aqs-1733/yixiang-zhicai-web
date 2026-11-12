@@ -1,0 +1,49 @@
+{
+  "title": "外汇投资与结算",
+  "source_url": "https://www.safe.gov.cn/tianjin/2024/0430/2465.html",
+  "source": "国家外汇管理局天津市分局；中国人民银行发布《个人外汇管理办法》; 国家外汇管理局重庆外汇管理部《常见外汇业务答疑手册：结售汇与购付汇》",
+  "sources": [
+    {
+      "title": "个人外汇管理办法",
+      "url": "https://www.safe.gov.cn/tianjin/2024/0430/2465.html",
+      "publisher": "国家外汇管理局天津市分局；中国人民银行发布"
+    },
+    {
+      "title": "常见外汇业务答疑手册：结售汇与购付汇",
+      "url": "https://www.safe.gov.cn/chongqing/file/file/20190311/87806e211bb74eb4a44e71395c31cda9.pdf",
+      "publisher": "国家外汇管理局重庆外汇管理部"
+    }
+  ],
+  "attribution": "颐享智财原创中文讲解、字幕及视觉；依据所列官方/第一方资料核对基础概念，未复制第三方音视频。",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "license_scope": "仅适用于本片原创讲解、字幕与视觉；所列参考文献的权利归原发布机构。",
+  "content": "结汇是把持有的外币换成人民币；购汇是用人民币购买外币。结算通常服务于真实收付，不等于投资获利。\n\n外汇投资涉及汇率变动，可能产生收益，也可能产生损失。使用杠杆还会放大风险，不能把换汇当作稳赚。\n\n办理外汇业务，应通过具备相应资格的机构，按真实用途提供资料。不要借用他人额度或参与陌生平台交易。",
+  "summary": "分清结汇、购汇与外汇投资；认识汇率风险及正规办理渠道。",
+  "updated_at": "2026-11-12",
+  "duration_seconds": 42.776,
+  "kind": "original_local_educational_course",
+  "voice": "Windows Microsoft Huihui Desktop, offline SAPI",
+  "video": "local_06.mp4",
+  "poster": "local_06_poster.png",
+  "slides": [
+    {
+      "n": "01",
+      "title": "先分清结汇与购汇",
+      "speech": "结汇是把持有的外币换成人民币；购汇是用人民币购买外币。结算通常服务于真实收付，不等于投资获利。",
+      "duration_seconds": 13.856
+    },
+    {
+      "n": "02",
+      "title": "汇率变化会有损失",
+      "speech": "外汇投资涉及汇率变动，可能产生收益，也可能产生损失。使用杠杆还会放大风险，不能把换汇当作稳赚。",
+      "duration_seconds": 14.892
+    },
+    {
+      "n": "03",
+      "title": "真实用途正规办理",
+      "speech": "办理外汇业务，应通过具备相应资格的机构，按真实用途提供资料。不要借用他人额度或参与陌生平台交易。",
+      "duration_seconds": 14.005
+    }
+  ]
+}

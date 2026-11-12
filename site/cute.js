@@ -28,7 +28,7 @@
     const art=document.querySelector('.login-graphic img');
     if(art){art.src='assets/cute/elderly.webp';art.alt='卡通爷爷奶奶微笑相伴';}
     const main=document.getElementById('yx-render');
-    if(main){const observer=new MutationObserver(enhance);observer.observe(main,{childList:true,subtree:false});enhance();}
+    if(main){const observer=new MutationObserver(enhance);main.addEventListener("yx:render",enhance);enhance();}
     const copyright=document.querySelector('.content-footer');
     if(copyright) copyright.innerHTML='颐享智财 · 守护您的养老生活 <span>仅提供信息辅助与风险提醒，不提供实际资金交易。</span>';
     const full=document.querySelector('.login-art h1');
