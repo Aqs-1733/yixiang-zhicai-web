@@ -22,9 +22,14 @@ with sync_playwright() as pw:
      elif action=='permissions':p.locator('[data-key="child_support"]').first.click()
      elif action=='location':p.evaluate('wx.chooseLocation({success(){}})')
      elif action=='term':p.evaluate('YX.getPage().setData({termExplainPopups:[{id:"layout-qa",term:"测试术语",explanation:"这段文字只用于检查弹窗的换行和滚动。",top:150,left:20}]})')
-     p.locator(selector).wait_for(state='visible');p.wait_for_timeout(120);state=p.locator(selector).evaluate('e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom,scroll:e.scrollHeight,client:e.clientHeight,overflow:getComputedStyle(e).overflowY}}');ok=state['x']>=-1 and state['y']>=-1 and state['right']<=width+1 and state['bottom']<=height+1
+     p.locator(selector).wait_for(state='visible');p.wait_for_timeout(120)
+     if action=='ledger':
+      readable=p.locator('.category-grid>.category-item').evaluate_all('es=>es.every(e=>e.getBoundingClientRect().width>=70)');assert readable,'Category labels squeezed into narrow columns'
+     state=p.locator(selector).evaluate('e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom,scroll:e.scrollHeight,client:e.clientHeight,overflow:getComputedStyle(e).overflowY}}');ok=state['x']>=-1 and state['y']>=-1 and state['right']<=width+1 and state['bottom']<=height+1
      rows.append({'test':name,'width':width,'font':font,'passed':ok,**state});print(('PASS ' if ok else 'FAIL ')+name,str(width),font,flush=True);p.screenshot(path=str(O/f'modal_{name}_{width}_{font}.png'),animations='disabled')
-     if action=='location':p.locator('.location-cancel').click()
+     if action=='ledger':
+      p.locator('.category-item').first.click();p.locator('.amount-input').fill('12.50');p.locator('.description-input').fill('弹窗输入验收，不保存');p.locator(selector).get_by_text('取消',exact=True).click()
+     elif action=='location':p.locator('.location-cancel').click()
      elif action in ['ledger','medicine','phone']:p.locator(selector).get_by_text('取消',exact=True).click()
      elif action=='history':p.locator('.history-close').click()
      elif action=='permissions':p.locator('.child-permission-panel .edit-cancel').click()
