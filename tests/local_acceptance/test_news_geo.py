@@ -6,6 +6,10 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'backend'))
 from app.services import live_news as news,geo_gateway as geo
 class NewsGeo(unittest.TestCase):
  def setUp(self):news._last=0;news._items=[];news._errors=[];news._fetched_at='';news._stale=True
+ def test_first_fetch_before_ten_minutes_uptime(self):
+  item={'id':'initial','title':'测试启动资讯','url':'https://www.gov.cn/initial','time':'2025-01-01'}
+  with patch.object(news.time,'monotonic',return_value=42),patch.object(news,'_gov',return_value=[item]) as source,patch.object(news,'_pbc',return_value=[]):
+   result=news.get_news();self.assertEqual(source.call_count,1);self.assertTrue(result['success']);self.assertEqual(result['items'][0]['id'],'initial')
  def test_empty_source_never_creates_today_news(self):
   with patch.object(news,'_gov',return_value=[]),patch.object(news,'_pbc',return_value=[]):
    r=news.get_news();self.assertFalse(r['success']);self.assertEqual(r['items'],[]);self.assertFalse(r['fallback'])

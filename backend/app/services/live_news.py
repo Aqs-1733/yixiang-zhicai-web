@@ -33,7 +33,7 @@ def _pbc():
 def get_news(limit=8,force=False):
     global _last,_items,_fetched_at,_errors,_stale
     with _lock:
-        if time.monotonic()-_last>600 or force and time.monotonic()-_last>20:
+        if _last<=0 or time.monotonic()-_last>600 or force and time.monotonic()-_last>20:
             results=[];errors=[]
             with ThreadPoolExecutor(max_workers=2) as pool:
                 futures=[(name,pool.submit(fn)) for name,fn in [('gov.cn',_gov),('pbc.gov.cn',_pbc)]]
