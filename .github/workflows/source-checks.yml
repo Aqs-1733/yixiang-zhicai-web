@@ -9,7 +9,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     env:
-      YX_EVIDENCE_DIR: ${{ runner.temp }}/yixiang-evidence
+      YX_EVIDENCE_DIR: .test-evidence
       LLM_PROVIDER_ORDER: local
       ARK_ASR_ENABLED: '0'
     steps:
@@ -26,3 +26,4 @@ jobs:
       - run: python tests/local_acceptance/test_seed21_adapters.py
       - run: python tests/local_acceptance/test_news_geo.py
       - run: node tests/local_acceptance/test_finance_decimals.cjs
+
