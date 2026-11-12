@@ -22,19 +22,19 @@
   }
   function init() {
     const logo = document.querySelector('.identity-logo');
-    if(logo) logo.innerHTML='<img src="assets/cute/mascot.webp" alt="小享" />';
+    if(logo) logo.innerHTML='<img src="assets/brand/xiaoxiang-original.png" alt="小享" />';
     const side=document.querySelector('.side-deco');
-    if(side) side.innerHTML='<img class="cute-side-mascot" src="assets/cute/mascot.webp" alt="" aria-hidden="true"/>';
+    if(side) side.innerHTML='<img class="cute-side-mascot" src="assets/brand/xiaoxiang-original.png" alt="" aria-hidden="true"/>';
     const art=document.querySelector('.login-graphic img');
     if(art){art.src='assets/cute/elderly.webp';art.alt='卡通爷爷奶奶微笑相伴';}
     const main=document.getElementById('yx-render');
     if(main){const observer=new MutationObserver(enhance);main.addEventListener("yx:render",enhance);enhance();}
     const copyright=document.querySelector('.content-footer');
-    if(copyright) copyright.innerHTML='颐享智财 · 守护您的养老生活 <span>仅提供信息辅助与风险提醒，不提供实际资金交易。</span>';
+    if(copyright) copyright.remove();
     const full=document.querySelector('.login-art h1');
-    if(full) full.innerHTML='让养老生活<br><em>更安心、更开心。</em>';
+    if(full) full.innerHTML='记账、看资讯<br><em>也能和家人聊聊。</em>';
     const loginCopy=document.querySelector('.login-art p');
-    if(loginCopy) loginCopy.textContent='小享陪您记账、看理财、识风险，家人也能一起关心您。';
+    if(loginCopy) loginCopy.textContent='记收支、查路线、看资讯，也可以给家人发消息。';
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();

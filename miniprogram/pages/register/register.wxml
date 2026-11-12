@@ -7,13 +7,13 @@
 
       <view class="register-card">
         <view class="register-title">注册账号</view>
-        <view class="register-subtitle">请先设置昵称和头像；子女端还需填写长辈生成的家庭绑定码。</view>
+        <view class="register-subtitle">填写手机号、密码和昵称。子女注册时，还需要长辈发来的家庭绑定码。</view>
 
         <view class="register-avatar-row">
           <button class="register-avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" hover-class="none">
             <image class="register-avatar-img" src="{{avatar}}" mode="aspectFill" />
           </button>
-          <view class="register-avatar-tip">点击选择头像，暂不选择会使用默认头像</view>
+          <view class="register-avatar-tip">点击头像可以更换，也可以先用默认头像。</view>
         </view>
 
         <view class="form-field">
@@ -74,14 +74,14 @@
         </view>
 
         <view class="role-note">
-          <text wx:if="{{role === 'elder'}}">长辈注册后进入小程序，可在家庭协同里生成绑定码给子女。</text>
-          <text wx:else>子女端注册必须先拿到长辈的绑定码，注册成功后会自动绑定该长辈。</text>
+          <text wx:if="{{role === 'elder'}}">登录后，在「家庭协同」里生成绑定码，再发给家人。</text>
+          <text wx:else>填写长辈提供的绑定码，注册后就能加入家庭。</text>
         </view>
 
         <view class="security-option">
           <view>
             <view class="security-title">设置忘记密码问题</view>
-            <view class="security-desc">可选。开启后注册成功会进入密保设置页。</view>
+            <view class="security-desc">用于找回密码，也可以注册后再设置。</view>
           </view>
           <switch checked="{{setSecurityQuestion}}" bindchange="onSecuritySwitch" color="#f2b632" />
         </view>

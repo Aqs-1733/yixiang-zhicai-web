@@ -27,7 +27,7 @@
           <button hover-class="none" disabled="{{healthBusy}}" bindtap="chooseFoodImage">拍照识别饭菜</button>
           <button hover-class="none" disabled="{{healthBusy}}" bindtap="recordExercise">记录运动</button>
         </view>
-        <view wx:if="{{!healthJournal.length}}" class="health-life-empty">暂无运动或饮食记录。记录后，小享会结合您的画像给出生活建议。</view>
+        <view wx:if="{{!healthJournal.length}}" class="health-life-empty">还没有运动或饮食记录。记一笔后，可以查看当天的活动和饮食情况。</view>
         <view wx:for="{{healthJournal}}" wx:key="id" class="health-journal-item">
           <view class="health-journal-kind">{{item.kind === 'food' ? '饮食分析' : '运动记录'}}</view>
           <view wx:if="{{item.content}}" class="health-journal-content">{{item.content}}</view>

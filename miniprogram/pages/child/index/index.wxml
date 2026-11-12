@@ -4,7 +4,7 @@
     <view class="top-main">
       <view>
         <view class="title">您好，{{accountName}}</view>
-        <view class="desc">颐享智财 · 家庭安心相伴</view>
+        <view class="desc">查看家人共享的信息</view>
       </view>
     </view>
   </view>

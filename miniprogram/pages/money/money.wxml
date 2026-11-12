@@ -79,7 +79,7 @@
         <view class="finance-parse-head">
           <view>
             <view class="section-title">理财图片识别结果</view>
-            <view class="finance-parse-status">只展示图片实际识别内容，由您决定是否保存</view>
+            <view class="finance-parse-status">请核对识别出的金额和收支方向，确认后再保存。</view>
           </view>
           <button class="panel-round-close round-close-btn" hover-class="none" catchtap="closeFinanceParsePanel">×</button>
         </view>
@@ -302,7 +302,7 @@
       </view>
       <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
         <view wx:for="{{pocketAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
-        <view wx:if="{{pocketAskLoading}}" class="position-ask-message assistant">小享正在结合您的收支分析…</view>
+        <view wx:if="{{pocketAskLoading}}" class="position-ask-message assistant">正在分析收支情况…</view>
       </scroll-view>
       <view class="position-ask-input-row">
         <input value="{{pocketAskInput}}" bindinput="onPocketAskInput" bindconfirm="sendPocketAsk" confirm-type="send" placeholder="继续问为什么这样分…" />

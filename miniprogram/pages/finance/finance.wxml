@@ -71,7 +71,7 @@
               <view wx:for="{{analysisAskMessages}}" wx:key="index" class="analysis-chat-msg {{item.role}}">
                 <text>{{item.role === 'user' ? '我' : '小享'}}</text><view>{{item.text}}</view>
               </view>
-              <view wx:if="{{analysisAskLoading}}" class="analysis-chat-thinking">小享正在认真看这项记录...</view>
+              <view wx:if="{{analysisAskLoading}}" class="analysis-chat-thinking">正在分析这项记录…</view>
             </scroll-view>
             <view class="analysis-chat-input-row">
               <input value="{{analysisAskInput}}" bindinput="onAnalysisAskInput" bindconfirm="sendAnalysisAsk" confirm-type="send" placeholder="继续问风险、期限、收益或赎回..." />
@@ -323,7 +323,7 @@
               <view class="error-content">
                 <view>{{verifyResult.error}}</view>
                 <view wx:if="{{verifyResult.reasonCode === 'not_found'}}">未查到不等于产品一定有问题，也不等于产品真实，请继续通过发行机构或官方登记平台复核。</view>
-                <view wx:if="{{verifyResult.reasonCode === 'not_configured'}}">当前没有可用的授权产品数据源，系统不会用本地样例冒充核验结果。</view>
+                <view wx:if="{{verifyResult.reasonCode === 'not_configured'}}">产品登记查询暂未接入，请到发行机构或官方登记平台核对。</view>
               </view>
               <view class="error-action">
                 <view>建议您：</view>

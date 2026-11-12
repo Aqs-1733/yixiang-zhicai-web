@@ -1761,24 +1761,9 @@ Page({
 
     const isChild = (wx.getStorageSync('role') || profile.role || 'elder') === 'child'
     // 长辈端使用亲切适老话术；子女端保持平等、清楚，不套用老人预设。
-    let greeting = isChild
-      ? `您好${nickname !== '您' ? '，' + nickname : ''}。我是小享，可以和您一起查看家庭协同、生活、健康和金融问题。`
-      : `您好${nickname !== '您' ? '，' + nickname : ''}。我是小享，愿意陪您聊生活、健康、出行，也能帮您看懂账本和理财。`
-
-    if (!isChild && age) {
-      greeting += `根据您${age}岁的情况，`
-      if (riskLevel === '保守' || riskLevel === '保守型') {
-        greeting += '我会重点帮您关注资金安全和防诈骗提醒。'
-      } else if (riskLevel === '稳健' || riskLevel === '稳健型') {
-        greeting += '我会帮您在安全的基础上做稳健配置。'
-      } else if (riskLevel === '积极' || riskLevel === '进取型') {
-        greeting += '我会帮您做好分层配置，提醒您控制风险。'
-      } else {
-        greeting += '您可以问我生活、健康、养老、防诈骗和理财问题。'
-      }
-    } else if (!isChild) {
-      greeting += '您可以问我生活、健康、养老、防诈骗和理财问题。'
-    }
+    const greeting = isChild
+      ? `您好${nickname !== '您' ? '，' + nickname : ''}。我是小享。可以直接提问，也可以发语音或图片；家人授权后的账本和健康信息，也能在这里查看。`
+      : `您好${nickname !== '您' ? '，' + nickname : ''}。我是小享。可以直接提问，也可以发语音或图片；记账、查路线、看理财信息都可以。`
 
     const welcomeMsg = {
       id: genId('a'),

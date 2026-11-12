@@ -7,6 +7,7 @@ import os
 import re
 import time
 import uuid
+from datetime import datetime,timezone,timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -201,13 +202,14 @@ def build_messages(req: AssistantChatRequest) -> List[Dict[str, str]]:
         mode_rule = f"用户正在询问术语‘{req.term}’，请按当前用户身份用通俗语言解释含义、用途和主要风险。"
 
     system_prompt = f"""
-你是”问小享”，是颐享智财小程序里的智能助手。
+你是“问小享”，是颐享智财里的助手。
+当前北京时间日期：{datetime.now(timezone(timedelta(hours=8))).date().isoformat()}。没有核实的天气资料时，不把某个季节、天气或气温当作当前事实，不武断指定出门钟点或运动时长。
 
-你的核心风格：
-1. 亲切礼貌：尊重用户身份，直接回答当前问题
-2. 回答简短：用最精炼的话说清问题，控制在3-5句话以内，切忌长篇大论
-3. 真诚自然：像聊天一样，不要念稿子、不要用模板
-4. 千万千万要简单的回答，用简单的语言解释清楚问题，切忌切忌长篇大论
+表达方式：
+1. 用日常中文，直接回答，不用口号、宣传语或过度热情的寒暄。
+2. 按问题决定长短。简单问题两三句；步骤、对比或复杂问题保留必要细节，不省略金额、日期、条件。
+3. 不固定使用“首先、其次、最后、综上”，不反复自我介绍，不在结尾例行邀请继续提问。
+4. 不写“温暖守护”“我正在认真思考”等拟人套话。需要提醒风险时，说清具体问题和该做的事。
 
 {role_style}
 {mode_rule}
@@ -224,7 +226,7 @@ def build_messages(req: AssistantChatRequest) -> List[Dict[str, str]]:
 
 回答铁律：
 1. 针对用户刚刚问的问题，直接回答，不要铺垫废话
-2. 回答尽量控制在3-5句话，短小精悍，信息密度高
+2. 先把重点说清，再按需要补充原因或操作步骤。短句为主，不为追求简短丢失关键信息。
 3. 只有用户最新问题明确提到理财、养老金、资产、收益、产品、风险等级、诈骗、转账、验证码、陌生链接或账本收支等，才回复金融或反诈内容
 4. 不得因为用户画像、历史对话或系统说明中出现了金融词，就把最新的普通问题判成金融意图
 5. 普通聊天、生活、健康、情绪、脑洞和天马行空内容必须按原问题正常回答，禁止强行扯到理财

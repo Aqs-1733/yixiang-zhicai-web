@@ -250,12 +250,13 @@ function refreshImmediate(){const dest=$('#yx-render');if(!dest||!page)return;
 
  for(const [key,y,x] of scrolls){const el=[...dest.querySelectorAll('.yx-scroll')].find(x=>x.getAttribute('data-yx-key')===key);if(el){el.scrollTop=y;el.scrollLeft=x}}
  if(focusKey){const match=[...dest.querySelectorAll('input,textarea,select,button')].find(x=>x.getAttribute('data-yx-key')===focusKey);if(match){match.focus({preventScroll:true});if(cursor){try{match.setSelectionRange(...cursor)}catch{}}}}
+ const fontMode=appDef.globalData.fontSizeMode||'normal';document.documentElement.dataset.font=fontMode;const fontButton=$('#font-change');if(fontButton){const label={normal:'标准字',large:'大字',xlarge:'超大字'}[fontMode];fontButton.dataset.mode=fontMode;fontButton.title='当前'+label+'，点击切换';fontButton.setAttribute('aria-label','字体大小：'+label+'，点击切换')}
  dest.dispatchEvent(new CustomEvent('yx:render',{detail:{route:page.path,sameOwner}}));
  $('#page-subtitle').textContent=pageName[page.path]||'颐享智财';
  document.documentElement.dataset.role=childPaths.has(activePath)||storageGet('role')==='child'?'child':'elder';
 }
 function updateShell(){const auth=authPaths.has(activePath);const role=childPaths.has(activePath)||storageGet('role')==='child'?'child':'elder';document.body.classList.toggle('is-auth',auth);
- $('#role-label').textContent=role==='child'?'子女关怀端':'长辈安心端';
+ $('#role-label').textContent=role==='child'?'子女端':'长辈端';
  const nav=$('#main-nav');nav.innerHTML='';
  const navItems=auth?[]:activeList(activePath);
  const cats=role==='child'?['首页与家人','账本与资产','生活与安全','账户与设置']:['日常首页','理财与财务','家庭与生活','我的账户'];
@@ -417,7 +418,7 @@ function bootstrap(){loadModule('app.js');appDef.globalData.baseUrl=location.ori
  $('#nav-scrim').onclick=()=>document.body.classList.remove('nav-open');
  $('#roleswitch').onclick=switchRole;
  $('#logout-top').onclick=()=>{clearSession();goto('pages/login/login','relaunch')};
- $('#font-change').onclick=()=>{const f=appDef.cycleGlobalFontSize?.();const mode=f?.mode||'normal';document.documentElement.dataset.font=mode;toast('已切换为 '+(f?.label||'标准字'));refresh()};
+ $('#font-change').onclick=()=>{const f=appDef.cycleGlobalFontSize?.();const mode=f?.mode||'normal';document.documentElement.dataset.font=mode;page?.instance?.syncGlobalFont?.();toast('已切换为 '+(f?.label||'标准字'));refresh()};
  $('#site-search').addEventListener('input',e=>{const key=e.target.value.trim();for(const b of $('#main-nav').querySelectorAll('button'))b.hidden=!!key&&!b.textContent.includes(key)});
  goto(firstVisit(),'relaunch');}
  const boot=()=>Promise.resolve(window.YXRelease?.ready).then(redirected=>{if(!redirected)bootstrap()});
