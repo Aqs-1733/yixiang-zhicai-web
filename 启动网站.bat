@@ -34,6 +34,11 @@ if not exist "backend\.env" (
         echo [提示] 尚未设置 backend\.env。请参考 backend\.env.example 填写 API 密钥。
     )
 )
+"%~dp0.venv\Scripts\python.exe" "%~dp0scripts\check_mysql.py" --autostart-local
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 echo.
 echo [启动] 网站地址: http://127.0.0.1:8004/site/
 echo [接口] API 文档: http://127.0.0.1:8004/docs

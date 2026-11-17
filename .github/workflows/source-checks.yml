@@ -8,10 +8,31 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-ephemeral-password
+          MYSQL_DATABASE: yixiang_qa_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
     env:
       YX_EVIDENCE_DIR: .test-evidence
       LLM_PROVIDER_ORDER: local
       ARK_ASR_ENABLED: '0'
+      DATABASE_URL: ''
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: '3306'
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ci-only-ephemeral-password
+      MYSQL_DATABASE: yixiang_qa_ci
+      DATA_API_TIMEOUT: '1'
+      LLM_TIMEOUT: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,4 +47,23 @@ jobs:
       - run: python tests/local_acceptance/test_seed21_adapters.py
       - run: python tests/local_acceptance/test_news_geo.py
       - run: node tests/local_acceptance/test_finance_decimals.cjs
+      - name: Start isolated MySQL-backed API
+        run: |
+          python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8001 --no-access-log > "$YX_EVIDENCE_DIR/api.log" 2>&1 &
+          python - <<'PY'
+          import time, httpx
+          for _ in range(60):
+              try:
+                  r = httpx.get('http://127.0.0.1:8001/healthz')
+                  if r.status_code == 200 and r.json().get('database_ready'):
+                      break
+              except httpx.HTTPError:
+                  pass
+              time.sleep(1)
+          else:
+              raise SystemExit('MySQL API did not become ready')
+          PY
+      - run: python tests/local_acceptance/test_mysql_contract.py
+      - run: python tests/local_acceptance/api_acceptance.py
+      - run: python tests/local_acceptance/test_mysql_integration.py
 

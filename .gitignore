@@ -69,3 +69,15 @@ API密钥需求.md
 
 *.db-journal
 tests/local_acceptance/*.json
+
+# MySQL dumps / server data / local credentials are never source artifacts
+*.sql
+*.sql.gz
+*.dump
+*.sql.bak
+mysql-backups/
+mysql-data/
+private_credentials.json
+my.ini
+my.cnf
+!backend/schema/mysql.sql

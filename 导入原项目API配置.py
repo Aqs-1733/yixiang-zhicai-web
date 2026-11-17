@@ -7,7 +7,7 @@ import sys
 import zipfile
 
 ROOT=Path(__file__).resolve().parent
-TARGET=ROOT/'.env'
+TARGET=ROOT/'backend'/'.env'
 
 
 def parse_env(raw: str) -> dict[str, str]:
@@ -65,8 +65,15 @@ def main():
         if not merge.get(key) or backend.get(key,'')=='':merge[key]=outer[key]
     if merge.get('BLUELM_API_KEY') and merge.get('ARK_API_KEY'):
         merge['LLM_PROVIDER_ORDER']='vivo_bluelm,ark,qwen,deepseek,openai,llm,local'
-    # 原包可能使用相对 DB_PATH=backend/app/data/... ，仍使用当前网站包内演示库。
-    merge['DB_PATH']='app/data/yixiang.db'
+    # 原包的 SQLite 配置不再导入；保留现有 MySQL 连接，API 配置与数据库配置分开。
+    current=parse_env(TARGET.read_text(encoding='utf-8-sig')) if TARGET.exists() else {}
+    merge.pop('DB_PATH',None)
+    for key in list(merge):
+        if key=='DATABASE_URL' or key.startswith('MYSQL_'):merge.pop(key,None)
+    for key,value in current.items():
+        if key=='DATABASE_URL' or key.startswith('MYSQL_'):merge[key]=value
+    if not any(merge.get(k) for k in ('DATABASE_URL','MYSQL_DATABASE')):
+        merge.update(DATABASE_URL='',MYSQL_HOST='127.0.0.1',MYSQL_PORT='3306',MYSQL_DATABASE='yixiang_zhicai',MYSQL_USER='yixiang_app',MYSQL_PASSWORD='')
     entries=['# 仅供本机 FastAPI 加载，严禁上传到公开仓库。']
     entries.extend(f'{k}={v}' for k,v in merge.items())
     TARGET.write_text('\n'.join(entries)+'\n',encoding='utf-8')

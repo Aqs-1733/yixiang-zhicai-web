@@ -9,7 +9,8 @@ import base64
 import random
 import hashlib
 import ipaddress
-import sqlite3
+from pymysql.err import IntegrityError
+from app.database import conn, initialize_schema, readiness
 import uuid
 import shutil
 from pathlib import Path
@@ -38,19 +39,6 @@ load_dotenv(BACKEND_ENV, override=False)
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = BASE_DIR.parent
-_RAW_DB_PATH = os.getenv("DB_PATH", "").strip()
-if _RAW_DB_PATH:
-    configured_db_path = Path(_RAW_DB_PATH)
-    if configured_db_path.is_absolute():
-        DB_PATH = configured_db_path
-    elif configured_db_path.parts and configured_db_path.parts[0].lower() == "backend":
-        DB_PATH = PROJECT_DIR / configured_db_path
-    else:
-        DB_PATH = BASE_DIR / configured_db_path
-else:
-    DB_PATH = BASE_DIR / "app" / "data" / "yixiang.db"
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-USE_MYSQL = DATABASE_URL.startswith("mysql://") or DATABASE_URL.startswith("mysql+pymysql://")
 SECRET_KEY = (os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY") or "yixiang-zhicai-change-me").strip().strip('"').strip("\'")
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "43200"))
 APP_PORT = int(os.getenv("APP_PORT", "8000"))
@@ -249,92 +237,23 @@ def lesson_video_file(filename: str) -> FileResponse:
 
 # ------------------------- database -------------------------
 
-class DictRow(dict):
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            return list(self.values())[key]
-        return super().__getitem__(key)
 
 
-class MySQLCursor:
-    def __init__(self, raw):
-        self.raw = raw
-
-    @staticmethod
-    def _sql(sql: str) -> str:
-        return sql.replace("INSERT OR REPLACE INTO", "REPLACE INTO").replace("?", "%s")
-
-    def execute(self, sql: str, params: Any = None):
-        self.raw.execute(self._sql(sql), params or ())
-        return self
-
-    def executemany(self, sql: str, seq_of_params: Any):
-        self.raw.executemany(self._sql(sql), seq_of_params)
-        return self
-
-    def fetchone(self):
-        row = self.raw.fetchone()
-        return DictRow(row) if row else None
-
-    def fetchall(self):
-        return [DictRow(row) for row in self.raw.fetchall()]
 
 
-class MySQLConnection:
-    def __init__(self):
-        try:
-            import pymysql
-            from pymysql.cursors import DictCursor
-        except Exception as e:
-            raise RuntimeError("使用 MySQL 需要先安装 pymysql：python -m pip install pymysql") from e
-
-        url = DATABASE_URL.replace("mysql+pymysql://", "mysql://", 1)
-        parsed = urlparse(url)
-        self.raw = pymysql.connect(
-            host=parsed.hostname or "127.0.0.1",
-            port=parsed.port or 3306,
-            user=unquote(parsed.username or "root"),
-            password=unquote(parsed.password or ""),
-            database=(parsed.path or "/yixiang_zhicai").lstrip("/"),
-            charset="utf8mb4",
-            cursorclass=DictCursor,
-            autocommit=False,
-        )
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        if exc_type:
-            self.raw.rollback()
-        self.raw.close()
-
-    def execute(self, sql: str, params: Any = None):
-        cursor = MySQLCursor(self.raw.cursor())
-        return cursor.execute(sql, params)
-
-    def executemany(self, sql: str, seq_of_params: Any):
-        cursor = MySQLCursor(self.raw.cursor())
-        return cursor.executemany(sql, seq_of_params)
-
-    def commit(self) -> None:
-        self.raw.commit()
 
 
-def conn():
-    if USE_MYSQL:
-        return MySQLConnection()
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    c = sqlite3.connect(DB_PATH)
-    c.row_factory = sqlite3.Row
-    return c
+
+
+
+
 
 
 def now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def row_to_dict(row: sqlite3.Row | None) -> Dict[str, Any]:
+def row_to_dict(row: Any) -> Dict[str, Any]:
     return dict(row) if row else {}
 
 
@@ -425,7 +344,7 @@ def insert_ledger_record(
             (user_id, record_type, title, float(amount), record_date, now_iso()),
         )
     try:
-        return c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        return c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
     except Exception:
         return None
 
@@ -470,7 +389,7 @@ def current_user(authorization: str = Header(default="")) -> Dict[str, Any]:
 
 
 def ensure_demo_user(c, phone: str, password: str, nickname: str, role: str) -> int:
-    insert_ignore = "INSERT IGNORE INTO" if USE_MYSQL else "INSERT OR IGNORE INTO"
+    insert_ignore = "INSERT IGNORE INTO"
     c.execute(
         f"{insert_ignore} users(phone,password_hash,nickname,role,created_at) VALUES(?,?,?,?,?)",
         (phone, hash_password(password), nickname, role, now_iso()),
@@ -506,7 +425,7 @@ def save_seed_profile_if_missing(c, uid: int, role: str, profile: Dict[str, Any]
         existing = parse_json_value(profile_row["data"], default_profile(profile.get("nickname") or "用户", role))
         ensure_structured_profile(c, uid, role, existing)
         return existing
-    c.execute("INSERT OR REPLACE INTO profiles(user_id,data,updated_at) VALUES(?,?,?)", (uid, json.dumps(profile, ensure_ascii=False), now_iso()))
+    c.execute("INSERT INTO profiles(user_id,data,updated_at) VALUES(?,?,?) ON DUPLICATE KEY UPDATE data=VALUES(data),updated_at=VALUES(updated_at)", (uid, json.dumps(profile, ensure_ascii=False), now_iso()))
     ensure_structured_profile(c, uid, role, profile)
     return profile
 
@@ -526,7 +445,7 @@ def ensure_demo_family_binding(c, elder_id: int, child_id: int) -> int:
             """,
             (elder_id, child_id, "子女", "安心子女", "13900000000", now_iso(), now_iso(), now_iso()),
         )
-        binding_id = int(c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0])
+        binding_id = int(c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0])
     try:
         grant_default_permissions(c, binding_id)
     except Exception:
@@ -594,21 +513,13 @@ def seed_demo_data(c) -> None:
             ],
         )
 
-    if USE_MYSQL:
-        safe_execute(c, """
-            CREATE TABLE IF NOT EXISTS health_metrics(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,bp VARCHAR(32) DEFAULT '',hr INT DEFAULT 0,
-              weight DECIMAL(10,2) DEFAULT 0,sleep VARCHAR(32) DEFAULT '',steps VARCHAR(32) DEFAULT '',updated_at VARCHAR(32) NOT NULL,
-              INDEX idx_health_metrics_user(user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        """)
-    else:
-        safe_execute(c, """
-            CREATE TABLE IF NOT EXISTS health_metrics(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,bp TEXT DEFAULT '',hr INTEGER DEFAULT 0,
-              weight REAL DEFAULT 0,sleep TEXT DEFAULT '',steps TEXT DEFAULT '',updated_at TEXT NOT NULL
-            )
-        """)
+    safe_execute(c, """
+        CREATE TABLE IF NOT EXISTS health_metrics(
+          id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,bp VARCHAR(32) DEFAULT '',hr INT DEFAULT 0,
+          weight DECIMAL(10,2) DEFAULT 0,sleep VARCHAR(32) DEFAULT '',steps VARCHAR(32) DEFAULT '',updated_at VARCHAR(32) NOT NULL,
+          INDEX idx_health_metrics_user(user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
     health_count = c.execute("SELECT COUNT(*) AS n FROM health_metrics WHERE user_id=?", (elder_id,)).fetchone()["n"]
     if not health_count:
         c.execute(
@@ -641,555 +552,20 @@ def safe_execute(c, sql: str, params: Any = None) -> None:
 
 
 def ensure_user_optional_columns(c) -> None:
-    if USE_MYSQL:
-        safe_execute(c, "ALTER TABLE users ADD COLUMN openid VARCHAR(128) NULL")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN wechat_bound_at VARCHAR(32) NULL")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN avatar TEXT NULL")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN updated_at VARCHAR(32) NULL")
-    else:
-        safe_execute(c, "ALTER TABLE users ADD COLUMN openid TEXT")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN wechat_bound_at TEXT")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN avatar TEXT")
-        safe_execute(c, "ALTER TABLE users ADD COLUMN updated_at TEXT")
+    initialize_schema()
 
 
-def init_extra_schema(c) -> None:
-    """3.0 复赛新增结构化表。保留旧表，增量兼容 SQLite/MySQL。"""
-    if USE_MYSQL:
-        for sql in [
-            "ALTER TABLE users ADD COLUMN openid VARCHAR(128) NULL UNIQUE",
-            "ALTER TABLE users ADD COLUMN wechat_bound_at VARCHAR(32) NULL",
-            "ALTER TABLE users ADD COLUMN avatar TEXT NULL",
-            "ALTER TABLE users ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'active'",
-            "ALTER TABLE users ADD COLUMN updated_at VARCHAR(32) NULL",
-            "CREATE INDEX idx_users_role ON users(role)",
-            "ALTER TABLE ledger_records ADD COLUMN category VARCHAR(64) NOT NULL DEFAULT ''",
-            "ALTER TABLE ledger_records ADD COLUMN description TEXT NULL",
-            "ALTER TABLE ledger_records ADD COLUMN source VARCHAR(32) NOT NULL DEFAULT 'manual'",
-        ]:
-            safe_execute(c, sql)
-        stmts = [
-            """
-            CREATE TABLE IF NOT EXISTS elder_profiles(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, user_id BIGINT NOT NULL UNIQUE, age INT NULL,
-              monthly_income DECIMAL(18,2) DEFAULT 0, monthly_expense DECIMAL(18,2) DEFAULT 0,
-              liquid_asset DECIMAL(18,2) DEFAULT 0, fixed_asset DECIMAL(18,2) DEFAULT 0, debt DECIMAL(18,2) DEFAULT 0,
-              risk_preference VARCHAR(32) DEFAULT '', health_status VARCHAR(64) DEFAULT '', phone_difficulty VARCHAR(64) DEFAULT '',
-              child_support VARCHAR(64) DEFAULT '', liquidity_need VARCHAR(64) DEFAULT '', pension_goal VARCHAR(255) DEFAULT '',
-              emergency_months INT DEFAULT 0, updated_at VARCHAR(32) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS child_profiles(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, user_id BIGINT NOT NULL UNIQUE, relation_default VARCHAR(32) DEFAULT '子女',
-              emergency_contact VARCHAR(64) DEFAULT '', notify_preference VARCHAR(64) DEFAULT 'risk_alert',
-              created_at VARCHAR(32) NOT NULL, updated_at VARCHAR(32) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_bind_codes(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, elder_user_id BIGINT NOT NULL, code_hash VARCHAR(128) NOT NULL,
-              code_plain_demo VARCHAR(12) DEFAULT '', expires_at VARCHAR(32) NOT NULL, used TINYINT NOT NULL DEFAULT 0,
-              created_at VARCHAR(32) NOT NULL, INDEX idx_bind_code_elder(elder_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_bindings(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, elder_user_id BIGINT NOT NULL, child_user_id BIGINT NOT NULL,
-              relation VARCHAR(32) DEFAULT '子女', child_name VARCHAR(64) DEFAULT '', child_phone VARCHAR(32) DEFAULT '',
-              status VARCHAR(16) NOT NULL DEFAULT 'pending', bind_code_id BIGINT NULL,
-              created_at VARCHAR(32) NOT NULL, confirmed_at VARCHAR(32) NULL, updated_at VARCHAR(32) NOT NULL,
-              INDEX idx_family_binding_elder(elder_user_id), INDEX idx_family_binding_child(child_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_permissions(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, binding_id BIGINT NOT NULL, permission_key VARCHAR(64) NOT NULL,
-              enabled TINYINT NOT NULL DEFAULT 1, updated_at VARCHAR(32) NOT NULL,
-              UNIQUE KEY uniq_permission(binding_id, permission_key)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_messages(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, elder_user_id BIGINT NOT NULL, from_user_id BIGINT NOT NULL,
-              to_user_id BIGINT NOT NULL, content TEXT NOT NULL, message_type VARCHAR(32) DEFAULT 'family',
-              status VARCHAR(16) DEFAULT 'unread', created_at VARCHAR(32) NOT NULL,
-              INDEX idx_family_msg_elder(elder_user_id), INDEX idx_family_msg_to_user(to_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_group_messages(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, family_id BIGINT NOT NULL, sender_id BIGINT NOT NULL,
-              sender_name VARCHAR(64) DEFAULT '', sender_role VARCHAR(16) DEFAULT '', content TEXT NOT NULL,
-              message_type VARCHAR(16) DEFAULT 'user', created_at VARCHAR(32) NOT NULL,
-              INDEX idx_family_group_family(family_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_group_reads(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, user_id BIGINT NOT NULL, family_id BIGINT NOT NULL,
-              last_read_message_id BIGINT NOT NULL DEFAULT 0, updated_at VARCHAR(32) NOT NULL,
-              UNIQUE KEY uniq_family_group_read(user_id, family_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_member_remarks(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, viewer_user_id BIGINT NOT NULL, peer_user_id BIGINT NOT NULL,
-              remark VARCHAR(64) DEFAULT '', updated_at VARCHAR(32) NOT NULL,
-              UNIQUE KEY uniq_family_remark(viewer_user_id, peer_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS alert_events(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, elder_user_id BIGINT NOT NULL, event_type VARCHAR(64) NOT NULL,
-              level VARCHAR(16) NOT NULL, title VARCHAR(128) NOT NULL, detail TEXT, source VARCHAR(64) DEFAULT '',
-              related_record_id BIGINT NULL, status VARCHAR(16) DEFAULT 'unread', created_at VARCHAR(32) NOT NULL, handled_at VARCHAR(32) NULL,
-              INDEX idx_alert_elder(elder_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS weekly_reports(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT, elder_user_id BIGINT NOT NULL, period_start VARCHAR(16) NOT NULL,
-              period_end VARCHAR(16) NOT NULL, summary TEXT, asset_summary_json JSON, ledger_summary_json JSON,
-              position_summary_json JSON, risk_summary_json JSON, ai_advice TEXT, created_at VARCHAR(32) NOT NULL,
-              INDEX idx_weekly_elder(elder_user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-        ]
-        for sql in stmts:
-            c.execute(sql)
-    else:
-        for sql in [
-            "ALTER TABLE users ADD COLUMN openid TEXT UNIQUE",
-            "ALTER TABLE users ADD COLUMN wechat_bound_at TEXT",
-            "ALTER TABLE users ADD COLUMN avatar TEXT",
-            "ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'",
-            "ALTER TABLE users ADD COLUMN updated_at TEXT",
-            "CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)",
-            "ALTER TABLE ledger_records ADD COLUMN category TEXT NOT NULL DEFAULT ''",
-            "ALTER TABLE ledger_records ADD COLUMN description TEXT",
-            "ALTER TABLE ledger_records ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'",
-        ]:
-            safe_execute(c, sql)
-        c.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS elder_profiles(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL UNIQUE,
-              age INTEGER,
-              monthly_income REAL DEFAULT 0,
-              monthly_expense REAL DEFAULT 0,
-              liquid_asset REAL DEFAULT 0,
-              fixed_asset REAL DEFAULT 0,
-              debt REAL DEFAULT 0,
-              risk_preference TEXT DEFAULT '',
-              health_status TEXT DEFAULT '',
-              phone_difficulty TEXT DEFAULT '',
-              child_support TEXT DEFAULT '',
-              liquidity_need TEXT DEFAULT '',
-              pension_goal TEXT DEFAULT '',
-              emergency_months INTEGER DEFAULT 0,
-              updated_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS child_profiles(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL UNIQUE,
-              relation_default TEXT DEFAULT '子女',
-              emergency_contact TEXT DEFAULT '',
-              notify_preference TEXT DEFAULT 'risk_alert',
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS family_bind_codes(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              elder_user_id INTEGER NOT NULL,
-              code_hash TEXT NOT NULL,
-              code_plain_demo TEXT DEFAULT '',
-              expires_at TEXT NOT NULL,
-              used INTEGER NOT NULL DEFAULT 0,
-              created_at TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_bind_code_elder ON family_bind_codes(elder_user_id);
-            CREATE TABLE IF NOT EXISTS family_bindings(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              elder_user_id INTEGER NOT NULL,
-              child_user_id INTEGER NOT NULL,
-              relation TEXT DEFAULT '子女',
-              child_name TEXT DEFAULT '',
-              child_phone TEXT DEFAULT '',
-              status TEXT NOT NULL DEFAULT 'pending',
-              bind_code_id INTEGER,
-              created_at TEXT NOT NULL,
-              confirmed_at TEXT,
-              updated_at TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_family_binding_elder ON family_bindings(elder_user_id);
-            CREATE INDEX IF NOT EXISTS idx_family_binding_child ON family_bindings(child_user_id);
-            CREATE TABLE IF NOT EXISTS family_permissions(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              binding_id INTEGER NOT NULL,
-              permission_key TEXT NOT NULL,
-              enabled INTEGER NOT NULL DEFAULT 1,
-              updated_at TEXT NOT NULL,
-              UNIQUE(binding_id, permission_key)
-            );
-            CREATE TABLE IF NOT EXISTS family_messages(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              elder_user_id INTEGER NOT NULL,
-              from_user_id INTEGER NOT NULL,
-              to_user_id INTEGER NOT NULL,
-              content TEXT NOT NULL,
-              message_type TEXT DEFAULT 'family',
-              status TEXT DEFAULT 'unread',
-              created_at TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_family_msg_elder ON family_messages(elder_user_id);
-            CREATE INDEX IF NOT EXISTS idx_family_msg_to_user ON family_messages(to_user_id);
-            CREATE TABLE IF NOT EXISTS family_group_messages(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              family_id INTEGER NOT NULL,
-              sender_id INTEGER NOT NULL,
-              sender_name TEXT DEFAULT '',
-              sender_role TEXT DEFAULT '',
-              content TEXT NOT NULL,
-              message_type TEXT DEFAULT 'user',
-              created_at TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_family_group_family ON family_group_messages(family_id);
-            CREATE TABLE IF NOT EXISTS family_group_reads(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              family_id INTEGER NOT NULL,
-              last_read_message_id INTEGER NOT NULL DEFAULT 0,
-              updated_at TEXT NOT NULL,
-              UNIQUE(user_id, family_id)
-            );
-            CREATE TABLE IF NOT EXISTS family_member_remarks(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              viewer_user_id INTEGER NOT NULL,
-              peer_user_id INTEGER NOT NULL,
-              remark TEXT DEFAULT '',
-              updated_at TEXT NOT NULL,
-              UNIQUE(viewer_user_id, peer_user_id)
-            );
-            CREATE TABLE IF NOT EXISTS alert_events(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              elder_user_id INTEGER NOT NULL,
-              event_type TEXT NOT NULL,
-              level TEXT NOT NULL,
-              title TEXT NOT NULL,
-              detail TEXT,
-              source TEXT DEFAULT '',
-              related_record_id INTEGER,
-              status TEXT DEFAULT 'unread',
-              created_at TEXT NOT NULL,
-              handled_at TEXT
-            );
-            CREATE INDEX IF NOT EXISTS idx_alert_elder ON alert_events(elder_user_id);
-            CREATE TABLE IF NOT EXISTS weekly_reports(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              elder_user_id INTEGER NOT NULL,
-              period_start TEXT NOT NULL,
-              period_end TEXT NOT NULL,
-              summary TEXT,
-              asset_summary_json TEXT,
-              ledger_summary_json TEXT,
-              position_summary_json TEXT,
-              risk_summary_json TEXT,
-              ai_advice TEXT,
-              created_at TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_weekly_elder ON weekly_reports(elder_user_id);
-            """
-        )
-    init_more_demo_tables(c)
 
 
-def init_more_demo_tables(c) -> None:
-    if USE_MYSQL:
-        stmts = [
-            "CREATE TABLE IF NOT EXISTS questionnaire_templates(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NULL,template_type VARCHAR(32),title VARCHAR(128),description TEXT,source_model VARCHAR(64),created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS questionnaire_questions(id BIGINT PRIMARY KEY AUTO_INCREMENT,template_id BIGINT NOT NULL,question_key VARCHAR(64),title TEXT,`desc` TEXT,terms_json JSON,options_json JSON,order_no INT DEFAULT 0) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS questionnaire_answers(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,template_id BIGINT NULL,answers_json JSON,created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS risk_assessments(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,template_id BIGINT NULL,risk_score INT,risk_level VARCHAR(32),summary TEXT,suggestion_json JSON,model_used VARCHAR(64),created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS input_attachments(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,scene VARCHAR(64),input_type VARCHAR(16),file_path TEXT,original_name TEXT,mime_type VARCHAR(128),size BIGINT,sha256 VARCHAR(128),extracted_text TEXT,parsed_json JSON,created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS ledger_imports(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,source VARCHAR(64),raw_text TEXT,parsed_json JSON,duplicate_count INT DEFAULT 0,imported_count INT DEFAULT 0,created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS wealth_position_snapshots(id BIGINT PRIMARY KEY AUTO_INCREMENT,position_id BIGINT NOT NULL,current_net_value DECIMAL(18,6),estimated_value DECIMAL(18,2),profit_amount DECIMAL(18,2),profit_rate DECIMAL(18,4),risk_status VARCHAR(32),source VARCHAR(64),raw_info JSON,snapshot_date VARCHAR(16),created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS term_explain_cache(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NULL,term VARCHAR(64),scene VARCHAR(64),nearby_text TEXT,explanation TEXT,risk_tip TEXT,model_used VARCHAR(64),created_at VARCHAR(32) NOT NULL,expires_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS llm_call_logs(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NULL,provider VARCHAR(64),model VARCHAR(128),scene VARCHAR(64),prompt_hash VARCHAR(128),input_summary TEXT,output_summary TEXT,success TINYINT,error_message TEXT,latency_ms INT,created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS audit_logs(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NULL,action VARCHAR(64),target_type VARCHAR(64),target_id VARCHAR(64),detail_json JSON,created_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-            "CREATE TABLE IF NOT EXISTS account_security_questions(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL UNIQUE,question VARCHAR(255) NOT NULL,answer_hash VARCHAR(128) NOT NULL,created_at VARCHAR(32) NOT NULL,updated_at VARCHAR(32) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-        ]
-        for sql in stmts:
-            c.execute(sql)
-    else:
-        c.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS questionnaire_templates(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,template_type TEXT,title TEXT,description TEXT,source_model TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS questionnaire_questions(id INTEGER PRIMARY KEY AUTOINCREMENT,template_id INTEGER NOT NULL,question_key TEXT,title TEXT,desc TEXT,terms_json TEXT,options_json TEXT,order_no INTEGER DEFAULT 0);
-            CREATE TABLE IF NOT EXISTS questionnaire_answers(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,template_id INTEGER,answers_json TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS risk_assessments(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,template_id INTEGER,risk_score INTEGER,risk_level TEXT,summary TEXT,suggestion_json TEXT,model_used TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS input_attachments(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,scene TEXT,input_type TEXT,file_path TEXT,original_name TEXT,mime_type TEXT,size INTEGER,sha256 TEXT,extracted_text TEXT,parsed_json TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS ledger_imports(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,source TEXT,raw_text TEXT,parsed_json TEXT,duplicate_count INTEGER DEFAULT 0,imported_count INTEGER DEFAULT 0,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS wealth_position_snapshots(id INTEGER PRIMARY KEY AUTOINCREMENT,position_id INTEGER NOT NULL,current_net_value REAL,estimated_value REAL,profit_amount REAL,profit_rate REAL,risk_status TEXT,source TEXT,raw_info TEXT,snapshot_date TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS term_explain_cache(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,term TEXT,scene TEXT,nearby_text TEXT,explanation TEXT,risk_tip TEXT,model_used TEXT,created_at TEXT NOT NULL,expires_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS llm_call_logs(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,provider TEXT,model TEXT,scene TEXT,prompt_hash TEXT,input_summary TEXT,output_summary TEXT,success INTEGER,error_message TEXT,latency_ms INTEGER,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS audit_logs(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,action TEXT,target_type TEXT,target_id TEXT,detail_json TEXT,created_at TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS account_security_questions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL UNIQUE,question TEXT NOT NULL,answer_hash TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
-            """
-        )
 
 
-def init_mysql_db() -> None:
-    with conn() as c:
-        for sql in [
-            """
-            CREATE TABLE IF NOT EXISTS users(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              phone VARCHAR(20) UNIQUE NOT NULL,
-              password_hash VARCHAR(128) NOT NULL,
-              nickname VARCHAR(64) NOT NULL,
-              role VARCHAR(32) NOT NULL DEFAULT 'elder',
-              created_at VARCHAR(32) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS profiles(
-              user_id BIGINT PRIMARY KEY,
-              data JSON NOT NULL,
-              updated_at VARCHAR(32) NOT NULL,
-              CONSTRAINT fk_profiles_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS ledger_records(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              type VARCHAR(16) NOT NULL,
-              title VARCHAR(128) NOT NULL,
-              amount DECIMAL(18,2) NOT NULL,
-              date DATE NOT NULL,
-              category VARCHAR(64) NOT NULL DEFAULT '',
-              description TEXT NULL,
-              source VARCHAR(32) NOT NULL DEFAULT 'manual',
-              created_at VARCHAR(32) NOT NULL,
-              INDEX idx_ledger_user_date(user_id, date),
-              CONSTRAINT fk_ledger_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS family_members(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              name VARCHAR(64) NOT NULL,
-              relation VARCHAR(32) NOT NULL,
-              phone VARCHAR(32) NOT NULL,
-              enabled TINYINT NOT NULL DEFAULT 1,
-              permissions JSON NOT NULL,
-              created_at VARCHAR(32) NOT NULL,
-              INDEX idx_family_user(user_id),
-              CONSTRAINT fk_family_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS service_phones(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              name VARCHAR(64) NOT NULL,
-              type VARCHAR(32) NOT NULL,
-              phone VARCHAR(32) NOT NULL,
-              INDEX idx_service_user(user_id),
-              CONSTRAINT fk_service_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS meds(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              name VARCHAR(64) NOT NULL,
-              time VARCHAR(16) NOT NULL,
-              dose VARCHAR(64) NOT NULL,
-              done TINYINT NOT NULL DEFAULT 0,
-              alarm TINYINT NOT NULL DEFAULT 0,
-              INDEX idx_meds_user(user_id),
-              CONSTRAINT fk_meds_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS sport_tasks(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              name VARCHAR(64) NOT NULL,
-              minutes INT NOT NULL,
-              note VARCHAR(255) NOT NULL,
-              done TINYINT NOT NULL DEFAULT 0,
-              task_date DATE NOT NULL,
-              INDEX idx_sport_user_date(user_id, task_date),
-              CONSTRAINT fk_sport_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS input_records(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              input_type VARCHAR(32) NOT NULL,
-              raw_text TEXT NOT NULL,
-              parsed_json JSON NOT NULL,
-              created_at VARCHAR(32) NOT NULL,
-              INDEX idx_input_user_time(user_id, created_at),
-              CONSTRAINT fk_input_records_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS wealth_positions(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              product_name VARCHAR(255) NOT NULL,
-              institution VARCHAR(128) NOT NULL,
-              product_code VARCHAR(128) NOT NULL DEFAULT '',
-              buy_amount DECIMAL(18,2) NOT NULL,
-              buy_net_value DECIMAL(18,6) NOT NULL DEFAULT 1,
-              current_net_value DECIMAL(18,6) NOT NULL DEFAULT 1,
-              buy_date DATE NOT NULL,
-              latest_date DATE NOT NULL,
-              source VARCHAR(64) NOT NULL,
-              raw_info JSON NOT NULL,
-              created_at VARCHAR(32) NOT NULL,
-              updated_at VARCHAR(32) NOT NULL,
-              INDEX idx_wealth_user(user_id),
-              CONSTRAINT fk_wealth_positions_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS product_info_cache(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              query VARCHAR(255) NOT NULL UNIQUE,
-              info_json JSON NOT NULL,
-              source VARCHAR(64) NOT NULL,
-              fetched_at VARCHAR(32) NOT NULL,
-              expires_at VARCHAR(32) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
-        ]:
-            c.execute(sql)
-        init_extra_schema(c)
-        seed_demo_data(c)
-        for binding_row in c.execute("SELECT id FROM family_bindings WHERE status='active'").fetchall():
-            grant_default_permissions(c, int(binding_row["id"]))
-        c.commit()
+
+
+
 
 
 def init_db() -> None:
-    if USE_MYSQL:
-        init_mysql_db()
-        return
-    with conn() as c:
-        c.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS users(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              phone TEXT UNIQUE NOT NULL,
-              password_hash TEXT NOT NULL,
-              nickname TEXT NOT NULL,
-              role TEXT NOT NULL DEFAULT 'elder',
-              created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS profiles(
-              user_id INTEGER PRIMARY KEY,
-              data TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS ledger_records(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              type TEXT NOT NULL,
-              title TEXT NOT NULL,
-              amount REAL NOT NULL,
-              date TEXT NOT NULL,
-              category TEXT NOT NULL DEFAULT '',
-              description TEXT,
-              source TEXT NOT NULL DEFAULT 'manual',
-              created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS family_members(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              name TEXT NOT NULL,
-              relation TEXT NOT NULL,
-              phone TEXT NOT NULL,
-              enabled INTEGER NOT NULL DEFAULT 1,
-              permissions TEXT NOT NULL,
-              created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS service_phones(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              name TEXT NOT NULL,
-              type TEXT NOT NULL,
-              phone TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS meds(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              name TEXT NOT NULL,
-              time TEXT NOT NULL,
-              dose TEXT NOT NULL,
-              done INTEGER NOT NULL DEFAULT 0,
-              alarm INTEGER NOT NULL DEFAULT 0
-            );
-            CREATE TABLE IF NOT EXISTS sport_tasks(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              name TEXT NOT NULL,
-              minutes INTEGER NOT NULL,
-              note TEXT NOT NULL,
-              done INTEGER NOT NULL DEFAULT 0,
-              task_date TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS input_records(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              input_type TEXT NOT NULL,
-              raw_text TEXT NOT NULL,
-              parsed_json TEXT NOT NULL,
-              created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS wealth_positions(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              product_name TEXT NOT NULL,
-              institution TEXT NOT NULL,
-              product_code TEXT NOT NULL,
-              buy_amount REAL NOT NULL,
-              buy_net_value REAL NOT NULL DEFAULT 1,
-              current_net_value REAL NOT NULL DEFAULT 1,
-              buy_date TEXT NOT NULL,
-              latest_date TEXT NOT NULL,
-              source TEXT NOT NULL,
-              raw_info TEXT NOT NULL,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS product_info_cache(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              query TEXT UNIQUE NOT NULL,
-              info_json TEXT NOT NULL,
-              source TEXT NOT NULL,
-              fetched_at TEXT NOT NULL,
-              expires_at TEXT NOT NULL
-            );
-            """
-        )
-        # 兼容已有数据库：为 meds 表添加 alarm 列
-        try:
-            c.execute("ALTER TABLE meds ADD COLUMN alarm INTEGER NOT NULL DEFAULT 0")
-        except Exception:
-            pass
-        init_extra_schema(c)
-        seed_demo_data(c)
-        for binding_row in c.execute("SELECT id FROM family_bindings WHERE status='active'").fetchall():
-            grant_default_permissions(c, int(binding_row["id"]))
-        c.commit()
+    initialize_schema()
 
 
 @app.on_event("startup")
@@ -1436,7 +812,7 @@ def get_profile(uid: int) -> Dict[str, Any]:
 
 def save_profile(uid: int, data: Dict[str, Any]) -> None:
     with conn() as c:
-        c.execute("INSERT OR REPLACE INTO profiles(user_id,data,updated_at) VALUES(?,?,?)", (uid, json.dumps(data, ensure_ascii=False), now_iso()))
+        c.execute("INSERT INTO profiles(user_id,data,updated_at) VALUES(?,?,?) ON DUPLICATE KEY UPDATE data=VALUES(data),updated_at=VALUES(updated_at)", (uid, json.dumps(data, ensure_ascii=False), now_iso()))
         c.commit()
 
 
@@ -1519,7 +895,7 @@ def normalize_role(role: str) -> str:
 
 def ensure_structured_profile(c, uid: int, role: str, profile: Optional[Dict[str, Any]] = None) -> None:
     profile = profile or get_profile(uid)
-    insert_ignore = "INSERT IGNORE INTO" if USE_MYSQL else "INSERT OR IGNORE INTO"
+    insert_ignore = "INSERT IGNORE INTO"
     if role == "child":
         c.execute(
             f"{insert_ignore} child_profiles(user_id,relation_default,emergency_contact,notify_preference,created_at,updated_at) VALUES(?,?,?,?,?,?)",
@@ -2102,20 +1478,17 @@ def register(data: RegisterIn) -> Dict[str, Any]:
             profile["avatar"] = avatar
             # 子女端不填写长辈风险问卷；长辈首次登录后进入画像问卷。
             profile["onboarding_completed"] = role == "child"
-            if USE_MYSQL:
-                c.execute(
-                    "INSERT INTO profiles(user_id,data,updated_at) VALUES(?,?,?) ON DUPLICATE KEY UPDATE data=VALUES(data),updated_at=VALUES(updated_at)",
-                    (uid, json.dumps(profile, ensure_ascii=False), now_iso()),
-                )
-            else:
-                c.execute("INSERT OR REPLACE INTO profiles(user_id,data,updated_at) VALUES(?,?,?)", (uid, json.dumps(profile, ensure_ascii=False), now_iso()))
+            c.execute(
+                "INSERT INTO profiles(user_id,data,updated_at) VALUES(?,?,?) ON DUPLICATE KEY UPDATE data=VALUES(data),updated_at=VALUES(updated_at)",
+                (uid, json.dumps(profile, ensure_ascii=False), now_iso()),
+            )
             ensure_structured_profile(c, uid, role, profile)
             binding = {}
             if role == "child":
                 binding = bind_child_with_code(c, bind_code, {"id": uid, "phone": data.phone, "nickname": nickname, "role": role}, "子女")
             c.commit()
     except Exception as e:
-        if isinstance(e, sqlite3.IntegrityError) or e.__class__.__name__ == "IntegrityError":
+        if isinstance(e, IntegrityError) or e.__class__.__name__ == "IntegrityError":
             raise HTTPException(400, detail="手机号已注册")
         raise
     user = {"id": uid, "phone": data.phone, "nickname": nickname, "role": role}
@@ -2212,7 +1585,7 @@ def wechat_login(data: WechatLoginIn) -> Dict[str, Any]:
             c.execute("UPDATE users SET openid=?,wechat_bound_at=?,updated_at=? WHERE id=?", (openid, bound_at, now_iso(), user_row["id"]))
             c.commit()
         except Exception as e:
-            if isinstance(e, sqlite3.IntegrityError) or e.__class__.__name__ == "IntegrityError":
+            if isinstance(e, IntegrityError) or e.__class__.__name__ == "IntegrityError":
                 raise HTTPException(400, detail="该微信已绑定其他账号")
             raise
     profile = get_profile(user_row["id"])
@@ -2237,19 +1610,13 @@ def set_security_question(data: Dict[str, Any], user=Depends(current_user)) -> D
     if len(question) < 4 or len(answer) < 2:
         raise HTTPException(400, detail="密保问题和答案不能为空，答案至少2个字")
     with conn() as c:
-        if USE_MYSQL:
-            c.execute(
-                """
-                INSERT INTO account_security_questions(user_id,question,answer_hash,created_at,updated_at)
-                VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE question=VALUES(question),answer_hash=VALUES(answer_hash),updated_at=VALUES(updated_at)
-                """,
-                (user["id"], question, hash_security_answer(answer), now_iso(), now_iso()),
-            )
-        else:
-            c.execute(
-                "INSERT OR REPLACE INTO account_security_questions(user_id,question,answer_hash,created_at,updated_at) VALUES(?,?,?,?,?)",
-                (user["id"], question, hash_security_answer(answer), now_iso(), now_iso()),
-            )
+        c.execute(
+            """
+            INSERT INTO account_security_questions(user_id,question,answer_hash,created_at,updated_at)
+            VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE question=VALUES(question),answer_hash=VALUES(answer_hash),updated_at=VALUES(updated_at)
+            """,
+            (user["id"], question, hash_security_answer(answer), now_iso(), now_iso()),
+        )
         c.commit()
     return {"ok": True, "message": "密保问题已保存"}
 
@@ -3047,8 +2414,9 @@ def ledger_add(data: LedgerRecordIn, type: str = Query(default=""), user=Depends
         explicit_risk = bool(re.search(r"陌生|保证金|验证码|转账|汇款|私人账户|二维码|高收益|虚拟币|杠杆", f"{title} {description}"))
         if amount >= 20000 and record_type == "支出" and explicit_risk:
             create_alert(c, user["id"], "large_expense", "medium", "大额支出提醒", f"记录了 {fmt_money(amount)} 元支出：{title}。如涉及理财或转账，请先核验官方渠道。", "ledger")
+        persisted = c.execute("SELECT id,type,title,amount,date,category FROM ledger_records WHERE id=? AND user_id=?", (rid, user["id"])).fetchone()
         c.commit()
-    return {"ok": True, "record": {"id": rid, "type": record_type, "title": title, "amount": amount, "date": data.date, "category": category}}
+    return {"ok": True, "record": dict(persisted)}
 
 
 @app.put("/ledger/records/{record_id}")
@@ -3070,6 +2438,7 @@ def ledger_update(record_id: int, data: LedgerRecordIn, user=Depends(current_use
             "UPDATE ledger_records SET type=?,title=?,amount=?,date=?,category=?,description=?,source=? WHERE id=? AND user_id=?",
             (record_type, title, amount, record_date, category, description, source, record_id, user["id"]),
         )
+        amount = c.execute("SELECT amount FROM ledger_records WHERE id=? AND user_id=?", (record_id, user["id"])).fetchone()["amount"]
         c.commit()
     return {
         "ok": True,
@@ -3541,7 +2910,7 @@ def create_position_from_ledger_item(c, user_id: int, item: Dict[str, Any], sour
             now_iso(),
         ),
     )
-    return c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+    return c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
 
 
 def create_alert(c, elder_id: int, event_type: str, level: str, title: str, detail: str, source: str = "rules") -> None:
@@ -4210,9 +3579,9 @@ async def risk_questionnaire_generate(data: Dict[str, Any] = None, user=Depends(
             "INSERT INTO questionnaire_templates(user_id,template_type,title,description,source_model,created_at) VALUES(?,?,?,?,?,?)",
             (user["id"], "ai_generated", payload["title"], payload["description"], payload["source_model"], now_iso()),
         )
-        tid = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        tid = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         for idx, q in enumerate(payload["questions"], 1):
-            desc_col = "`desc`" if USE_MYSQL else "desc"
+            desc_col = "`desc`"
             c.execute(
                 f"INSERT INTO questionnaire_questions(template_id,question_key,title,{desc_col},terms_json,options_json,order_no) VALUES(?,?,?,?,?,?,?)",
                 (tid, q["key"], q["title"], q.get("desc", ""), json.dumps(q.get("terms", []), ensure_ascii=False), json.dumps(q.get("options", []), ensure_ascii=False), idx),
@@ -4529,7 +3898,7 @@ def finance_track_from_analysis(data: Dict[str, Any], user=Depends(current_user)
                 now_iso(),
             ),
         )
-        pid = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        pid = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {"ok": True, "success": True, "id": pid, "message": "已添加到理财记录。", "status": "已记录"}
 
@@ -4550,7 +3919,7 @@ def ledger_import_wechat_text(data: GenericTextIn, user=Depends(current_user)) -
             "INSERT INTO ledger_imports(user_id,source,raw_text,parsed_json,duplicate_count,imported_count,created_at) VALUES(?,?,?,?,?,?,?)",
             (user["id"], "wechat_text", data.text, json.dumps(parsed, ensure_ascii=False), 0, 0, now_iso()),
         )
-        import_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        import_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {**parsed, "import_id": import_id}
 
@@ -4579,7 +3948,7 @@ async def ledger_import_wechat_image(file: UploadFile = File(...), user=Depends(
             "INSERT INTO ledger_imports(user_id,source,raw_text,parsed_json,duplicate_count,imported_count,created_at) VALUES(?,?,?,?,?,?,?)",
             (user["id"], "wechat_screenshot", extracted or digest, json.dumps(parsed, ensure_ascii=False), 0, 0, now_iso()),
         )
-        import_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        import_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {**parsed, "import_id": import_id}
 
@@ -4595,9 +3964,9 @@ def ledger_import_confirm(data: Dict[str, Any], user=Depends(current_user)) -> D
     import_id = int(data.get("import_id") or 0)
     items = data.get("items")
     with conn() as c:
-        if not USE_MYSQL:c.execute('BEGIN IMMEDIATE')
+        pass
         if import_id:
-            sql='SELECT * FROM ledger_imports WHERE id=? AND user_id=?'+(' FOR UPDATE' if USE_MYSQL else '')
+            sql='SELECT * FROM ledger_imports WHERE id=? AND user_id=?'+(' FOR UPDATE')
             imported=c.execute(sql,(import_id,user['id'])).fetchone()
             if not imported:raise HTTPException(404,detail='未找到这批导入记录，请重新识别')
             if int(imported['imported_count'] or 0)>0:
@@ -5557,20 +4926,7 @@ def payment_ledger_record(data: PaymentLedgerIn, user=Depends(current_user)) -> 
 # ------------------------- four-pocket allocator -------------------------
 
 def ensure_pocket_history_table(c) -> None:
-    if USE_MYSQL:
-        safe_execute(c, """
-            CREATE TABLE IF NOT EXISTS pocket_history(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,action VARCHAR(32) NOT NULL,
-              summary_json JSON,created_at VARCHAR(32) NOT NULL,INDEX idx_pocket_user(user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        """)
-    else:
-        safe_execute(c, """
-            CREATE TABLE IF NOT EXISTS pocket_history(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,action TEXT NOT NULL,
-              summary_json TEXT,created_at TEXT NOT NULL
-            )
-        """)
+    initialize_schema()
 
 
 def build_pockets_for_user(user: Dict[str, Any]) -> Dict[str, Any]:
@@ -5810,7 +5166,7 @@ def add_wealth_position(data: WealthPositionIn, user=Depends(current_user)) -> D
                 now_iso(),
             ),
         )
-        pid = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        pid = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {"ok": True, "id": pid}
 
@@ -5909,16 +5265,10 @@ def safe_int(value: Any, default: int = 0) -> int:
 def grant_default_permissions(c, binding_id: int) -> None:
     for key in DEFAULT_PERMISSION_KEYS:
         enabled = 1
-        if USE_MYSQL:
-            c.execute(
-                "INSERT IGNORE INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?)",
-                (binding_id, key, enabled, now_iso()),
-            )
-        else:
-            c.execute(
-                "INSERT OR IGNORE INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?)",
-                (binding_id, key, enabled, now_iso()),
-            )
+        c.execute(
+            "INSERT IGNORE INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?)",
+            (binding_id, key, enabled, now_iso()),
+        )
 
 
 def remark_for_peer(c, viewer_user_id: int, peer_user_id: int) -> str:
@@ -6069,7 +5419,7 @@ def bind_child_with_code(c, code: str, child_user: Dict[str, Any], relation: str
             """,
             (elder_id, child_user["id"], relation or "子女", child_user.get("nickname", "家人"), child_user.get("phone", ""), row["id"], now_iso(), now_iso(), now_iso()),
         )
-        binding_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        binding_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
     grant_default_permissions(c, int(binding_id))
     c.execute("UPDATE family_bind_codes SET used=1 WHERE id=?", (row["id"],))
     return {"binding_id": int(binding_id), "elder_user_id": int(elder_id), "status": "active"}
@@ -6297,16 +5647,10 @@ def update_binding_permissions(binding_id: int, data: Dict[str, Any], user=Depen
             if isinstance(permissions, dict) and key not in permissions:
                 continue
             enabled = bool(permissions.get(key, False)) if isinstance(permissions, dict) else key in permissions
-            if USE_MYSQL:
-                c.execute(
-                    "INSERT INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE enabled=VALUES(enabled),updated_at=VALUES(updated_at)",
-                    (binding_id, key, 1 if enabled else 0, now_iso()),
-                )
-            else:
-                c.execute(
-                    "INSERT OR REPLACE INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?)",
-                    (binding_id, key, 1 if enabled else 0, now_iso()),
-                )
+            c.execute(
+                "INSERT INTO family_permissions(binding_id,permission_key,enabled,updated_at) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE enabled=VALUES(enabled),updated_at=VALUES(updated_at)",
+                (binding_id, key, 1 if enabled else 0, now_iso()),
+            )
         c.commit()
     return {"ok": True, "permissions": {key: bool(permissions.get(key, False)) for key in DEFAULT_PERMISSION_KEYS if isinstance(permissions, dict) and key in permissions}}
 
@@ -6359,7 +5703,7 @@ def family_update_remark(peer_id: int, data: Dict[str, Any], user=Depends(curren
     with conn() as c:
         assert_bound_peer(c, user, peer_id)
         c.execute(
-            "INSERT OR REPLACE INTO family_member_remarks(viewer_user_id,peer_user_id,remark,updated_at) VALUES(?,?,?,?)",
+            "INSERT INTO family_member_remarks(viewer_user_id,peer_user_id,remark,updated_at) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE remark=VALUES(remark),updated_at=VALUES(updated_at)",
             (user["id"], peer_id, remark, now_iso()),
         )
         c.commit()
@@ -6488,7 +5832,7 @@ def send_family_message(data: Dict[str, Any], user=Depends(current_user)) -> Dic
             "INSERT INTO family_messages(elder_user_id,from_user_id,to_user_id,content,message_type,status,created_at) VALUES(?,?,?,?,?,?,?)",
             (elder_user_id, user["id"], receiver_id, content, message_type, "unread", now_iso()),
         )
-        msg_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        msg_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         if message_type == "high_risk":
             create_alert(c, elder_user_id, "high_risk_family_message", "high", "高风险内容提醒", content, "family_message")
         c.commit()
@@ -6540,7 +5884,7 @@ async def send_family_voice_message(
             "INSERT INTO family_messages(elder_user_id,from_user_id,to_user_id,content,message_type,status,created_at) VALUES(?,?,?,?,?,?,?)",
             (elder_user_id, user["id"], receiver_id, json.dumps({"voice_url":voice_url,"duration":duration}), "voice", "unread", now_iso()),
         )
-        msg_id = c.execute("SELECT last_insert_rowid() AS id").fetchone()[0]
+        msg_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
         row = c.execute(
             "SELECT m.*,fu.nickname AS from_name,tu.nickname AS to_name FROM family_messages m JOIN users fu ON fu.id=m.from_user_id JOIN users tu ON tu.id=m.to_user_id WHERE m.id=?",
@@ -6621,20 +5965,12 @@ async def upload_family_chat_image(file: UploadFile = File(...), user=Depends(cu
 
 
 def mark_family_group_read(c, user_id: int, family_id: int, message_id: int) -> None:
-    if USE_MYSQL:
-        c.execute(
-            """INSERT INTO family_group_reads(user_id,family_id,last_read_message_id,updated_at)
-               VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE
-               last_read_message_id=VALUES(last_read_message_id),updated_at=VALUES(updated_at)""",
-            (user_id, family_id, message_id, now_iso()),
-        )
-    else:
-        c.execute(
-            """INSERT INTO family_group_reads(user_id,family_id,last_read_message_id,updated_at)
-               VALUES(?,?,?,?) ON CONFLICT(user_id,family_id) DO UPDATE SET
-               last_read_message_id=excluded.last_read_message_id,updated_at=excluded.updated_at""",
-            (user_id, family_id, message_id, now_iso()),
-        )
+    c.execute(
+        """INSERT INTO family_group_reads(user_id,family_id,last_read_message_id,updated_at)
+           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE
+           last_read_message_id=VALUES(last_read_message_id),updated_at=VALUES(updated_at)""",
+        (user_id, family_id, message_id, now_iso()),
+    )
 
 
 @app.get("/family/group-chat/unread")
@@ -6716,7 +6052,7 @@ async def send_family_group_chat(data: Dict[str, Any], user=Depends(current_user
             "INSERT INTO family_group_messages(family_id,sender_id,sender_name,sender_role,content,message_type,created_at) VALUES(?,?,?,?,?,?,?)",
             (family_id, user["id"], sender_name, user.get("role") or "", content, message_type, now_iso()),
         )
-        user_msg_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        user_msg_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         row = c.execute("SELECT * FROM family_group_messages WHERE id=?", (user_msg_id,)).fetchone()
         created_messages.append(normalize_group_message(row))
         c.commit()
@@ -6746,7 +6082,7 @@ async def send_family_group_chat(data: Dict[str, Any], user=Depends(current_user
                 "INSERT INTO family_group_messages(family_id,sender_id,sender_name,sender_role,content,message_type,created_at) VALUES(?,?,?,?,?,?,?)",
                 (family_id, 0, "小享", "assistant", answer[:1000], "assistant", now_iso()),
             )
-            assistant_msg_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+            assistant_msg_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
             row = c.execute("SELECT * FROM family_group_messages WHERE id=?", (assistant_msg_id,)).fetchone()
             c.commit()
         created_messages.append(normalize_group_message(row))
@@ -7010,55 +6346,11 @@ def child_dashboard(user=Depends(current_user)) -> Dict[str, Any]:
 # ------------------------- health/service/sport/lesson -------------------------
 
 def ensure_health_metrics_table(c) -> None:
-    if USE_MYSQL:
-        c.execute(
-            """
-            CREATE TABLE IF NOT EXISTS health_metrics(
-              id BIGINT PRIMARY KEY AUTO_INCREMENT,
-              user_id BIGINT NOT NULL,
-              bp VARCHAR(32) DEFAULT '',
-              hr INT DEFAULT 0,
-              weight DECIMAL(10,2) DEFAULT 0,
-              sleep VARCHAR(32) DEFAULT '',
-              steps VARCHAR(32) DEFAULT '',
-              updated_at VARCHAR(32) NOT NULL,
-              INDEX idx_health_metrics_user(user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """
-        )
-    else:
-        c.execute(
-            """
-            CREATE TABLE IF NOT EXISTS health_metrics(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              bp TEXT DEFAULT '',
-              hr INTEGER DEFAULT 0,
-              weight REAL DEFAULT 0,
-              sleep TEXT DEFAULT '',
-              steps TEXT DEFAULT '',
-              updated_at TEXT NOT NULL
-            )
-            """
-        )
+    initialize_schema()
 
 
 def ensure_health_journal_table(c) -> None:
-    if USE_MYSQL:
-        c.execute(
-            """CREATE TABLE IF NOT EXISTS health_journal(
-                 id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,kind VARCHAR(24) NOT NULL,
-                 content TEXT,analysis TEXT,image_path TEXT,created_at VARCHAR(32) NOT NULL,
-                 INDEX idx_health_journal_user(user_id,created_at)
-               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"""
-        )
-    else:
-        c.execute(
-            """CREATE TABLE IF NOT EXISTS health_journal(
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,kind TEXT NOT NULL,
-                 content TEXT,analysis TEXT,image_path TEXT,created_at TEXT NOT NULL
-               )"""
-        )
+    initialize_schema()
 def build_health_analysis(health: Dict[str, Any]) -> Dict[str, Any]:
     tips: List[str] = []
     level = "平稳"
@@ -7161,7 +6453,7 @@ async def add_health_activity(data: Dict[str, Any], user=Depends(current_user)) 
             "INSERT INTO health_journal(user_id,kind,content,analysis,image_path,created_at) VALUES(?,?,?,?,?,?)",
             (user["id"], "exercise", content, answer, "", now_iso()),
         )
-        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {"ok": True, "id": journal_id, "kind": "exercise", "content": content, "analysis": answer, "created_at": now_iso()}
 
@@ -7182,7 +6474,7 @@ async def add_health_meal(data: Dict[str, Any], user=Depends(current_user)) -> D
             "INSERT INTO health_journal(user_id,kind,content,analysis,image_path,created_at) VALUES(?,?,?,?,?,?)",
             (user["id"], "food", content, answer, "", now_iso()),
         )
-        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {"ok": True, "id": journal_id, "kind": "food", "content": content, "analysis": answer, "created_at": now_iso()}
 
@@ -7214,7 +6506,7 @@ async def analyze_health_food_image(file: UploadFile = File(...), user=Depends(c
             "INSERT INTO health_journal(user_id,kind,content,analysis,image_path,created_at) VALUES(?,?,?,?,?,?)",
             (user["id"], "food", "食物拍照记录", answer, str(path), now_iso()),
         )
-        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id" if USE_MYSQL else "SELECT last_insert_rowid() AS id").fetchone()[0]
+        journal_id = c.execute("SELECT LAST_INSERT_ID() AS id").fetchone()[0]
         c.commit()
     return {"ok": True, "id": journal_id, "kind": "food", "analysis": answer, "created_at": now_iso(), "provider": vision.get("provider")}
 
@@ -7698,12 +6990,16 @@ def integrations_status() -> Dict[str, Any]:
             "bulletin_url": JUHE_BULLETIN_URL,
         },
         "market_sources": configured_market_sources(),
-        "database": "mysql" if USE_MYSQL else "sqlite",
+        "database": "mysql",
     }
 
 
 @app.get("/healthz")
 def healthz() -> Dict[str, Any]:
+    try:
+        database_ready = readiness()
+    except Exception:
+        raise HTTPException(status_code=503, detail="MySQL暂未连接，请检查数据库服务和私有配置")
     ai_status = ai_gateway.status()
     return {
         "ok": True,
@@ -7723,8 +7019,9 @@ def healthz() -> Dict[str, Any]:
         "lbs_configured": bool(ai_status.get("lbs_configured")),
         "finance_data_configured": bool(ai_status.get("finance_data_configured")),
         "market_sources": configured_market_sources(),
-        "database": "mysql" if USE_MYSQL else "sqlite",
-        "db_path": str(DB_PATH) if not USE_MYSQL else "",
+        "database": "mysql",
+        "db_path": "",
+        "database_ready": database_ready,
     }
 
 # Web platform static app; the original API remains unchanged.

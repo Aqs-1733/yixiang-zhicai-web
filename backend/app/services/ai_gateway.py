@@ -6,7 +6,7 @@ import hmac
 import json
 import logging
 import os
-import sqlite3
+from app.database import conn
 import time
 import uuid
 from datetime import datetime,timezone,timedelta
@@ -24,11 +24,6 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 PROJECT_DIR = BASE_DIR.parent
 load_dotenv(PROJECT_DIR / ".env")
 load_dotenv(BASE_DIR / ".env", override=False)
-raw_db = os.getenv("DB_PATH", "")
-DB_PATH = Path(raw_db) if raw_db else BASE_DIR / "data" / "yixiang.db"
-if not DB_PATH.is_absolute():
-    DB_PATH = BASE_DIR / DB_PATH
-
 DATA_DIR = BASE_DIR / "data"
 AUDIO_DIR = DATA_DIR / "tts"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -194,19 +189,9 @@ def _headers(provider: Dict[str, str], body: str, uri: str = "", query: Optional
 
 def _log(provider: str, model: str, scene: str, prompt: str, output: str = "", success: bool = True, error: str = "", latency_ms: int = 0, user_id: Optional[int] = None) -> None:
     try:
-        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(str(DB_PATH)) as c:
+        with conn() as c:
             c.execute(
-                """
-                CREATE TABLE IF NOT EXISTS llm_call_logs(
-                  id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,provider TEXT,model TEXT,scene TEXT,
-                  prompt_hash TEXT,input_summary TEXT,output_summary TEXT,success INTEGER,error_message TEXT,
-                  latency_ms INTEGER,created_at TEXT NOT NULL
-                )
-                """
-            )
-            c.execute(
-                "INSERT INTO llm_call_logs(user_id,provider,model,scene,prompt_hash,input_summary,output_summary,success,error_message,latency_ms,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))",
+                "INSERT INTO llm_call_logs(user_id,provider,model,scene,prompt_hash,input_summary,output_summary,success,error_message,latency_ms,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     user_id,
                     provider,
@@ -218,11 +203,12 @@ def _log(provider: str, model: str, scene: str, prompt: str, output: str = "", s
                     1 if success else 0,
                     (error or "")[:300],
                     latency_ms,
+                    datetime.now(timezone(timedelta(hours=8))).isoformat(timespec='seconds'),
                 ),
             )
             c.commit()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.error("AI audit log write failed (%s)", type(exc).__name__)
 
 
 def _profile_text(profile: Optional[Dict[str, Any]]) -> str:

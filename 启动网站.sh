@@ -5,5 +5,6 @@ if [ ! -d .venv ]; then
   python3 -m venv .venv
   .venv/bin/python -m pip install -r backend/requirements.txt
 fi
+.venv/bin/python scripts/check_mysql.py --autostart-local
 cd backend
 PYTHONPATH=. ../.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8004

@@ -14,6 +14,7 @@ for line in p.read_text(encoding='utf-8-sig').splitlines():
         e[match.group(1)] = match.group(2).strip().strip('"').strip("'")
 
 groups = {
+    'MySQL 数据库（或使用 DATABASE_URL）': ['MYSQL_HOST', 'MYSQL_PORT', 'MYSQL_DATABASE', 'MYSQL_USER', 'MYSQL_PASSWORD'],
     '火山方舟 / 豆包': ['ARK_API_KEY', 'ARK_BASE_URL', 'ARK_MODEL'],
     'vivo 蓝心': ['VIVO_APP_ID', 'BLUELM_API_KEY', 'BLUELM_BASE_URL', 'BLUELM_TEXT_MODEL'],
     '百度语音 ASR/TTS': ['BAIDU_API_KEY', 'BAIDU_SECRET_KEY'],

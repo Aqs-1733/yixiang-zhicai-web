@@ -8,7 +8,7 @@ paths=git('ls-files','--cached','-z').decode('utf-8').split('\0');paths=[p for p
 secrets={}
 if a.private_env:
  from dotenv import dotenv_values
- secrets={k:v for k,v in dotenv_values(a.private_env).items() if v and len(v)>=8 and re.search('KEY|SECRET|TOKEN',k) and not v.startswith('http')}
+ secrets={k:v for k,v in dotenv_values(a.private_env).items() if v and len(v)>=8 and re.search('KEY|SECRET|TOKEN|PASSWORD|DATABASE_URL',k) and not v.startswith('http')}
 patterns={
  'aws_access_key':rb'AKIA[0-9A-Z]{16}',
  'github_token':rb'(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})',

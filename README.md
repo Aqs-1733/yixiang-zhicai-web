@@ -1,6 +1,10 @@
 # 颐享智财 Web
 
-FastAPI + SQLite + 小程序页面兼容层。保留30个业务页面、5个原组件，以及奶油白、浅黄、墨绿的适老化配色。
+FastAPI + MySQL 8.0+ + 小程序页面兼容层。保留30个业务页面、5个原组件，以及奶油白、浅黄、墨绿的适老化配色。
+
+## MySQL 切换 · 2026-11-17
+
+业务数据、家庭消息、健康记录、AI调用日志统一使用 MySQL；运行时不再创建或连接 SQLite。建库、数据迁移、备份和服务器要求见 [MySQL 部署说明](docs/MYSQL_DEPLOYMENT.md)，实测结果见 [MySQL切换验收](docs/MYSQL_ACCEPTANCE_20261117.md)。本轮只改数据库层，前端页面与素材保持原样。
 
 ## 当前版本 · 2026-11-12
 
@@ -24,13 +28,14 @@ Fork → 自己的功能分支 → Pull Request 到main。无需上游写权限�
 
 ## 本地启动
 
-Python 3.12；修改/校验浏览器源代码另需Node.js 22。
+Python 3.12、MySQL 8.0+；修改/校验浏览器源代码另需Node.js 22。先按部署说明创建空库及专用账号。
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 Copy-Item backend\.env.example backend\.env
-# 按需在本机填写自己的API配置
+# 填写 MYSQL_HOST / PORT / DATABASE / USER / PASSWORD，再按需填写API配置
+.\.venv\Scripts\python.exe scripts\check_mysql.py
 Set-Location backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8004 --no-access-log
 ```
@@ -41,6 +46,7 @@ Set-Location backend
 
 ## 结构与同步
 
+- `backend/app/database.py`、`backend/schema/mysql.sql`：统一 MySQL 连接、事务与35张表结构。
 - `backend/app/main.py`：账户、画像、理财知识、账本、家庭、健康、课程与生活服务。
 - `backend/app/routers/assistant.py`、`services/`：AI、图像、ASR、TTS、新闻与位置服务。
 - `miniprogram/`：原始页面、组件和业务逻辑，以及本地课程素材。
@@ -67,9 +73,13 @@ node scripts/check_browser_sources.cjs
 所有业务写入使用隔离数据库，不能把验收脚本指向私人运行数据库。Windows浏览器验收使用本机Edge和Playwright；麦克风与定位为可重复的合成音频/已知坐标夹具，另有真实云API链路核验。
 
 ```powershell
-# 另开终端，在backend目录启动独立8001测试服务，数据库路径须为新建的验收副本
-$env:DB_PATH='D:\YOUR_TEST_DIR\acceptance.db'
+# 另开终端，在backend目录启动独立8001测试服务，必须使用专门的QA库和账号
 $env:DATABASE_URL=''
+$env:MYSQL_HOST='127.0.0.1'
+$env:MYSQL_PORT='3306'
+$env:MYSQL_DATABASE='yixiang_qa_local'
+$env:MYSQL_USER='yixiang_test'
+# MYSQL_PASSWORD 只在本机私有环境配置中填写，不写进提交或命令历史
 $env:LLM_PROVIDER_ORDER='local'
 $env:ARK_ASR_ENABLED='0'
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001

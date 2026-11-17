@@ -23,15 +23,13 @@ for name in ('modules.js','templates.js','compat.js'):
 record('Web 前端页面模板完整覆盖', all('"'+s+'"' in (FRONT/'templates.js').read_text(encoding='utf-8') for s in original_pages),f'{len(original_pages)} templates')
 record('API 密钥未直接写入前端',not bool(re.search(r'(AKIA[0-9A-Z]{16}|sk-[a-zA-Z0-9_-]{40,})', ''.join((FRONT/f).read_text(encoding='utf-8',errors='replace') for f in ('index.html','compat.js','theme.css')))))
 record('独立网页预览 HTML',(ROOT/'网页视觉预览.html').is_file())
-# Set a scratch DB path to avoid modifying bundled demo DB while checking live auth.
+# 只读检查独立8001验收服务；数据库创建与写入由MySQL专用验收脚本负责。
 with TemporaryDirectory(prefix='yx_check_') as td:
-    os.environ['DB_PATH']=str(Path(td)/'yixiang_test.db')
-    os.environ['JWT_SECRET']='test-only-not-for-production-secret-unique-2026'
-    sys.path.insert(0,str(ROOT/'backend'))
     try:
-        from fastapi.testclient import TestClient
-        from app.main import app
-        with TestClient(app) as client:
+        import httpx
+        base=os.getenv('YX_TEST_URL','http://127.0.0.1:8001')
+        assert base=='http://127.0.0.1:8001','只检查独立8001验收服务'
+        with httpx.Client(base_url=base,timeout=10) as client:
             for loc in ['/site/','/web/']:
                 r=client.get(loc)
                 record(f'HTTP {loc} 首页',r.status_code==200 and '颐享智财' in r.text,f'HTTP {r.status_code}')
@@ -40,6 +38,8 @@ with TemporaryDirectory(prefix='yx_check_') as td:
                 record(f'HTTP {loc}',r.status_code==200 and len(r.content)>200,f'HTTP {r.status_code}, {len(r.content)} bytes')
             r=client.get('/integrations/status')
             record('第三方服务状态接口',r.status_code==200 and 'llm' in r.text,f'HTTP {r.status_code}')
+            h=client.get('/healthz').json()
+            record('MySQL实际连接',h.get('database')=='mysql' and h.get('database_ready') is True)
             (ROOT/'tests').mkdir(exist_ok=True)
             if r.status_code==200:
                 (ROOT/'tests'/'API状态.json').write_text(json.dumps(r.json(),ensure_ascii=False,indent=2),encoding='utf-8')
