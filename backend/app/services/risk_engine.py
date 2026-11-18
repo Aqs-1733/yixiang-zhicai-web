@@ -75,7 +75,14 @@ def normalize_level(flags: List[Dict[str, Any]]) -> str:
 
 def _contains(text: str, pattern: str) -> bool:
     if pattern.lower() in text.lower():
-        return True
+        matches=list(re.finditer(re.escape(pattern),text,re.I))
+        for match in matches:
+            start=max(text.rfind(ch,0,match.start()) for ch in '，。；！？\n')+1
+            prefix=text[start:match.start()]
+            absent=bool(re.search(r'(?:没有|未发现|不存在|不含|无)(?:[^，。；！？\n]{0,14})$',prefix))
+            preventative=pattern=='验证码' and bool(re.search(r'(?:不要|不得|切勿|请勿|不能)(?:把|将)?[^，。；！？\n]{0,8}(?:泄露|透露|发送|告知|提供|交出)?[^，。；！？\n]{0,4}$',prefix))
+            if not absent and not preventative:return True
+        return False
     if re.fullmatch(r"[A-Za-z0-9_%\\.\-\u4e00-\u9fa5]+", pattern):
         return False
     try:

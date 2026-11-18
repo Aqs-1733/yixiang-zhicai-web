@@ -135,7 +135,7 @@ a:focus-visible,button:focus-visible,[role=button]:focus-visible{outline:3px sol
 .is-auth #yx-render{width:100%;max-width:570px!important;flex:0 0 auto!important}
 .is-auth .login-panel,.is-auth .register-panel{padding:28px 24px 32px!important;max-width:560px!important}
 .is-auth .login-panel::before,.is-auth .register-panel::before{content:'欢迎回来';font-size:clamp(33px,3.2vw,44px)!important;font-weight:860!important;color:#183d34!important;letter-spacing:-1.5px;margin-bottom:5px!important}
-.is-auth .register-panel::before{content:'创建一个安心的账户'}
+.is-auth .register-panel::before{content:'注册账号'}
 .is-auth .login-panel:after{content:'欢迎登录颐享智财，开启温暖从容的每一天。';display:block;position:absolute;top:89px;left:24px;color:#849e91;font-size:12px}
 .is-auth .role-switch{margin:52px 0 21px!important;background:#eaf2eb!important;border:1px solid #e1e9df!important;padding:5px!important;border-radius:14px!important}
 .is-auth .role-btn{border-radius:10px!important;min-height:48px!important;font-weight:760!important;color:#79968a!important}.is-auth .role-btn.active{color:#1e614e!important;background:#fff!important;box-shadow:0 7px 18px #2d71511b!important}

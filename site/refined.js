@@ -5,7 +5,7 @@ const paths={
  '记账助手':'<path d="M4 4h11l5 5v11H4z"/><path d="M15 4v5h5M8 13h8M8 17h5"/>',
  '找儿女':'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 16a5 5 0 0 1 5 4"/>',
  '家庭群聊':'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/>',
- '守护健康':'<path d="M20.3 5.3a5.5 5.5 0 0 0-7.8 0L12 6l-.5-.7a5.5 5.5 0 0 0-7.8 7.8L12 21l8.3-7.9a5.5 5.5 0 0 0 0-7.8Z"/><path d="M6 12h3l2-3 2 6 2-3h3"/>',
+ '健康记录':'<path d="M20.3 5.3a5.5 5.5 0 0 0-7.8 0L12 6l-.5-.7a5.5 5.5 0 0 0-7.8 7.8L12 21l8.3-7.9a5.5 5.5 0 0 0 0-7.8Z"/><path d="M6 12h3l2-3 2 6 2-3h3"/>',
  '附近服务':'<path d="M20 10c0 5.1-8 11-8 11S4 15.1 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>'
 };
 const svg=(p)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;

@@ -1,4 +1,4 @@
-// 守护健康页面 —— 开关直接控制每日闹钟
+// 健康记录页面 —— 开关直接控制每日闹钟
 const app = getApp()
 
 let ttsAudio = null

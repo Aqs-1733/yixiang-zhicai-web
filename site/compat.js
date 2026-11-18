@@ -30,9 +30,24 @@ const pageName=Object.fromEntries(pages.map(([p,n])=>[p,n]));
 const authPaths=new Set(['pages/login/login','pages/register/register','pages/forgot-password/forgot-password','pages/security-question/security-question']);
 const childPaths=new Set(pages.filter(([p])=>p.startsWith('pages/child/')).map(x=>x[0]));
 const activeList = (p)=> childPaths.has(p)||storageGet('role')==='child' ? pages.filter(([x])=>childPaths.has(x) || x==='pages/assistant/assistant'||x==='pages/family/family'||x==='pages/family-group-chat/family-group-chat'||x==='pages/family-messages/family-messages') : pages.filter(([x])=>!childPaths.has(x)&&!authPaths.has(x));
-function storageGet(k){try{const session=k==='token'?sessionStorage.getItem(storePrefix+k):null;const v=session===null?localStorage.getItem(storePrefix+k):session;return v===null?'':JSON.parse(v)}catch{return ''}}
-function storageSet(k,v){try{const encoded=JSON.stringify(v);localStorage.setItem(storePrefix+k,encoded);if(k==='token')sessionStorage.setItem(storePrefix+k,encoded);if(k==='rememberLoginUntil'&&!Number(v)&&sessionStorage.getItem(storePrefix+'token'))localStorage.removeItem(storePrefix+'token')}catch(e){console.warn('Local storage',e)}}
-function storageRemove(k){localStorage.removeItem(storePrefix+k);sessionStorage.removeItem(storePrefix+k)}
+const authKeys=new Set(['token','user','profile','userProfile','role','rememberLoginUntil','wechatPasswordFreeUntil']);
+// Account identity and token form one tab-local snapshot. Font preferences remain shared.
+function initAuthStorage(){try{if(sessionStorage.getItem(storePrefix+'authVersion')!=='2'){
+ for(const k of authKeys)sessionStorage.removeItem(storePrefix+k);
+ const until=JSON.parse(localStorage.getItem(storePrefix+'rememberLoginUntil')||'0');
+ if(until>Date.now()&&localStorage.getItem(storePrefix+'token'))for(const k of authKeys){const v=localStorage.getItem(storePrefix+k);if(v!==null)sessionStorage.setItem(storePrefix+k,v)}
+ sessionStorage.setItem(storePrefix+'authVersion','2');
+}}catch{}}
+initAuthStorage();
+function storageGet(k){try{const v=(authKeys.has(k)?sessionStorage:localStorage).getItem(storePrefix+k);return v===null?'':JSON.parse(v)}catch{return ''}}
+function storageSet(k,v){try{const encoded=JSON.stringify(v);if(!authKeys.has(k)){localStorage.setItem(storePrefix+k,encoded);return}sessionStorage.setItem(storePrefix+k,encoded);
+ const token=sessionStorage.getItem(storePrefix+'token'),remember=Number(storageGet('rememberLoginUntil'));
+ if(k==='rememberLoginUntil'){
+  if(remember>Date.now()&&token)for(const key of authKeys){const item=sessionStorage.getItem(storePrefix+key);if(item!==null)localStorage.setItem(storePrefix+key,item);else localStorage.removeItem(storePrefix+key)}
+  else if(token===localStorage.getItem(storePrefix+'token'))for(const key of authKeys)localStorage.removeItem(storePrefix+key);
+ }else if(remember>Date.now()&&token===localStorage.getItem(storePrefix+'token'))localStorage.setItem(storePrefix+k,encoded);
+}catch(e){console.warn('Local storage',e)}}
+function storageRemove(k){const token=sessionStorage.getItem(storePrefix+'token'),saved=localStorage.getItem(storePrefix+'token');sessionStorage.removeItem(storePrefix+k);if(!authKeys.has(k)||!saved||saved===token)localStorage.removeItem(storePrefix+k)}
 function storageClear(){for(const st of [localStorage,sessionStorage])Object.keys(st).filter(k=>k.startsWith(storePrefix)).forEach(k=>st.removeItem(k))}
 function normalizeUrl(s){let p=String(s||'').replace(/^\//,'');return p.replace(/\.js$/,'')}
 function pathModule(parent,relative){if(!relative.startsWith('.'))return relative; const seg=parent.split('/');seg.pop();for(const x of relative.split('/')){if(x==='..')seg.pop();else if(x!=='.')seg.push(x)}return seg.join('/')+(relative.endsWith('.js')?'':'.js')}

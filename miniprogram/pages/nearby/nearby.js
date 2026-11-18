@@ -489,7 +489,7 @@ Page({
       address: item.address || '',
       scale: 18,
       fail: () => wx.showModal({
-        title: '请在手机上打开导航',
+        title: '请在手机上查看路线',
         content: '当前位置或目的地暂时无法交给微信地图，请重新定位后再试。',
         showCancel: false
       })
@@ -520,7 +520,7 @@ Page({
       `已经为您选中 ${item.title}。`,
       item.address ? `地址：${item.address}` : '',
       item.distanceText ? `距离：${item.distanceText}` : '',
-      '您可以点“打开导航”进入微信地图导航。',
+      '点“查看路线”可在本页查看步行路线。',
       '出门前请确认手机电量、证件和随身药品。',
       nearbyNames ? `附近还可以考虑：${nearbyNames}。` : ''
     ].filter(Boolean)
@@ -765,7 +765,7 @@ Page({
           text: `附近服务指路。目的地：${place.title || ''}，地址：${place.address || ''}。请结合图片给出老人能懂的操作建议。`,
           scene: 'nearby_navigation_image'
         }).then(answer => {
-          this.replaceGuideMessage(thinkingId, answer || '图片已收到。请继续点“打开导航”，出门前核对地点名称和地址。')
+          this.replaceGuideMessage(thinkingId, answer || '图片已收到。请继续点“查看路线”，出门前核对地点名称和地址。')
         }).catch(() => {
           this.replaceGuideMessage(thinkingId, '图片识别暂不可用。请直接输入您想问的路线问题。')
         })
@@ -813,7 +813,7 @@ Page({
       `分类：${place.category || ''}`,
       `当前位置：${this.data.currentAddress}`,
       `用户问题：${content}`,
-      '不要输出复杂路线坐标，不要让用户打开外部 scheme。可以提醒用户点击页面里的“打开导航”。'
+      '不要输出复杂路线坐标，不要让用户打开外部 scheme。可以提醒用户点击页面里的“查看路线”。'
     ].join('\n')
     this.requestAssistant(prompt, {
       scene: 'nearby_navigation',
@@ -868,15 +868,15 @@ Page({
   localGuideAnswer(place, question) {
     const ask = String(question || '')
     if (/远|多久|时间/.test(ask)) {
-      return `从当前区域到 ${place.title || '这个地点'} 大约是 ${place.distanceText || '附近'}。实际时间要以微信地图导航为准，出门前请先看天气和路况。`
+      return `从当前区域到 ${place.title || '这个地点'} 大约是 ${place.distanceText || '附近'}。这是直线距离，实际步行距离和用时请查看路线。`
     }
     if (/安全|老人|自己/.test(ask)) {
       return `如果是老人自己去，建议先确认目的地名称和地址，手机保持有电，必要时把行程告诉家人。到达前不要给陌生人转账或出示验证码。`
     }
     if (/电话|联系/.test(ask)) {
-      return place.phone ? `这个地点有电话：${place.phone}。您可以先电话确认营业时间和要带的材料。` : '这个地点暂时没有电话，建议点“打开导航”进入微信地图查看详情。'
+      return place.phone ? `这个地点有电话：${place.phone}。您可以先电话确认营业时间和要带的材料。` : '这个地点暂未提供电话，可以查看地址和步行路线。'
     }
-    return `您可以先点“打开导航”，用微信地图带路去 ${place.title || '这个地点'}。出门前确认手机电量、身份证件、医保卡或银行卡是否带齐。`
+    return `点“查看路线”可以查看前往 ${place.title || '这个地点'}的步行路线。`
   },
 
   openGuideNavigation() {

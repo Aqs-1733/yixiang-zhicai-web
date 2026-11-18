@@ -50,7 +50,7 @@ html,body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif!impor
 body.is-home .page-frame{padding-top:26px!important}
 .yx-page .bg-page:has(.home-scroll-inner){padding:0!important;background:transparent!important;border:none!important;box-shadow:none!important}
 .yx-page .greet-hello{min-height:255px!important;padding:50px 45px 93px!important;border-radius:26px!important;margin:0 0 23px!important;border:0!important;box-shadow:0 10px 34px #c98a6020!important;background-image:linear-gradient(90deg,#fff0df 0%,#fff0df 30%,rgba(255,240,223,.95) 42%,rgba(255,240,223,.18) 66%),url('assets/cute/elderly.webp')!important;background-size:100% 100%,auto 112%!important;background-position:center,right 20px center!important;background-repeat:no-repeat!important;color:#783f2c!important;font-size:clamp(34px,3.5vw,48px)!important;line-height:1.22!important;font-weight:800!important;letter-spacing:0!important}
-.yx-page .greet-hello::before{content:'小享陪您，安心每一天'!important;font-size:18px!important;color:#ba704f!important;margin-bottom:17px!important;font-weight:650!important}
+.yx-page .greet-hello::before{content:'您好'!important;font-size:18px!important;color:#ba704f!important;margin-bottom:17px!important;font-weight:650!important}
 .cute-hero-actions{left:45px!important;bottom:34px!important;gap:12px!important}
 .cute-hero-actions button{font-size:18px!important;min-height:50px!important;padding:9px 24px!important;box-shadow:0 8px 18px #ef915323!important}
 .cute-hero-actions button:last-child{background:#fffaf5!important;border:1px solid #f1d5be!important;box-shadow:none!important;color:#b55f35!important}

@@ -4,6 +4,13 @@
  const cache=new Map();
  const project=(lat,lng,z)=>{const size=256*2**z,s=Math.sin(Math.max(-85,Math.min(85,lat))*Math.PI/180);return {x:(lng+180)/360*size,y:(.5-Math.log((1+s)/(1-s))/(4*Math.PI))*size}};
  const unproject=(x,y,z)=>{const size=256*2**z;return {latitude:Math.atan(Math.sinh(Math.PI*(1-2*y/size)))*180/Math.PI,longitude:x/size*360-180}};
+ function fitRoute(points,width=640,height=320){
+  const valid=points.filter(p=>Array.isArray(p)&&Number.isFinite(Number(p[0]))&&Number.isFinite(Number(p[1]))&&Math.abs(Number(p[0]))<=85&&Math.abs(Number(p[1]))<=180);
+  if(valid.length<2)throw Error('路线缺少坐标');
+  let zoom=4,bounds;
+  for(let z=18;z>=4;z--){const projected=valid.map(p=>project(Number(p[0]),Number(p[1]),z));const xs=projected.map(p=>p.x),ys=projected.map(p=>p.y);bounds={left:Math.min(...xs),right:Math.max(...xs),top:Math.min(...ys),bottom:Math.max(...ys)};zoom=z;if(bounds.right-bounds.left<=width*.78&&bounds.bottom-bounds.top<=height*.74)break;}
+  return {...unproject((bounds.left+bounds.right)/2,(bounds.top+bounds.bottom)/2,zoom),scale:zoom};
+ }
  async function imageURL(lat,lng,z,w,h,signal){
   const url='/lbs/static-map?'+new URLSearchParams({latitude:lat,longitude:lng,zoom:z,width:w,height:h});
   if(cache.has(url))return cache.get(url);
@@ -13,13 +20,15 @@
  function mount(host,options){
   const state={latitude:Number(options.latitude)||39.12,longitude:Number(options.longitude)||117.2,zoom:Math.max(4,Math.min(18,Number(options.scale)||14))};
   host.classList.add('yx-real-map');const image=document.createElement('img');image.className='yx-map-image';image.alt='地图';image.draggable=false;
+  const routeLayer=document.createElementNS('http://www.w3.org/2000/svg','svg');routeLayer.classList.add('yx-map-route');routeLayer.setAttribute('aria-hidden','true');
   const overlay=document.createElement('div');overlay.className='yx-map-markers';
   const controls=document.createElement('div');controls.className='yx-map-controls';
   const status=document.createElement('button');status.type='button';status.className='yx-map-status';status.textContent='地图加载中';status.hidden=true;
   const credit=document.createElement('span');credit.className='yx-map-credit';credit.textContent='腾讯地图';
-  host.append(image,overlay,controls,status,credit);let size={width:640,height:360},controller=null,drag=null,dragged=false;
+  host.append(image,routeLayer,overlay,controls,status,credit);let size={width:640,height:360},controller=null,drag=null,dragged=false;
+  function routePoints(){routeLayer.replaceChildren();routeLayer.setAttribute('viewBox',`0 0 ${size.width} ${size.height}`);const center=project(state.latitude,state.longitude,state.zoom);const points=(options.polyline||[]).map(p=>{const q=project(Number(p[0]),Number(p[1]),state.zoom);return `${q.x-center.x+size.width/2},${q.y-center.y+size.height/2}`}).join(' ');if(!points)return;for(const [color,width] of [['#fff',10],['#467b64',6]]){const path=document.createElementNS('http://www.w3.org/2000/svg','polyline');path.setAttribute('points',points);path.setAttribute('fill','none');path.setAttribute('stroke',color);path.setAttribute('stroke-width',width);path.setAttribute('stroke-linejoin','round');path.setAttribute('stroke-linecap','round');routeLayer.append(path)}}
   function points(){overlay.replaceChildren();const center=project(state.latitude,state.longitude,state.zoom);for(const m of options.markers||[]){if(!Number.isFinite(Number(m.latitude))||!Number.isFinite(Number(m.longitude)))continue;const p=project(Number(m.latitude),Number(m.longitude),state.zoom),x=(p.x-center.x+size.width/2)/size.width*100,y=(p.y-center.y+size.height/2)/size.height*100;if(x<0||x>100||y<0||y>100)continue;const b=document.createElement('button');b.type='button';b.className='yx-map-marker';b.textContent=m.id===1?'●':'📍';b.title=m.title||m.callout?.content||'地点';b.setAttribute('aria-label',b.title);b.style.left=x+'%';b.style.top=y+'%';b.addEventListener('click',e=>{e.stopPropagation();host.dispatchEvent(new CustomEvent('markertap',{detail:{markerId:m.id}}))});overlay.append(b)}}
-  async function paint(){controller?.abort();const current=new AbortController();controller=current;const rect=host.getBoundingClientRect();size={width:Math.max(280,Math.min(1000,Math.round(rect.width)||640)),height:Math.max(180,Math.min(800,Math.round(rect.height)||360))};points();status.hidden=true;try{const url=await imageURL(state.latitude,state.longitude,state.zoom,size.width,size.height,current.signal);if(controller===current&&!current.signal.aborted)image.src=url}catch(e){if(e.name!=='AbortError'&&controller===current){status.hidden=false;status.textContent='重新加载地图'}}}
+  async function paint(){controller?.abort();const current=new AbortController();controller=current;const rect=host.getBoundingClientRect();size={width:Math.max(280,Math.min(1000,Math.round(rect.width)||640)),height:Math.max(180,Math.min(800,Math.round(rect.height)||360))};points();routePoints();status.hidden=true;try{const url=await imageURL(state.latitude,state.longitude,state.zoom,size.width,size.height,current.signal);if(controller===current&&!current.signal.aborted)image.src=url}catch(e){if(e.name!=='AbortError'&&controller===current){status.hidden=false;status.textContent='重新加载地图'}}}
   function button(text,label,action){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.addEventListener('click',e=>{e.stopPropagation();action()});controls.append(b)}
   button('+','放大地图',()=>{state.zoom=Math.min(18,state.zoom+1);paint()});button('−','缩小地图',()=>{state.zoom=Math.max(4,state.zoom-1);paint()});
   status.onclick=()=>paint();host.style.touchAction='none';
@@ -55,16 +64,18 @@
  }
  async function navigate(opts={}){
   const cover=document.createElement('div');cover.className='yx-location-cover';cover.setAttribute('role','dialog');cover.setAttribute('aria-modal','true');cover.setAttribute('aria-label','步行导航');
-  cover.innerHTML='<section class="yx-location-dialog yx-route-dialog"><header><h2>步行导航</h2><button type="button" aria-label="关闭">×</button></header><h3></h3><p class="route-status" role="status">正在核对起点和路线…</p><ol class="route-steps"></ol><footer><button class="route-origin" type="button">选择起点</button><a class="route-open" target="_blank" rel="noopener noreferrer" hidden>在地图中导航 ↗</a></footer></section>';
-  document.body.append(cover);cover.querySelector('h3').textContent=opts.name||'目的地';let closed=false;
-  const close=()=>{closed=true;cover.remove();opts.complete?.({})};cover.querySelector('header button').onclick=close;cover.addEventListener('click',e=>{if(e.target===cover)close()});cover.onkeydown=e=>{if(e.key==='Escape')close()};
-  const status=cover.querySelector('.route-status'),list=cover.querySelector('ol'),link=cover.querySelector('a');
-  async function route(origin){if(!origin||closed){status.textContent='请允许定位或手动选择出发地';return}window.YXMaps.lastLocation=origin;const params={start_latitude:origin.latitude,start_longitude:origin.longitude,latitude:opts.latitude,longitude:opts.longitude};
-   const url=new URL('https://uri.amap.com/navigation');url.search=new URLSearchParams({from:`${origin.longitude},${origin.latitude},出发地`,to:`${opts.longitude},${opts.latitude},${opts.name||'目的地'}`,mode:'walk',coordinate:'gaode',callnative:'0',src:'颐享智财'});link.href=url.href;link.hidden=false;status.textContent='正在查询实际步行路线…';
-   try{const data=await getApp().request({url:'/lbs/route',data:params,loading:false});if(closed)return;list.replaceChildren();for(const step of data.steps||[]){const li=document.createElement('li');li.textContent=step.instruction;list.append(li)}status.textContent=`腾讯地图 · 步行约${Math.round(data.distance)}米 · ${Math.ceil(data.duration)}分钟${origin.accuracy?' · 定位精度约'+Math.round(origin.accuracy)+'米':''}`;cover.dataset.routeSource=data.source;opts.success?.(data)}catch(e){if(!closed)status.textContent='暂未取得可核实路线，可在地图中继续查询；本页未生成虚构指路。'}
+  cover.innerHTML='<section class="yx-location-dialog yx-route-dialog"><header><h2>步行路线</h2><button type="button" aria-label="关闭">×</button></header><h3></h3><p class="route-status" role="status">正在获取出发位置…</p><div class="yx-route-map" aria-label="步行路线地图" hidden></div><ol class="route-steps"></ol><footer><button class="route-origin" type="button">选择起点</button><button class="route-retry" type="button" hidden>重新查询</button></footer></section>';
+  const previous=document.activeElement;document.body.append(cover);cover.querySelector('h3').textContent=opts.name||'目的地';let closed=false,map=null,routeId=0,lastOrigin=null;
+  const close=()=>{closed=true;routeId++;map?.destroy();cover.remove();previous?.focus?.();opts.complete?.({})};cover.querySelector('header button').onclick=close;cover.addEventListener('click',e=>{if(e.target===cover)close()});
+  const status=cover.querySelector('.route-status'),list=cover.querySelector('ol'),mapHost=cover.querySelector('.yx-route-map'),retry=cover.querySelector('.route-retry');
+  cover.onkeydown=e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const nodes=[...cover.querySelectorAll('button:not([hidden])')].filter(e=>e.getClientRects().length);if(!nodes.length)return;const index=nodes.indexOf(document.activeElement);if(e.shiftKey&&index===0){e.preventDefault();nodes.at(-1).focus()}else if(!e.shiftKey&&index===nodes.length-1){e.preventDefault();nodes[0].focus()}}};
+  async function route(origin){if(closed)return;if(!origin){status.textContent='未取得定位，请选择起点。';return}const id=++routeId;lastOrigin=origin;window.YXMaps.lastLocation=origin;const params={start_latitude:origin.latitude,start_longitude:origin.longitude,latitude:opts.latitude,longitude:opts.longitude};
+   status.textContent='正在查询步行路线…';retry.hidden=true;list.replaceChildren();map?.destroy();map=null;mapHost.replaceChildren();mapHost.hidden=true;
+   try{const data=await getApp().request({url:'/lbs/route',data:params,loading:false});if(closed||id!==routeId)return;if(data.source!=='tencent_directions'||!data.polyline||data.polyline.length<2)throw Error('路线未返回');mapHost.hidden=false;const rect=mapHost.getBoundingClientRect(),fit=fitRoute(data.polyline,Math.max(280,rect.width),Math.max(260,rect.height));map=mount(mapHost,{...fit,polyline:data.polyline,markers:[{id:1,latitude:origin.latitude,longitude:origin.longitude,title:'起点'},{id:2,latitude:opts.latitude,longitude:opts.longitude,title:opts.name||'终点'}]});for(const step of data.steps||[]){const li=document.createElement('li');li.textContent=step.instruction;list.append(li)}status.textContent=`步行约${Math.round(data.distance)}米，预计${Math.ceil(data.duration)}分钟`;cover.dataset.routeSource=data.source;retry.hidden=false;opts.success?.(data)}catch(e){if(!closed&&id===routeId){status.textContent='路线暂时加载失败，请重新查询或更换起点。';retry.hidden=false}}
   }
   cover.querySelector('.route-origin').onclick=()=>choose({success:route});
+  retry.onclick=()=>route(lastOrigin);
   const origin=window.YXMaps.lastLocation||await locate({type:'gcj02'});await route(origin);cover.querySelector('header button')?.focus();
  }
- window.YXMaps={mount,choose,locate,navigate};
+ window.YXMaps={mount,choose,locate,navigate,geometry:{project,unproject,fitRoute}};
 })();

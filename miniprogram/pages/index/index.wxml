@@ -1,4 +1,4 @@
-﻿﻿<view class="bg-page {{globalFontPageClass}}">
+﻿<view class="bg-page {{globalFontPageClass}}">
   <view class="page-bg-top">
     <image class="page-bg-image" src="/assets/ui/home_bg_top.jpg" mode="widthFix" />
   </view>
@@ -6,7 +6,7 @@
   <!-- 左上角问候语（绝对定位覆盖层） -->
   <view class="greet-hello">您好，{{nickname}}</view>
 
-  <!-- 可滚动内容区：字体按钮 + 每日一课 + 贴心功能 -->
+  <!-- 可滚动内容区：字体按钮 + 每日一课 + 常用功能 -->
   <scroll-view class="home-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
     <view class="home-scroll-inner {{globalFontPageClass}}">
     <view class="global-font-wrap"><button class="global-font-btn {{globalFontPageClass}}" hover-class="none" bindtap="toggleGlobalFontSize">{{globalFontLabel}}</button></view>
@@ -46,16 +46,7 @@
       <view class="home-grid-left">
         <view class="lesson-card lesson-card-compact">
           <view class="lesson-head" bindtap="readLesson">
-            <view class="lesson-title">
-              <text
-                wx:for="{{lessonTitleSegments}}"
-                wx:for-item="seg"
-                wx:key="*this"
-                class="{{seg.term ? 'term-inline-home' : ''}}"
-                data-term="{{seg.term}}"
-                catchtap="explainTerm"
-              >{{seg.text}}</text>
-            </view>
+            <view class="lesson-title">理财课堂</view>
           </view>
           <view class="lesson-video-shell">
             <view class="lesson-video-toolbar">
@@ -93,11 +84,11 @@
         </view>
       </view>
 
-      <!-- 贴心功能 -->
+      <!-- 常用功能 -->
       <view class="home-grid-right">
         <view class="common-func-panel common-func-panel-compact">
           <view class="common-func-head">
-            <text class="common-func-title">贴心功能</text>
+            <text class="common-func-title">常用功能</text>
             <text class="common-func-star">(●'◡'●)</text>
           </view>
           <view class="common-func-grid">
@@ -111,8 +102,8 @@
               <text class="common-func-item-label">👪家庭群聊</text>
               <text wx:if="{{groupUnreadCount > 0}}" class="family-unread-badge">{{groupUnreadCount > 99 ? '99+' : groupUnreadCount}}</text>
             </view>
-            <view class="common-func-item" bindtap="readAndGo" data-label="守护健康" data-url="/pages/health/health">
-              <text class="common-func-item-label">💖守护健康</text>
+            <view class="common-func-item" bindtap="readAndGo" data-label="健康记录" data-url="/pages/health/health">
+              <text class="common-func-item-label">💖健康记录</text>
             </view>
             <view class="common-func-item" bindtap="readAndGo" data-label="附近服务" data-url="/pages/nearby/nearby">
               <text class="common-func-item-label">📍附近服务</text>

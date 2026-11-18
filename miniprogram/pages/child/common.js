@@ -26,7 +26,7 @@ function syncGlobalFont(page) {
 function logout() {
   wx.showModal({
     title: '退出登录',
-    content: '退出后需要重新登录，长辈和子女账号都可以用手机号或微信登录。',
+    content: '退出后，使用手机号和密码重新登录。',
     confirmText: '退出',
     success: (res) => {
       if (!res.confirm) return

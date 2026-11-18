@@ -27,9 +27,12 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
 from app.services import ai_gateway, asr_gateway
+from app.services.domestic_network import allowed_ai_url
 from app.services.local_ocr import recognize_image as local_ocr_recognize
 from app.services.pocket_allocator import allocate as allocate_pockets
 from app.services.pocket_allocator import simulate as simulate_pockets
+from app.services.pocket_allocator import apportion
+from app.services.money_parser import RMB_PATTERN, parse_rmb
 from app.services.risk_engine import behavior_risk_check, content_risk_check, family_alert_payload
 
 PROJECT_ENV = Path(__file__).resolve().parents[2] / ".env"
@@ -76,7 +79,7 @@ BLUELM_AUTH_MODE = os.getenv("BLUELM_AUTH_MODE", "auto").strip().lower()
 BLUELM_ENDPOINT_PATH = os.getenv("BLUELM_ENDPOINT_PATH", "/chat/completions").strip()
 LLM_PROVIDER_ORDER = [
     item.strip().lower()
-    for item in os.getenv("LLM_PROVIDER_ORDER", "vivo_bluelm,ark,qwen,deepseek,openai,llm,local").split(",")
+    for item in os.getenv("LLM_PROVIDER_ORDER", "ark,vivo_bluelm,qwen,deepseek,llm,local").split(",")
     if item.strip()
 ]
 
@@ -172,7 +175,7 @@ def build_lesson_video_title(video_file: Path) -> str:
             if title:return str(title)
         except Exception:pass
     if video_file.stem == "daily_lesson":
-        return "理财基础：先看懂，再决定"
+        return "理财产品入门"
     return re.sub(r"[_-]+", " ", video_file.stem).strip() or "视频课程"
 
 
@@ -219,7 +222,7 @@ def build_local_lesson_video_options(base_url: str) -> List[Dict[str, str]]:
         except Exception:metadata={}
         item.update({k:metadata.get(k,'') for k in ('license','license_url','source_url','attribution','updated_at','summary','content')})
         item['source']=metadata.get('source') or metadata.get('attribution') or '颐享智财原创课程'
-        item['poster']=base_url+'/site/assets/videos/'+item['id']+'_poster.png'
+        item['poster']=base_url+'/site/assets/videos/'+Path(str(metadata.get('poster') or item['id']+'_poster.png')).name
         item['original_source_url']=external.get(item['title'],'')
     # Main playlist is fully local. Original external streams remain attribution links,
     # not playback dependencies and are never silently substituted into a local lesson.
@@ -304,6 +307,9 @@ def parse_money_amount(value: Any, default: float = 0.0) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     text = str(value).replace(",", "").strip()
+    spoken = parse_rmb(text)
+    if spoken is not None:
+        return spoken
     match = re.search(r"([+-]?\d+(?:\.\d+)?)(万|元|块)?", text)
     if not match:
         cn = chinese_amount_to_float(text)
@@ -1286,7 +1292,7 @@ def llm_provider_configs() -> List[Dict[str, str]]:
             continue
         has_bearer = bool(item.get("api_key"))
         has_gateway = item.get("name") == "vivo_bluelm" and bool(item.get("app_id") and item.get("app_key"))
-        if item.get("base_url") and item.get("model") and (has_bearer or has_gateway):
+        if item.get("base_url") and allowed_ai_url(item["base_url"]) and item.get("model") and (has_bearer or has_gateway):
             providers.append(item)
     return providers
 
@@ -1393,8 +1399,8 @@ async def call_vision_llm(prompt: str, image_bytes: bytes, mime_type: str, scene
 
 def system_prompt(profile: Dict[str, Any]) -> str:
     return (
-        "你是颐享智财的小享，定位是银发稳健理财管家。必须使用中文，语气温和，面向老年人，白话解释。"
-        "原则：安全第一、操作极简、风险可控、亲情联动、合规透明。"
+        "你是颐享智财的助手小享，帮助用户记账、查看家庭记录和理解理财信息。使用自然中文，直接回答问题。"
+        "说明具体金额、日期、条件和操作步骤。不要写口号、排比、宣传语、固定开场白或例行结尾邀请；不要编造记录、实时数据和新闻。"
         "只能推荐大额存单、国债、货币基金、中低风险理财；禁止推荐股票、杠杆、私募、虚拟币、高收益骗局。"
         "不能承诺收益，不能代替用户交易，只做教育和辅助分析。"
         f"用户画像：{json.dumps(profile, ensure_ascii=False)}"
@@ -1919,11 +1925,8 @@ def suggest_allocation(p: Dict[str, Any]) -> Dict[str, Any]:
     spare = max(0, income - expense)
     return {
         "data_complete": p.get("monthly_income") not in [None, ""] and p.get("monthly_expense") not in [None, ""],
-        "monthly_spare": spare,
-        "daily": round(spare * 0.25, 2),
-        "medical": round(spare * 0.20, 2),
-        "emergency": round(spare * 0.20, 2),
-        "growth": round(spare * 0.35, 2),
+        "monthly_spare": round(spare, 2),
+        **apportion(spare, {"daily": .25, "medical": .20, "emergency": .20, "growth": .35}),
     }
 
 @app.get("/products")
@@ -2502,6 +2505,9 @@ def is_finance_text(text: str) -> bool:
 
 def extract_amount_from_text(text: str) -> float:
     text = str(text or "").replace(",", "")
+    spoken = list(RMB_PATTERN.finditer(text))
+    if spoken:
+        return parse_rmb(spoken[-1].group()) or 0.0
     unit_patterns = [
         r"(?:¥|￥)?\s*([+-]?\d+(?:\.\d+)?\s*(?:万|元|块))",
         r"([零〇一二两三四五六七八九十百千万]+(?:元|块))",
@@ -2521,6 +2527,8 @@ def extract_amount_from_text(text: str) -> float:
 
 def has_explicit_ledger_amount(text: str, record_kind: str = "daily") -> bool:
     text = str(text or "")
+    if RMB_PATTERN.search(text):
+        return True
     money_unit = r"(?:￥|¥)?\s*[+-]?\d+(?:\.\d+)?\s*(?:万\s*)?(?:元|块)"
     chinese_money = r"[零〇一二两三四五六七八九十百千万]+(?:元|块)"
     if re.search(money_unit, text) or re.search(chinese_money, text):
@@ -2592,6 +2600,7 @@ def enrich_ledger_item(item: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def clean_record_title(text: str, record_type: str, category: str) -> str:
+    text = RMB_PATTERN.sub('', text)
     title = re.sub(r"(?:¥|￥)?\s*[+-]?\d+(?:\.\d+)?\s*(?:万元|万|元|块)?", "", text)
     title = re.sub(r"[零〇一二两三四五六七八九十百千万]+(?:元|块)", "", title)
     title = re.sub(r"[\"'“”‘’{}【】\[\]]", "", title)
@@ -2727,7 +2736,7 @@ def parse_json_ledger_items(text: str) -> List[Dict[str, Any]]:
                 "category": category,
                 "record_kind": record_kind,
                 "product_name": infer_product_name(title, title) if record_kind == "finance" else "",
-                "source_text": json.dumps(rec, ensure_ascii=False),
+                "source_text": str(rec.get("source_text") or rec.get("原文") or " ".join(str(rec.get(k) or "") for k in ["date", "title", "type", "amount"])).strip(),
                 "confidence": 0.88,
             })
         if items:
@@ -4476,252 +4485,43 @@ def translated_china_address_queries(address: str) -> List[str]:
     return queries
 
 
-def nominatim_search_once(query: str) -> Optional[Dict[str, Any]]:
-    try:
-        with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={"q": query, "format": "json", "limit": 1, "addressdetails": 1},
-                headers={"User-Agent": "YixiangZhicai/3.0 elderly-finance-miniapp"},
-            )
-            r.raise_for_status()
-            payload = r.json()
-        return payload[0] if payload else None
-    except Exception:
-        return None
 
 
-def nominatim_item_matches_china_address(item: Dict[str, Any], address: str) -> bool:
-    display = str(item.get("display_name") or "") + str(item.get("name") or "")
-    for zh in CHINA_CITY_ALIASES:
-        if zh in address:
-            short = zh.replace("市", "")
-            if zh not in display and short not in display:
-                return False
-            break
-    for zh in CHINA_DISTRICT_ALIASES:
-        if zh in address and zh not in display:
-            return False
-    return True
 
 
-def nominatim_item_to_response(item: Dict[str, Any], address: str, source_note: str = "openstreetmap") -> Dict[str, Any]:
-    lat = float(item.get("lat"))
-    lng = float(item.get("lon"))
-    return {
-        "success": True,
-        "address": item.get("display_name") or address,
-        "location": {"lat": lat, "lng": lng, "latitude": lat, "longitude": lng},
-        "source": source_note,
-    }
+
+
+
+
+
+
 
 
 def fallback_geocode_osm(address: str) -> Dict[str, Any]:
-    try:
-        item = nominatim_search_once(address)
-        if item and not nominatim_item_matches_china_address(item, address):
-            item = None
-        if not item:
-            for query in translated_china_address_queries(address):
-                item = nominatim_search_once(query)
-                if item and nominatim_item_matches_china_address(item, address):
-                    return nominatim_item_to_response(item, address)
-            return local_geocode_fallback(address, "Nominatim returned empty results")
-        return nominatim_item_to_response(item, address)
-    except Exception as e:
-        for query in translated_china_address_queries(address):
-            item = nominatim_search_once(query)
-            if item and nominatim_item_matches_china_address(item, address):
-                return nominatim_item_to_response(item, address)
-        return local_geocode_fallback(address, "Nominatim geocode failed", str(e))
+    return local_geocode_fallback(address)
 
 
-def local_geocode_fallback(address: str, message: str = "local geocode fallback", error: str = "") -> Dict[str, Any]:
-    city_points = [
-        ("北京", 39.9042, 116.4074),
-        ("天津", 39.1200, 117.2000),
-        ("上海", 31.2304, 121.4737),
-        ("重庆", 29.5630, 106.5516),
-        ("广州", 23.1291, 113.2644),
-        ("深圳", 22.5431, 114.0579),
-        ("杭州", 30.2741, 120.1551),
-        ("成都", 30.5728, 104.0668),
-        ("西安", 34.3416, 108.9398),
-        ("武汉", 30.5928, 114.3055),
-    ]
-    lat, lng = 39.1200, 117.2000
-    for city, city_lat, city_lng in city_points:
-        if city in address:
-            lat, lng = city_lat, city_lng
-            break
-    return {
-        "success": True,
-        "address": address,
-        "location": {"lat": lat, "lng": lng, "latitude": lat, "longitude": lng},
-        "source": "local_geocode_fallback",
-        "fallback": True,
-        "message": message,
-        "debug_error": error,
-        "user_message": "已按城市位置查找附近服务；如需更准确，请使用地图选点或输入街道小区名。",
-    }
+
+def local_geocode_fallback(address: str, message: str = "", error: str = "") -> Dict[str, Any]:
+    return {"success": False, "address": address, "location": {}, "source": "unavailable", "fallback": True,
+            "message": "地址暂未查到，请输入街道、小区或具体地点。", "user_message": "地址暂未查到，请重新搜索或在地图上选点。"}
+
 
 
 def fallback_geocode_baidu(address: str) -> Dict[str, Any]:
-    if not BAIDU_API_KEY:
-        return fallback_geocode_osm(address)
-    try:
-        with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.get(
-                "https://api.map.baidu.com/geocoding/v3/",
-                params={"address": address, "output": "json", "ak": BAIDU_API_KEY},
-            )
-            r.raise_for_status()
-            payload = r.json()
-        if int(payload.get("status", -1)) != 0:
-            fallback = fallback_geocode_osm(address)
-            fallback["debug_message"] = payload.get("msg") or "Baidu geocode failed"
-            return fallback
-        loc = ((payload.get("result") or {}).get("location") or {})
-        bd_lng = float(loc.get("lng"))
-        bd_lat = float(loc.get("lat"))
-        lng, lat = bd09_to_gcj02(bd_lng, bd_lat)
-        return {
-            "success": True,
-            "address": address,
-            "location": {"lat": lat, "lng": lng, "latitude": lat, "longitude": lng},
-            "source": "baidu_map",
-        }
-    except Exception as e:
-        fallback = fallback_geocode_osm(address)
-        fallback["debug_message"] = "Baidu geocode failed"
-        fallback["baidu_error"] = str(e)
-        return fallback
+    # The speech credential is not a Baidu Map credential. Never send it to another product.
+    return local_geocode_fallback(address)
+
 
 
 def fallback_nearby_baidu(kind: str, keyword: str, label: str, latitude: float, longitude: float) -> Dict[str, Any]:
-    if not BAIDU_API_KEY:
-        return fallback_nearby_osm(kind, keyword, label, latitude, longitude)
-    try:
-        bd_lng, bd_lat = gcj02_to_bd09(longitude, latitude)
-        with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.get(
-                "https://api.map.baidu.com/place/v2/search",
-                params={
-                    "query": keyword,
-                    "location": f"{bd_lat},{bd_lng}",
-                    "radius": 3000,
-                    "page_size": 10,
-                    "output": "json",
-                    "ak": BAIDU_API_KEY,
-                },
-            )
-            r.raise_for_status()
-            payload = r.json()
-        if int(payload.get("status", -1)) != 0:
-            fallback = fallback_nearby_osm(kind, keyword, label, latitude, longitude)
-            fallback["debug_message"] = payload.get("message") or "Baidu place search failed"
-            return fallback
-        items = []
-        for idx, item in enumerate(payload.get("results") or [], start=1):
-            loc = item.get("location") or {}
-            if "lat" not in loc or "lng" not in loc:
-                continue
-            lng, lat = bd09_to_gcj02(float(loc.get("lng")), float(loc.get("lat")))
-            phone = item.get("telephone") or ""
-            distance = distance_meters(latitude, longitude, lat, lng)
-            items.append({
-                "id": str(item.get("uid") or f"baidu-{kind}-{idx}"),
-                "name": item.get("name") or keyword,
-                "type": label,
-                "keyword": keyword,
-                "address": item.get("address") or "暂无详细地址",
-                "phone": phone,
-                "distance": format_lbs_distance(distance),
-                "latitude": lat,
-                "longitude": lng,
-                "note": "出发前可先电话确认营业时间和是否办理对应业务。" if phone else "暂无电话，可先打开地图查看详情。",
-            })
-        if items:
-            return {
-                "success": True,
-                "items": items,
-                "message": "ok",
-                "privacy_note": "位置服务需用户主动授权；拒绝授权时可手动输入地址搜索。",
-                "source": "baidu_map",
-            }
-        fallback = fallback_nearby_osm(kind, keyword, label, latitude, longitude)
-        fallback["debug_message"] = "Baidu place search returned empty results"
-        return fallback
-    except Exception as e:
-        fallback = fallback_nearby_osm(kind, keyword, label, latitude, longitude)
-        fallback["debug_message"] = "Baidu place search failed"
-        fallback["baidu_error"] = str(e)
-        return fallback
+    return local_nearby_fallback(kind, keyword, label, latitude, longitude, "附近地点暂未查到，请更换查询位置或稍后重试。")
+
 
 
 def fallback_nearby_osm(kind: str, keyword: str, label: str, latitude: float, longitude: float) -> Dict[str, Any]:
-    selector = osm_selector_for_lbs(kind)
-    query = f"""
-    [out:json][timeout:12];
-    (
-      node(around:3000,{latitude},{longitude}){selector};
-      way(around:3000,{latitude},{longitude}){selector};
-      relation(around:3000,{latitude},{longitude}){selector};
-    );
-    out center tags 20;
-    """
-    try:
-        with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.post(
-                "https://overpass-api.de/api/interpreter",
-                data={"data": query},
-                headers={"User-Agent": "YixiangZhicai/3.0 elderly-finance-miniapp"},
-            )
-            r.raise_for_status()
-            payload = r.json()
-        items = []
-        seen = set()
-        for idx, element in enumerate(payload.get("elements") or [], start=1):
-            tags = element.get("tags") or {}
-            center = element.get("center") or element
-            lat = center.get("lat")
-            lng = center.get("lon")
-            if lat is None or lng is None:
-                continue
-            name = tags.get("name:zh") or tags.get("name") or f"{label}{idx}"
-            key = (name, round(float(lat), 6), round(float(lng), 6))
-            if key in seen:
-                continue
-            seen.add(key)
-            phone = tags.get("phone") or tags.get("contact:phone") or ""
-            distance = distance_meters(latitude, longitude, float(lat), float(lng))
-            items.append({
-                "id": f"osm-{element.get('type', 'node')}-{element.get('id', idx)}",
-                "name": name,
-                "type": label,
-                "keyword": keyword,
-                "address": osm_address_from_tags(tags),
-                "phone": phone,
-                "distance": format_lbs_distance(distance),
-                "distance_value": distance,
-                "latitude": float(lat),
-                "longitude": float(lng),
-                "note": "出发前可先电话确认营业时间和是否办理对应业务。" if phone else "暂无电话，可先打开地图查看详情。",
-            })
-        items.sort(key=lambda item: item.get("distance_value") or 999999)
-        for item in items:
-            item.pop("distance_value", None)
-        if not items:
-            return local_nearby_fallback(kind, keyword, label, latitude, longitude, "OpenStreetMap 暂无结果")
-        return {
-            "success": True,
-            "items": items[:10],
-            "message": "ok",
-            "privacy_note": "位置服务需用户主动授权；拒绝授权时可手动输入地址搜索。",
-            "source": "openstreetmap",
-        }
-    except Exception as e:
-        return local_nearby_fallback(kind, keyword, label, latitude, longitude, "Overpass nearby search failed", str(e))
+    return local_nearby_fallback(kind, keyword, label, latitude, longitude, "附近地点暂未查到，请更换查询位置或稍后重试。")
+
 
 
 def local_nearby_fallback(kind: str, keyword: str, label: str, latitude: float, longitude: float, message: str = "", error: str = "") -> Dict[str, Any]:
@@ -4879,28 +4679,24 @@ def lbs_reverse_geocode(latitude: float = Query(default=39.120), longitude: floa
 
 
 @app.get("/lbs/ip-location")
-def lbs_ip_location(user=Depends(current_user)) -> Dict[str, Any]:
-    if not TENCENT_MAP_KEY:
-        return {"success": False, "address":"", "location":{}, "source":"unavailable", "message":"暂未取得所在城市，请手动搜索地址"}
+def lbs_ip_location(request: Request, user=Depends(current_user)) -> Dict[str, Any]:
+    missing = {"success": False, "address": "", "location": {}, "source": "unavailable", "message": "未取得所在城市，请手动选择位置。"}
+    if not TENCENT_MAP_KEY:return missing
     try:
+        visitor_ip = str(request.client.host if request.client else "")
+        if not ipaddress.ip_address(visitor_ip).is_global:return missing
         with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-            r = client.get("https://apis.map.qq.com/ws/location/v1/ip", params={"key": TENCENT_MAP_KEY})
-            r.raise_for_status()
-            payload = r.json()
-        result = payload.get("result") or {}
-        loc = result.get("location") or {}
-        lat = float(loc.get("lat"))
-        lng = float(loc.get("lng"))
-        ad = result.get("ad_info") or {}
-        address = "".join(str(v) for v in [ad.get("province"), ad.get("city"), ad.get("district")] if v) or "当前区域"
-        return {
-            "success": True,
-            "address": address,
-            "location": {"lat": lat, "lng": lng, "latitude": lat, "longitude": lng},
-            "source": "tencent_map",
-        }
-    except Exception:
-        return {"success": False, "address":"", "location":{}, "source":"unavailable", "message":"暂未取得所在城市，请手动搜索地址"}
+            r = client.get("https://apis.map.qq.com/ws/location/v1/ip", params={"key":TENCENT_MAP_KEY,"ip":visitor_ip})
+            r.raise_for_status();payload = r.json()
+        if int(payload.get("status",-1)) != 0:return missing
+        result = payload.get("result") or {};loc=result.get("location") or {};ad=result.get("ad_info") or {}
+        latitude=float(loc["lat"]);longitude=float(loc["lng"])
+        parts=[]
+        for value in [ad.get("province"),ad.get("city"),ad.get("district")]:
+            if value and value not in parts:parts.append(str(value))
+        return {"success":True,"address":"".join(parts),"location":{"lat":latitude,"lng":longitude,"latitude":latitude,"longitude":longitude},"source":"tencent_map","approximate":True,"coordinate_system":"gcj02"}
+    except Exception:return missing
+
 
 
 @app.post("/payments/ledger-record")
@@ -6649,7 +6445,7 @@ def lesson_today(request: Request, user=Depends(current_user)) -> Dict[str, Any]
     return {
         'title':selected.get('title') or lesson_video_title,
         'summary':selected.get('summary') or '理财课堂 · 视频学习',
-        'content':selected.get('content') or '先看清发行机构、风险和赎回条件，再作决定。',
+        'content':selected.get('content') or '介绍产品的发行机构、风险等级、期限和赎回规则。',
         'video_title':selected.get('title') or lesson_video_title,
         'video_url':lesson_video_url,
         'video_poster':selected.get('poster') or DAILY_LESSON_VIDEO_POSTER or '/site/assets/videos/daily_lesson_poster.png',
@@ -6808,115 +6604,28 @@ def fallback_weather(city: str = "天津") -> Dict[str, Any]:
     return {"ok":False,"success":False,"city":city,"weather":"暂未取得天气","temperature":"","temp":"","wind":"","humidity":"","update_time":"","suggestion":"请以当地气象服务的实际预报为准。","source":"unavailable","message":"天气服务暂未返回真实数据"}
 
 
-def open_meteo_weather(city: str, latitude: float, longitude: float) -> Dict[str, Any]:
-    code_map = {
-        0: "晴",
-        1: "晴间多云",
-        2: "多云",
-        3: "阴",
-        45: "雾",
-        48: "雾",
-        51: "小雨",
-        53: "小雨",
-        55: "中雨",
-        61: "小雨",
-        63: "中雨",
-        65: "大雨",
-        71: "小雪",
-        73: "中雪",
-        75: "大雪",
-        80: "阵雨",
-        81: "阵雨",
-        82: "强阵雨",
-        95: "雷阵雨",
-    }
-    with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-        r = client.get(
-            "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": latitude,
-                "longitude": longitude,
-                "current": "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m",
-                "timezone": "Asia/Shanghai",
-            },
-        )
-        r.raise_for_status()
-        payload = r.json()
-    current = payload.get("current") or {}
-    temp = current.get("temperature_2m")
-    humidity = current.get("relative_humidity_2m")
-    code = int(current.get("weather_code") or 0)
-    weather = code_map.get(code, "多云")
-    temp_text = f"{temp}℃" if temp not in ["", None] else ""
-    humidity_text = f"{humidity}%" if humidity not in ["", None] else ""
-    wind = current.get("wind_speed_10m")
-    wind_text = f"{wind}km/h" if wind not in ["", None] else "微风"
-    return {
-        "ok": True,
-        "success": True,
-        "city": city or "当前区域",
-        "weather": weather,
-        "temperature": temp_text,
-        "temp": temp_text,
-        "wind": wind_text,
-        "humidity": humidity_text,
-        "update_time": str(current.get("time") or now_iso())[:16].replace("T", " "),
-        "suggestion": weather_suggestion(weather, temp),
-        "source": "real",
-    }
+def domestic_weather(city: str, latitude: float, longitude: float) -> Dict[str, Any]:
+    from app.services.domestic_weather import get_weather
+    result = get_weather(city, latitude, longitude)
+    result["suggestion"] = weather_suggestion(result["weather"], result["temperature"])
+    return result
+
 
 
 @app.get("/weather/today")
 def weather_today(
-    city: str = Query(default="天津"),
-    latitude: float = Query(default=39.0851),
-    longitude: float = Query(default=117.1994),
-    lat: Optional[float] = Query(default=None),
-    lng: Optional[float] = Query(default=None),
+    city: str = Query(default="天津"), latitude: float = Query(default=39.0851,ge=-85,le=85),
+    longitude: float = Query(default=117.1994,ge=-180,le=180),
+    lat: Optional[float] = Query(default=None,ge=-85,le=85), lng: Optional[float] = Query(default=None,ge=-180,le=180),
 ) -> Dict[str, Any]:
-    latitude = lat if lat is not None else latitude
-    longitude = lng if lng is not None else longitude
     try:
-        if TENCENT_MAP_KEY:
-            with httpx.Client(timeout=DATA_API_TIMEOUT) as client:
-                r = client.get(
-                    "https://apis.map.qq.com/ws/weather/v1/",
-                    params={"location": f"{latitude},{longitude}", "key": TENCENT_MAP_KEY},
-                )
-                r.raise_for_status()
-                payload = r.json()
-            if int(payload.get("status", -1)) == 0:
-                realtime = (payload.get("result") or {}).get("realtime") or {}
-                if isinstance(realtime, list):
-                    realtime = realtime[0] if realtime else {}
-                infos = realtime.get("infos") if isinstance(realtime, dict) else {}
-                if isinstance(infos, dict) and infos:
-                    realtime = {**realtime, **infos}
-                weather = realtime.get("weather") or realtime.get("text") or "晴"
-                temp = realtime.get("temperature", realtime.get("temp", ""))
-                humidity = realtime.get("humidity", "")
-                wind = " ".join(str(v) for v in [realtime.get("wind_direction"), realtime.get("wind_power")] if v)
-                temp_text = f"{temp}℃" if temp not in ["", None] and "℃" not in str(temp) else str(temp or "")
-                humidity_text = f"{humidity}%" if humidity not in ["", None] and "%" not in str(humidity) else str(humidity or "")
-                return {
-                    "ok": True,
-                    "success": True,
-                    "city": city or "当前区域",
-                    "weather": str(weather),
-                    "temperature": temp_text,
-                    "temp": temp_text,
-                    "wind": wind or "微风",
-                    "humidity": humidity_text,
-                    "update_time": str(realtime.get("update_time") or now_iso())[:16].replace("T", " "),
-                    "suggestion": weather_suggestion(str(weather), temp),
-                    "source": "real",
-                }
-        return open_meteo_weather(city, latitude, longitude)
+        return domestic_weather(city, lat if lat is not None else latitude, lng if lng is not None else longitude)
     except Exception as exc:
         data = fallback_weather(city)
-        data["message"] = "天气API调用失败，已使用兜底天气"
+        data["message"] = "天气暂时加载失败，请稍后刷新。"
         data["error_summary"] = type(exc).__name__
         return data
+
 
 
 @app.post("/risk/text-check")
@@ -7056,7 +6765,7 @@ def walking_route(start_latitude: float = Query(ge=-85,le=85), start_longitude: 
 
 @app.get('/app/release')
 def app_release():
-    return {'application':'yixiang-zhicai','release':'20261112-reliable','local_port':8004}
+    return {'application':'yixiang-zhicai','release':'20261118-domestic-copy-r3','local_port':8004}
 
 
 @app.get('/family/messages/unread')

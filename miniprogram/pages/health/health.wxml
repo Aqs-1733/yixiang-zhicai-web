@@ -1,4 +1,4 @@
-<!-- 守护健康页面 —— 开关直接控制每日闹钟 -->
+<!-- 健康记录页面 —— 开关直接控制每日闹钟 -->
 <view class="bg-page {{globalFontPageClass}}">
   <image class="page-bg" src="/assets/ui/health_bg.jpg" mode="heightFix" />
 

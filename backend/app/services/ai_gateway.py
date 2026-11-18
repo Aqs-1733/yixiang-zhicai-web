@@ -7,6 +7,7 @@ import json
 import logging
 import os
 from app.database import conn
+from app.services.domestic_network import allowed_ai_url
 import time
 import uuid
 from datetime import datetime,timezone,timedelta
@@ -30,7 +31,7 @@ AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
 PROVIDER_ORDER = [
     item.strip().lower()
-    for item in os.getenv("LLM_PROVIDER_ORDER", "vivo_bluelm,ark,qwen,deepseek,openai,llm,local").split(",")
+    for item in os.getenv("LLM_PROVIDER_ORDER", "ark,vivo_bluelm,qwen,deepseek,llm,local").split(",")
     if item.strip()
 ]
 STRICT_LLM = os.getenv("STRICT_LLM", "0").strip() == "1"
@@ -76,7 +77,7 @@ def configured_providers() -> List[Dict[str, str]]:
             continue
         has_gateway = name == "vivo_bluelm" and bool(cfg.get("app_id") and cfg.get("app_key"))
         has_bearer = bool(cfg.get("api_key"))
-        if cfg.get("base_url") and cfg.get("model") and (has_gateway or has_bearer):
+        if cfg.get("base_url") and allowed_ai_url(cfg["base_url"]) and cfg.get("model") and (has_gateway or has_bearer):
             items.append(cfg)
     return items
 
@@ -404,7 +405,7 @@ async def chat_vision(prompt: str, image_bytes: bytes, mime_type: str = "image/j
 async def transcribe_ark_audio(audio_bytes: bytes, filename: str = "audio.wav", dialect: bool = False) -> Dict[str, Any]:
     started = time.time()
     provider = provider_configs()["ark"]
-    if not audio_bytes or not provider.get("api_key") or not provider.get("model"):
+    if not audio_bytes or not provider.get("api_key") or not provider.get("model") or not allowed_ai_url(provider.get("base_url", "")):
         return {"ok": False, "provider": "ark_asr", "fallback": True, "error_summary": "NotConfiguredOrEmptyAudio"}
     fmt = Path(filename or "audio.wav").suffix.lower().lstrip(".") or "wav"
     payload: Dict[str, Any] = {

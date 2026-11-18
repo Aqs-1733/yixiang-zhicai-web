@@ -147,7 +147,7 @@
       </view>
 
       <view wx:if="{{showParsePanel && lastParse}}" class="parse-card card">
-        <view class="section-title">智能解析结果</view>
+        <view class="section-title">核对账单</view>
         <view class="analysis-text">{{lastParse.message}}</view>
         <view class="parse-stats">
           <view>
@@ -165,8 +165,7 @@
             <view>
               <view class="rname">{{item.title}}</view>
               <view class="small">分类：{{item.category}} · {{item.type}}</view>
-              <view class="parse-detail">{{item.detail}}</view>
-              <view wx:if="{{item.source_text}}" class="parse-source">原文：{{item.source_text}}</view>
+              <view wx:if="{{item.source_text}}" class="parse-source">图片文字：{{item.source_text}}</view>
             </view>
             <view class="amount {{item.type==='收入'?'income':'expense'}}">{{item.type==='收入'?'+':'-'}}{{item.amount}}</view>
           </view>
@@ -177,8 +176,7 @@
             <view>
               <view class="rname">{{item.title}}</view>
               <view class="small">分类：{{item.category}} · {{item.type}}</view>
-              <view class="parse-detail">{{item.detail}}</view>
-              <view wx:if="{{item.source_text}}" class="parse-source">原文：{{item.source_text}}</view>
+              <view wx:if="{{item.source_text}}" class="parse-source">图片文字：{{item.source_text}}</view>
             </view>
             <view class="amount {{item.type==='收入'?'income':'expense'}}">{{item.type==='收入'?'+':'-'}}{{item.amount}}</view>
           </view>

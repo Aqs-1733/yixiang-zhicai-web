@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR
+import math
 from typing import Any, Dict, List
 
 
@@ -36,9 +38,26 @@ def _num(value: Any, default: float = 0.0) -> float:
     try:
         if value in [None, ""]:
             return default
-        return float(str(value).replace(",", "").replace("元", ""))
+        result = float(str(value).replace(",", "").replace("元", ""))
+        return result if math.isfinite(result) else default
     except Exception:
         return default
+
+
+def apportion(total: Any, weights: Dict[str, float], places: int = 2) -> Dict[str, float]:
+    """Largest-remainder allocation: displayed amounts always add up to the total."""
+    factor = Decimal(10) ** places
+    units = int((Decimal(str(max(0, _num(total)))) * factor).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+    values = {k: Decimal(str(max(0, _num(v)))) for k, v in weights.items()}
+    weight_sum = sum(values.values())
+    if not values or weight_sum <= 0:
+        raise ValueError('Allocation weights must have a positive sum')
+    exact = {k: Decimal(units) * v / weight_sum for k, v in values.items()}
+    allocated = {k: int(v.to_integral_value(rounding=ROUND_FLOOR)) for k, v in exact.items()}
+    remaining = units - sum(allocated.values())
+    for key in sorted(values, key=lambda k: exact[k] - allocated[k], reverse=True)[:remaining]:
+        allocated[key] += 1
+    return {k: float(Decimal(v) / factor) for k, v in allocated.items()}
 
 
 def _health_attention(profile: Dict[str, Any], health: Dict[str, Any]) -> bool:
@@ -87,11 +106,13 @@ def allocate(profile: Dict[str, Any], ledger_summary: Dict[str, Any] | None = No
     total_ratio = sum(ratios.values())
     ratios = {k: v / total_ratio for k, v in ratios.items()}
 
+    amounts = apportion(total, ratios)
+    percentages = apportion(100, ratios, places=1)
     cards = []
     for item in POCKETS:
         key = item["key"]
         ratio = ratios[key]
-        amount = round(total * ratio, 2)
+        amount = amounts[key]
         if key == "growth" and ("保守" in risk_pref or any(str(a.get("level")) in {"high", "critical"} for a in risk_alerts)):
             status = "暂停新增高风险，只看低风险"
             advice = "只学习国债、大额存单、货币基金或中低风险产品，先不碰股票、私募、虚拟币。"
@@ -103,12 +124,12 @@ def allocate(profile: Dict[str, Any], ledger_summary: Dict[str, Any] | None = No
             advice = "月支出接近月收入，先保障生活费，暂缓新增理财。"
         else:
             status = "平稳"
-            advice = "保持当前比例，每月复盘一次。"
+            advice = "可按月收支变化调整预留金额。"
         cards.append({
             **item,
-            "ratio": round(ratio * 100, 1),
+            "ratio": percentages[key],
             "amount": amount,
-            "amount_text": f"{amount:,.0f}",
+            "amount_text": f"{amount:,.2f}".rstrip('0').rstrip('.'),
             "status": status,
             "advice": advice,
         })
@@ -117,7 +138,7 @@ def allocate(profile: Dict[str, Any], ledger_summary: Dict[str, Any] | None = No
         "success": True,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "total_asset": round(total, 2),
-        "total_asset_text": f"{total:,.0f}",
+        "total_asset_text": f"{round(total, 2):,.2f}".rstrip('0').rstrip('.'),
         "monthly_income": income,
         "monthly_expense": expense,
         "cards": cards,

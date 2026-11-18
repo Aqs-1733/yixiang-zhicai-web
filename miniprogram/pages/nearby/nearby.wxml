@@ -107,7 +107,7 @@
       </scroll-view>
 
       <view class="guide-quick-actions">
-        <button hover-class="none" bindtap="openGuideNavigation">打开导航</button>
+        <button hover-class="none" bindtap="openGuideNavigation">查看路线</button>
       </view>
       <view wx:if="{{selectedGuidePlace.phone}}" class="guide-phone-line">目的地电话：{{selectedGuidePlace.phone}}</view>
 
