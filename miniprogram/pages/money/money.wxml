@@ -1,4 +1,4 @@
-﻿<view class="bg-page {{globalFontPageClass}}">
+<view class="bg-page {{globalFontPageClass}}">
   <image class="page-bg" src="/assets/ui/money_bg.jpg" mode="widthFix" />
   
   <view class="layer money-layer">
@@ -186,6 +186,19 @@
           <button class="parse-btn cancel" bindtap="cancelParsedImport">取消</button>
           <button class="parse-btn ok" bindtap="confirmParsedImport">确认导入</button>
         </view>
+      </view>
+
+      <view wx:if="{{pocketCards.length}}" class="pocket-card card">
+        <view class="section-title">四账户资金安排</view>
+        <view class="pocket-source">根据您填写的资产与日常开支计算，不会实际划转资金。</view>
+        <view class="pocket-grid">
+          <view wx:for="{{pocketCards}}" wx:key="key" class="pocket-item" data-key="{{item.key}}" bindtap="openPocketDetail">
+            <view class="pocket-head"><text class="pocket-name">{{item.name}}</text><text class="pocket-status">{{item.ratio}}%</text></view>
+            <view class="pocket-amount">{{item.amount_text}} 元</view>
+            <view class="pocket-purpose">{{item.purpose}}</view>
+          </view>
+        </view>
+        <button class="pocket-rebalance" hover-class="none" bindtap="rebalancePockets">更新资金安排</button>
       </view>
 
       <!-- 理财持仓 -->
