@@ -74,7 +74,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ef97
 .yx-page :is(.btn-primary,.primary-btn,.submit-btn,.confirm-btn,.footer-btn.next-btn,.go-btn,.login-btn){background:linear-gradient(125deg,#ffa45a,#f57e3e)!important;border-color:#f88846!important;color:#fff!important;box-shadow:0 9px 17px #f9a27048!important;border-radius:13px!important;font-weight:820!important}
 .yx-page :is(.btn-primary,.primary-btn,.submit-btn,.confirm-btn,.footer-btn.next-btn,.go-btn,.login-btn):hover{box-shadow:0 12px 23px #f9a2706c!important}
 /* 首页卡通横幅：真正的插画，原动态问候继续显示 */
-.yx-page .greet-hello{position:relative!important;margin:0 0 20px!important;min-height:270px!important;padding:57px 39px 91px!important;border:1px solid #ffdfbf!important;border-radius:25px!important;background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 28%,rgba(255,239,217,.96) 43%,rgba(255,239,217,.36) 67%,rgba(255,239,217,.04) 100%),url('assets/cute/elderly.webp')!important;background-color:#fff0d9!important;background-repeat:no-repeat!important;background-size:cover,auto 100%!important;background-position:center,right center!important;color:#8c3b20!important;box-shadow:0 12px 30px #efa87924!important;font-size:clamp(35px,4vw,54px)!important;font-weight:900!important;letter-spacing:0!important;overflow:hidden}
+.yx-page .greet-hello{position:relative!important;margin:0 0 20px!important;min-height:270px!important;padding:57px 39px 91px!important;border:1px solid #ffdfbf!important;border-radius:25px!important;background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 28%,rgba(255,239,217,.96) 43%,rgba(255,239,217,.36) 67%,rgba(255,239,217,.04) 100%),url('assets/ui/login_bg.jpg')!important;background-color:#fff0d9!important;background-repeat:no-repeat!important;background-size:cover,auto 100%!important;background-position:center,right center!important;color:#8c3b20!important;box-shadow:0 12px 30px #efa87924!important;font-size:clamp(35px,4vw,54px)!important;font-weight:900!important;letter-spacing:0!important;overflow:hidden}
 .yx-page .greet-hello::before{content:'🌷 您好'!important;display:block!important;position:relative!important;font-size:17px!important;font-weight:800!important;letter-spacing:0!important;color:#b85f36!important;margin-bottom:14px!important}
 .yx-page .greet-hello::after{content:none!important}
 .cute-hero-actions{position:absolute;left:39px;bottom:33px;display:flex;gap:11px;z-index:3}
@@ -207,7 +207,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ef97
  .breadcrumbs strong{font-size:17px!important}
  .role-pill{min-height:43px!important;padding:7px 9px!important}.role-pill #role-label{display:none!important}
  .circle-tool{min-width:42px!important;width:42px!important;height:42px!important}
- .yx-page .greet-hello{min-height:225px!important;padding:26px 17px 82px!important;margin-bottom:15px!important;font-size:clamp(27px,7.7vw,36px)!important;background-size:cover,auto 76%!important;background-position:center,right top!important;background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 25%,rgba(255,239,217,.76) 45%,rgba(255,240,217,.13) 100%),url('assets/cute/elderly.webp')!important}
+ .yx-page .greet-hello{min-height:225px!important;padding:26px 17px 82px!important;margin-bottom:15px!important;font-size:clamp(27px,7.7vw,36px)!important;background-size:cover,auto 76%!important;background-position:center,right top!important;background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 25%,rgba(255,239,217,.76) 45%,rgba(255,240,217,.13) 100%),url('assets/ui/login_bg.jpg')!important}
  .yx-page .greet-hello::before{font-size:14px!important;margin-bottom:13px!important;max-width:230px!important}
  .cute-hero-actions{left:17px;bottom:19px;gap:7px}
  .cute-hero-actions button{font-size:15px;min-height:44px;padding:8px 15px}
@@ -252,7 +252,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ef97
 .is-auth .yx-page .yx-switch{background:#f4ddcd!important}
 .is-auth .yx-page .role-switch{background:#fff1e8!important}
 .is-auth .yx-page .role-btn.active{color:#ad5333!important}
-.yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 44%,rgba(255,240,217,.96) 53%,rgba(255,240,217,.48) 68%,rgba(255,240,217,.04) 85%),url('assets/cute/elderly.webp')!important}
+.yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,#fff0d9 44%,rgba(255,240,217,.96) 53%,rgba(255,240,217,.48) 68%,rgba(255,240,217,.04) 85%),url('assets/ui/login_bg.jpg')!important}
 .yx-page .assistant-page :is(.msg-text,.msg-content,.msg-time,.bubble-text){color:#623e30!important;font-size:17px!important;line-height:1.65!important}
 .yx-page .assistant-page .msg-row.self :is(.msg-text,.msg-content,.bubble-text){color:white!important}
 .yx-page .assistant-page :is(.assistant-back,.back-btn,.assistant-tool-btn,.mode-switch-btn,.image-pick-btn,.send-btn-v2,.auto-speak-toggle){background:#fff1e4!important;border-color:#f5d3b9!important;color:#aa6245!important}
@@ -267,7 +267,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ef97
 .yx-page :is(.finance-tabs,.finance-mode-tabs,.finance-filter-item,.recognize-form-label,.record-category,.child-tab,.child-nav-item){font-size:16px!important}
 .yx-page .lesson-video-toolbar,.yx-page .lesson-video-toolbar *{background:#8b5140!important;color:#fff4e9!important;font-size:14px!important}
 @media(max-width:610px){
- .yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 23%,rgba(255,240,217,.52) 56%,rgba(255,240,217,.0) 100%),url('assets/cute/elderly.webp')!important}
+ .yx-page .greet-hello{background-image:linear-gradient(90deg,#fff0d9 0%,rgba(255,240,217,.98) 23%,rgba(255,240,217,.52) 56%,rgba(255,240,217,.0) 100%),url('assets/ui/login_bg.jpg')!important}
  .yx-page .assistant-page :is(.msg-text,.msg-content,.bubble-text){font-size:16px!important}
  .yx-page :is(.news-time,.news-source,.news-summary,.home-news-time){font-size:14px!important}
 }

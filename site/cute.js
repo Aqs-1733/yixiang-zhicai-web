@@ -26,7 +26,7 @@
     const side=document.querySelector('.side-deco');
     if(side) side.innerHTML='<img class="cute-side-mascot" src="assets/brand/xiaoxiang-original.png" alt="" aria-hidden="true"/>';
     const art=document.querySelector('.login-graphic img');
-    if(art){art.src='assets/cute/elderly.webp';art.alt='卡通爷爷奶奶微笑相伴';}
+    if(art){art.src='assets/ui/login_bg.jpg';art.alt='原版小享和爷爷奶奶插画';}
     const main=document.getElementById('yx-render');
     if(main){const observer=new MutationObserver(enhance);main.addEventListener("yx:render",enhance);enhance();}
     const copyright=document.querySelector('.content-footer');

@@ -30,7 +30,7 @@ const pageName=Object.fromEntries(pages.map(([p,n])=>[p,n]));
 const authPaths=new Set(['pages/login/login','pages/register/register','pages/forgot-password/forgot-password','pages/security-question/security-question']);
 const childPaths=new Set(pages.filter(([p])=>p.startsWith('pages/child/')).map(x=>x[0]));
 const activeList = (p)=> childPaths.has(p)||storageGet('role')==='child' ? pages.filter(([x])=>childPaths.has(x) || x==='pages/assistant/assistant'||x==='pages/family/family'||x==='pages/family-group-chat/family-group-chat'||x==='pages/family-messages/family-messages') : pages.filter(([x])=>!childPaths.has(x)&&!authPaths.has(x));
-const authKeys=new Set(['token','user','profile','userProfile','role','rememberLoginUntil','wechatPasswordFreeUntil']);
+const authKeys=new Set(['token','user','profile','userProfile','user_profile','me','nickname','nickName','role','rememberLoginUntil','wechatPasswordFreeUntil']);
 // Account identity and token form one tab-local snapshot. Font preferences remain shared.
 function initAuthStorage(){try{if(sessionStorage.getItem(storePrefix+'authVersion')!=='2'){
  for(const k of authKeys)sessionStorage.removeItem(storePrefix+k);
@@ -405,7 +405,7 @@ const wx={
 };
 window.wx=wx;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)recorderManager.stop()});
-function clearSession(){for(const key of ['token','user','profile','rememberLoginUntil','wechatPasswordFreeUntil'])wx.removeStorageSync(key);Object.assign(appDef.globalData,{token:'',user:null,profile:null})}
+function clearSession(){for(const key of authKeys)wx.removeStorageSync(key);Object.assign(appDef.globalData,{token:'',user:null,profile:null})}
 function switchRole(){clearSession();goto('pages/login/login','relaunch');toast('请在登录页选择长辈或子女账号登录')}
 function firstVisit(){const hp=location.hash.replace(/^#\//,'');if(hp&&pageName[hp.split('?')[0]]&&(storageGet('token')||authPaths.has(hp.split('?')[0])))return hp;
  if(storageGet('token'))return storageGet('role')==='child'?'pages/child/index/index':'pages/index/index';return 'pages/login/login'}

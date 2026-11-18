@@ -266,28 +266,11 @@ function saveProfileEverywhere(profile) {
  * 根据用户画像生成首页资产概览
  */
 function buildOverviewFromProfile(profile) {
-  const has = value => value !== undefined && value !== null && value !== ''
-  const liquidValue = has(profile.liquid_asset) ? profile.liquid_asset : profile.liquid
-  const fixedValue = has(profile.fixed_asset) ? profile.fixed_asset : profile.fixed
-  const totalValue = has(profile.total_asset) ? profile.total_asset : profile.total
-  const hasLiquid = has(liquidValue)
-  const hasFixed = has(fixedValue)
-  const hasTotal = has(totalValue)
-  if (!hasLiquid && !hasFixed && !hasTotal) {
-    return { total_text: '--', today_gain_text: '--', deposit_text: '--', finance_text: '--', fund_text: '--', safe_ratio: 0 }
-  }
-  const liquid = hasLiquid ? toNumber(liquidValue, 0) : 0
-  const fixed = hasFixed ? toNumber(fixedValue, 0) : 0
-  const total = hasTotal ? toNumber(totalValue, 0) : liquid + fixed
-
-  return {
-    total_text: formatMoney(total),
-    today_gain_text: '--',
-    deposit_text: hasLiquid ? formatMoney(liquid) : '--',
-    finance_text: hasFixed ? formatMoney(fixed) : '--',
-    fund_text: '--',
-    safe_ratio: 0
-  }
+  const has=v=>v!==undefined&&v!==null&&v!==''&&Number.isFinite(Number(v));
+  const liquid=has(profile.liquid_asset)?Number(profile.liquid_asset):null;
+  const fixed=has(profile.fixed_asset)?Number(profile.fixed_asset):null;
+  const debt=has(profile.debt)?Number(profile.debt):null;
+  return {total_text:liquid!==null||fixed!==null?formatMoney((liquid||0)+(fixed||0)-(debt||0)):'--',today_gain_text:'--',deposit_text:liquid===null?'--':formatMoney(liquid),finance_text:fixed===null?'--':formatMoney(fixed),fund_text:debt===null?'--':formatMoney(debt),safe_ratio:null};
 }
 
 /**
@@ -334,6 +317,7 @@ function decorateArticles(articles) {
 
 Page({
   data: {
+    assetsHidden: false,
     homeLessonVideoBroken: false,
     lessonVideoPlaying: false,
     lessonCurrentTime: 0,
@@ -457,6 +441,7 @@ Page({
       }} : {})
     })
 
+    this.loadAssetOverview()
     this.loadHomeWeather()
     this.loadFamilyMemberCache()
 
@@ -515,7 +500,7 @@ Page({
 
       this.setData({
         nickname: finalNickname,
-        overview: buildOverviewFromProfile(finalProfile),
+        overview: {...this.data.overview,...buildOverviewFromProfile(finalProfile),today_gain_text:this.data.overview.today_gain_text},
         recommend: buildRecommendFromProfile(finalProfile)
       })
     }).catch(() => {
@@ -553,6 +538,15 @@ Page({
     }
   },
 
+  toggleAssetVisibility() {
+    const hidden=!this.data.assetsHidden;
+    wx.setStorageSync('assets_hidden_'+(wx.getStorageSync('user')||{}).id,hidden);
+    this.setData({assetsHidden:hidden});
+  },
+  loadAssetOverview() {
+    this.setData({assetsHidden:!!wx.getStorageSync('assets_hidden_'+(wx.getStorageSync('user')||{}).id)});
+    getApp().request({url:'/portfolio/overview',loading:false}).then(res=>this.setData({overview:res})).catch(()=>{});
+  },
   loadFamilyMemberCache() {
     const user = wx.getStorageSync('user') || {}
     if (!user.id) return

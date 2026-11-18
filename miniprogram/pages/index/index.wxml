@@ -11,6 +11,14 @@
     <view class="home-scroll-inner {{globalFontPageClass}}">
     <view class="global-font-wrap"><button class="global-font-btn {{globalFontPageClass}}" hover-class="none" bindtap="toggleGlobalFontSize">{{globalFontLabel}}</button></view>
 
+    <view class="asset-overview card">
+      <view class="asset-heading"><view class="section-title">我的资产总览</view><button class="asset-eye" bindtap="toggleAssetVisibility" aria-label="显示或隐藏资产金额">{{assetsHidden ? '显示金额' : '隐藏金额'}}</button></view>
+      <view class="asset-total"><text>总资产（元）</text><view>{{assetsHidden ? '••••' : overview.total_text}}</view></view>
+      <view class="asset-gain">持仓记录盈亏 {{assetsHidden ? '••••' : overview.today_gain_text}}</view>
+      <view class="asset-breakdown"><view><text>流动资金</text><view>{{assetsHidden ? '••••' : overview.deposit_text}}</view></view><view><text>固定资产</text><view>{{assetsHidden ? '••••' : overview.finance_text}}</view></view><view><text>负债</text><view>{{assetsHidden ? '••••' : overview.fund_text}}</view></view></view>
+      <view class="asset-actions"><button bindtap="goProfile">资产明细</button><button bindtap="goFinance">持仓分析</button></view>
+    </view>
+
     <view class="home-weather-card" bindtap="refreshHomeWeather">
       <view class="home-weather-left">
         <view class="home-weather-city">{{weatherCard.city || '当前区域'}}</view>

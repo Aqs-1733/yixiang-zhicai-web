@@ -8,8 +8,22 @@
       <view class="finance-mode-tabs">
         <button class="{{financeMode === 'recognize' ? 'active' : ''}}" hover-class="none" data-mode="recognize" bindtap="switchFinanceMode">产品识别</button>
         <button class="{{financeMode === 'learn' ? 'active' : ''}}" hover-class="none" data-mode="learn" bindtap="switchFinanceMode">理财认知</button>
+        <button class="{{financeMode === 'quotes' ? 'active' : ''}}" data-mode="quotes" bindtap="switchFinanceMode">净值查询</button>
       </view>
 
+      <view wx:if="{{financeMode === 'quotes'}}" class="official-quotes card">
+        <view class="quote-heading"><view class="section-title">银行最新披露</view><button bindtap="refreshQuotes" disabled="{{quotesLoading}}">{{quotesLoading ? '正在更新' : '更新数据'}}</button></view>
+        <view class="quote-search"><input value="{{quoteQuery}}" bindinput="onQuoteQuery" placeholder="输入产品名称或产品代码" /><button bindtap="searchQuotes">查询</button></view>
+        <view class="quote-source">{{quoteStatus}}</view>
+        <view wx:if="{{quoteError}}" class="quote-error">{{quoteError}}</view>
+        <view wx:if="{{!quotesLoading && !quoteItems.length}}" class="quote-empty">没有匹配的披露记录，可换一个产品名称或代码。</view>
+        <view wx:if="{{quotePages > 1}}" class="quote-pagination"><button bindtap="quotePrevious" disabled="{{quotePage === 0}}">上一页</button><text>{{quotePage + 1}} / {{quotePages}} 页，共 {{quoteTotal}} 条</text><button bindtap="quoteNext" disabled="{{quotePage + 1 >= quotePages}}">下一页</button></view>
+        <view wx:for="{{quoteItems}}" wx:key="product_code" class="quote-item">
+          <view class="quote-title">{{item.name}}</view><view class="quote-code">产品代码 {{item.product_code}}</view>
+          <view class="quote-values"><view><text>单位净值</text><view>{{item.unit_net_value}}</view></view><view><text>累计净值</text><view>{{item.cumulative_net_value || '未披露'}}</view></view><view><text>披露日期</text><view>{{item.as_of_date}}</view></view></view>
+          <button data-code="{{item.product_code}}" bindtap="showQuoteDetail">查看披露详情</button>
+        </view>
+      </view>
       <view wx:if="{{financeMode === 'recognize'}}" class="recognize-card card">
         <view class="section-title">识别我看到的理财产品</view>
         <textarea class="product-input" value="{{productText}}" bindinput="onProductText" placeholder="粘贴产品名称、风险等级、期限、业绩比较基准等文字"></textarea>
@@ -397,14 +411,19 @@
       </view>
       <view class="position-action-bar">
         <button hover-class="none" catchtap="editPosition">修改</button>
+        <button hover-class="none" catchtap="editPositionCode">产品代码</button>
+        <button hover-class="none" catchtap="refreshSelectedPosition">更新净值</button>
         <button class="danger" hover-class="none" catchtap="deletePosition">删除</button>
         <button class="assistant" hover-class="none" catchtap="togglePositionAsk">问小享</button>
         <button hover-class="none" catchtap="closePositionDetail">关闭</button>
       </view>
       <view class="detail-name">{{selectedPosition.product_name}}</view>
       <view class="detail-status">{{selectedPosition.status_label}}</view>
+      <view class="detail-row"><text>产品代码</text><text>{{selectedPosition.product_code || '未填写'}}</text></view>
+      <view class="detail-row"><text>记录净值</text><text>{{selectedPosition.current_net_value || '未填写'}}</text></view>
+      <view class="detail-row"><text>净值日期</text><text>{{selectedPosition.latest_date || '未填写'}}</text></view>
       <view class="detail-row"><text>投入金额</text><text>{{selectedPosition.amount_text}} 元</text></view>
-      <view wx:if="{{selectedPosition.institution}}" class="detail-row"><text>发行机构</text><text>{{selectedPosition.institution}}</text></view>
+      <view wx:if="{{selectedPosition.institution}}" class="detail-row"><text>机构/渠道</text><text>{{selectedPosition.institution}}</text></view>
       <view wx:if="{{selectedPosition.risk_level}}" class="detail-row"><text>风险等级</text><text>{{selectedPosition.risk_level}}</text></view>
       <view wx:if="{{selectedPosition.benchmark}}" class="detail-row"><text>收益基准</text><text>{{selectedPosition.benchmark}}</text></view>
       <view wx:if="{{selectedPosition.term}}" class="detail-row"><text>产品期限</text><text>{{selectedPosition.term}}</text></view>
@@ -420,7 +439,7 @@
       <view wx:if="{{positionAskOpen}}" class="position-ask-box">
         <scroll-view class="position-ask-messages" scroll-y="true" enhanced="true">
           <view wx:for="{{positionAskMessages}}" wx:key="index" class="position-ask-message {{item.role === 'user' ? 'user' : 'assistant'}}">{{item.text}}</view>
-          <view wx:if="{{positionAskLoading}}" class="position-ask-message assistant">小享正在认真想一想…</view>
+          <view wx:if="{{positionAskLoading}}" class="position-ask-message assistant">正在整理回答…</view>
         </scroll-view>
         <view class="position-ask-input-row">
           <input value="{{positionAskInput}}" bindinput="onPositionAskInput" bindconfirm="sendPositionAsk" confirm-type="send" placeholder="继续问小享…" />

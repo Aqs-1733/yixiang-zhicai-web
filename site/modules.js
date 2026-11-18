@@ -4872,6 +4872,14 @@ Page({
   data: {
     advice: {},
     ratioList: [],
+    quoteItems: [],
+    quotePage: 0,
+    quotePages: 0,
+    quoteTotal: 0,
+    quoteQuery: '',
+    quotesLoading: false,
+    quoteStatus: '按银行披露日期更新，不是盘中报价。',
+    quoteError: '',
     products: [],
     articles: [],
     dataSource: '',
@@ -4921,12 +4929,29 @@ Page({
     exampleCodes: []        // 示例编码
   },
 
+  onQuoteQuery(e) {this.setData({quoteQuery:e.detail.value})},
+  searchQuotes() {this.loadQuotes(false)},
+  refreshQuotes() {this.loadQuotes(true)},
+  loadQuotes(refresh) {
+    if(this.data.quotesLoading)return;
+    this.setData({quotesLoading:true,quoteError:''});
+    getApp().request({url:'/products/disclosures',data:{q:this.data.quoteQuery,refresh:refresh?1:0},loading:false}).then(res=>{
+      this._quotesLoaded=true;this._quoteRows=res.items||[];
+      this.setData({quotePage:0,quotePages:Math.ceil(this._quoteRows.length/12),quoteTotal:this._quoteRows.length,quoteItems:this._quoteRows.slice(0,12),quotesLoading:false,quoteStatus:(res.source_label||'银行公开披露')+' · 最新日期 '+(res.latest_date||'暂无')+(res.stale?' · 更新暂缓，显示缓存':'')+'；非盘中报价。',quoteError:res.message||''});
+    }).catch(()=>this.setData({quotesLoading:false,quoteError:'本次查询未成功，请稍后重试。'}));
+  },
+  showQuoteDetail(e) {
+    const row=(this._quoteRows||[]).find(x=>x.product_code===e.currentTarget.dataset.code);if(!row)return;
+    wx.showModal({title:row.name,content:'产品代码：'+row.product_code+'\n单位净值：'+row.unit_net_value+'\n累计净值：'+(row.cumulative_net_value||'未披露')+'\n披露日期：'+row.as_of_date+'\n来源：'+row.source_label+'\n此页未披露风险等级、销售状态和适用客户，需另查产品说明书。',showCancel:false});
+  },
+  quoteNext() {const page=Math.min(this.data.quotePages-1,this.data.quotePage+1);this.setData({quotePage:page,quoteItems:(this._quoteRows||[]).slice(page*12,page*12+12)})},
+  quotePrevious() {const page=Math.max(0,this.data.quotePage-1);this.setData({quotePage:page,quoteItems:(this._quoteRows||[]).slice(page*12,page*12+12)})},
   onProductText(e) {
     this.setData({ productText: e.detail.value })
   },
 
   switchFinanceMode(e) {
-    this.setData({ financeMode: e.currentTarget.dataset.mode || 'recognize' })
+    const mode=e.currentTarget.dataset.mode || 'recognize';this.setData({financeMode:mode});if(mode==='quotes'&&!this._quotesLoaded)this.loadQuotes(false)
   },
 
   switchLearnTab(e) {
@@ -5283,7 +5308,7 @@ Page({
     })).filter(item => item.label && item.value)
     const knownFields = [
       { label: '产品名称', value: product.name },
-      { label: '发行机构', value: product.institution },
+      { label: '机构/渠道', value: product.institution },
       { label: '产品类型', value: product.product_type },
       { label: '风险等级', value: product.risk_level },
       { label: '收益/业绩比较基准', value: product.yield_expression },
@@ -5305,7 +5330,7 @@ Page({
       valueSegments: termHelper.buildTermSegments(cleanDisplayText(item.value, ''))
     }))
     const labels = {
-      name: '产品名称', product_name: '产品名称', institution: '发行机构', issuer: '发行机构',
+      name: '产品名称', product_name: '产品名称', institution: '机构/渠道', issuer: '发行机构',
       product_type: '产品类型', type: '产品类型', risk_level: '风险等级', amount: '持有金额',
       income: '相关收益', yield: '收益率', yield_expression: '收益/业绩比较基准', benchmark: '收益/业绩比较基准',
       term: '期限', min_buy: '起购金额', redemption_rule: '赎回规则', registration_code: '登记编码'
@@ -5620,6 +5645,19 @@ Page({
     })
   },
 
+  editPositionCode() {
+    const item=this.data.selectedPosition;if(!item)return;
+    wx.showModal({title:'填写银行产品代码',content:'请输入净值披露页对应的产品代码，字母和数字需完全一致。',editable:true,placeholderText:item.product_code||'',success:res=>{
+      if(!res.confirm)return;const code=String(res.content||'').trim();if(!/^[A-Za-z0-9_-]{3,64}$/.test(code))return wx.showToast({title:'请核对产品代码',icon:'none'});
+      getApp().request({url:'/wealth/positions/'+item.id,method:'PUT',data:{product_code:code},loading:true}).then(res=>{this.setData({selectedPosition:this.decorateTrackedPosition(res.item)});this.loadTrackedPositions();});
+    }});
+  },
+  refreshSelectedPosition() {
+    const item=this.data.selectedPosition;if(!item)return;
+    getApp().request({url:'/wealth/positions/'+item.id+'/refresh',method:'POST',loading:true}).then(res=>{
+      this.setData({selectedPosition:this.decorateTrackedPosition(res.item)});this.loadTrackedPositions();wx.showModal({title:res.refreshed?'净值已更新':'保留原记录',content:res.item.refresh_note,showCancel:false});
+    });
+  },
   editPosition() {
     const item = this.data.selectedPosition
     if (!item) return
@@ -5715,7 +5753,7 @@ Page({
     if (!item || !question || this.data.positionAskLoading) return
     const messages = (this.data.positionAskMessages || []).concat([{ role: 'user', text: question }])
     this.setData({ positionAskMessages: messages, positionAskInput: '', positionAskLoading: true })
-    const context = `产品名称：${item.product_name || '未识别'}；发行机构：${item.institution || '未识别'}；投入金额：${item.amount_text || 0}元；风险等级：${item.risk_level || '未识别'}；收益基准：${item.benchmark || '未识别'}；期限：${item.term || '未识别'}；赎回规则：${item.redeem_rule || '未识别'}`
+    const context = `产品名称：${item.product_name || '未识别'}；机构/渠道：${item.institution || '未识别'}；投入金额：${item.amount_text || 0}元；风险等级：${item.risk_level || '未识别'}；收益基准：${item.benchmark || '未识别'}；期限：${item.term || '未识别'}；赎回规则：${item.redeem_rule || '未识别'}`
     getApp().request({
       url: '/assistant/chat',
       method: 'POST',
@@ -7449,28 +7487,11 @@ function saveProfileEverywhere(profile) {
  * 根据用户画像生成首页资产概览
  */
 function buildOverviewFromProfile(profile) {
-  const has = value => value !== undefined && value !== null && value !== ''
-  const liquidValue = has(profile.liquid_asset) ? profile.liquid_asset : profile.liquid
-  const fixedValue = has(profile.fixed_asset) ? profile.fixed_asset : profile.fixed
-  const totalValue = has(profile.total_asset) ? profile.total_asset : profile.total
-  const hasLiquid = has(liquidValue)
-  const hasFixed = has(fixedValue)
-  const hasTotal = has(totalValue)
-  if (!hasLiquid && !hasFixed && !hasTotal) {
-    return { total_text: '--', today_gain_text: '--', deposit_text: '--', finance_text: '--', fund_text: '--', safe_ratio: 0 }
-  }
-  const liquid = hasLiquid ? toNumber(liquidValue, 0) : 0
-  const fixed = hasFixed ? toNumber(fixedValue, 0) : 0
-  const total = hasTotal ? toNumber(totalValue, 0) : liquid + fixed
-
-  return {
-    total_text: formatMoney(total),
-    today_gain_text: '--',
-    deposit_text: hasLiquid ? formatMoney(liquid) : '--',
-    finance_text: hasFixed ? formatMoney(fixed) : '--',
-    fund_text: '--',
-    safe_ratio: 0
-  }
+  const has=v=>v!==undefined&&v!==null&&v!==''&&Number.isFinite(Number(v));
+  const liquid=has(profile.liquid_asset)?Number(profile.liquid_asset):null;
+  const fixed=has(profile.fixed_asset)?Number(profile.fixed_asset):null;
+  const debt=has(profile.debt)?Number(profile.debt):null;
+  return {total_text:liquid!==null||fixed!==null?formatMoney((liquid||0)+(fixed||0)-(debt||0)):'--',today_gain_text:'--',deposit_text:liquid===null?'--':formatMoney(liquid),finance_text:fixed===null?'--':formatMoney(fixed),fund_text:debt===null?'--':formatMoney(debt),safe_ratio:null};
 }
 
 /**
@@ -7517,6 +7538,7 @@ function decorateArticles(articles) {
 
 Page({
   data: {
+    assetsHidden: false,
     homeLessonVideoBroken: false,
     lessonVideoPlaying: false,
     lessonCurrentTime: 0,
@@ -7640,6 +7662,7 @@ Page({
       }} : {})
     })
 
+    this.loadAssetOverview()
     this.loadHomeWeather()
     this.loadFamilyMemberCache()
 
@@ -7698,7 +7721,7 @@ Page({
 
       this.setData({
         nickname: finalNickname,
-        overview: buildOverviewFromProfile(finalProfile),
+        overview: {...this.data.overview,...buildOverviewFromProfile(finalProfile),today_gain_text:this.data.overview.today_gain_text},
         recommend: buildRecommendFromProfile(finalProfile)
       })
     }).catch(() => {
@@ -7736,6 +7759,15 @@ Page({
     }
   },
 
+  toggleAssetVisibility() {
+    const hidden=!this.data.assetsHidden;
+    wx.setStorageSync('assets_hidden_'+(wx.getStorageSync('user')||{}).id,hidden);
+    this.setData({assetsHidden:hidden});
+  },
+  loadAssetOverview() {
+    this.setData({assetsHidden:!!wx.getStorageSync('assets_hidden_'+(wx.getStorageSync('user')||{}).id)});
+    getApp().request({url:'/portfolio/overview',loading:false}).then(res=>this.setData({overview:res})).catch(()=>{});
+  },
   loadFamilyMemberCache() {
     const user = wx.getStorageSync('user') || {}
     if (!user.id) return
@@ -8777,7 +8809,7 @@ Page({
     this.setData({ positionAskMessages: messages, positionAskInput: '', positionAskLoading: true })
     const context = [
       `产品名称：${item.product_name || '未识别'}`,
-      `发行机构：${item.institution || '未识别'}`,
+      `机构/渠道：${item.institution || '未识别'}`,
       `记录金额：${item.amount_text || item.amount || 0}元`,
       `风险等级：${item.risk_level || '未识别'}`,
       `收益基准：${item.benchmark || '未识别'}`,
@@ -9549,7 +9581,7 @@ Page({
     })).filter(item => item.label && item.value)
     const knownFields = [
       { key: 'product_name', label: '产品名称', value: data.product_name || product.name },
-      { key: 'issuer', label: '发行机构', value: data.issuer || product.institution },
+      { key: 'issuer', label: data.issuer ? '发行机构' : '机构/渠道', value: data.issuer || product.institution },
       { key: 'product_type', label: '产品类型', value: data.product_type || product.product_type },
       { key: 'risk_level', label: '风险等级', value: data.risk_level_label || product.risk_level },
       { key: 'benchmark', label: '收益/业绩比较基准', value: data.benchmark || product.yield_expression },
@@ -9571,7 +9603,7 @@ Page({
       valueSegments: termHelper.buildTermSegments(item.value)
     }))
     const fieldLabels = {
-      name: '产品名称', product_name: '产品名称', institution: '发行机构', issuer: '发行机构',
+      name: '产品名称', product_name: '产品名称', institution: '机构/渠道', issuer: '发行机构',
       product_type: '产品类型', type: '产品类型', risk_level: '风险等级', risk_level_label: '风险等级',
       amount: '持有金额', buy_amount: '买入金额', income: '相关收益', profit: '相关收益',
       yield: '收益率', yield_expression: '收益/业绩比较基准', benchmark: '收益/业绩比较基准',

@@ -1137,6 +1137,7 @@ def normalize_product(raw: Dict[str, Any], source: str, idx: int) -> Dict[str, A
         "safe": str(risk).lower() in ["低风险", "r1", "pr1"] or "低" in str(risk),
         "institution": str(institution),
         "registration_code": str(code),
+        **{k:raw[k] for k in ["product_code","net_value","unit_net_value","as_of_date","source_url","source_label"] if k in raw},
         "source": source,
         "desc": str(desc),
         "compliance_tip": "理财非存款，产品有风险，投资须谨慎；最终以销售文件和官方登记信息为准。",
@@ -1170,18 +1171,20 @@ def load_external_products() -> List[Dict[str, Any]]:
 def product_catalog(refresh: bool = False) -> Dict[str, Any]:
     if not refresh and _PRODUCT_CACHE["payload"] and time.time() < float(_PRODUCT_CACHE["expires_at"]):
         return _PRODUCT_CACHE["payload"]
-    external = load_external_products()
-    items = external or PRODUCTS
-    payload = {
-        "items": items,
-        "source": "external" if external else "compliance_reference",
-        "real_time": bool(external),
-        "sources": configured_market_sources(),
-        "disclaimer": "本页仅做信息展示和风险教育，不构成收益承诺、投资建议或交易指令；购买前请通过官方渠道核验登记编码和销售文件。",
-    }
-    _PRODUCT_CACHE["payload"] = payload
-    _PRODUCT_CACHE["expires_at"] = time.time() + PRODUCT_CACHE_TTL_SECONDS
+    external = load_external_products() if BANK_PRODUCTS_URL or PRODUCT_FEED_URL else []
+    if external:
+        payload={"items":external,"source":"external","real_time":True,"sources":configured_market_sources()}
+    else:
+        from app.services.official_products import catalogue
+        payload=catalogue(refresh)
+        payload["sources"]=configured_market_sources()
+        if not payload.get("items"):
+            payload.update(items=PRODUCTS,source="compliance_reference",real_time=False,live_source=False)
+    payload["disclaimer"]="净值按银行披露日期展示；产品风险、销售状态及适用客户以销售文件为准。"
+    _PRODUCT_CACHE["payload"]=payload
+    _PRODUCT_CACHE["expires_at"]=time.time()+min(PRODUCT_CACHE_TTL_SECONDS,1800)
     return payload
+
 
 def build_chat_url(base_url: str, request_id: str = "") -> str:
     url = (base_url or "").rstrip("/")
@@ -1860,43 +1863,18 @@ async def risk_evaluate(data: RiskIn, user=Depends(current_user)) -> Dict[str, A
 
 @app.get("/portfolio/overview")
 def portfolio_overview(user=Depends(current_user)) -> Dict[str, Any]:
-    p = get_profile(user["id"])
-    has_liquid = p.get("liquid_asset") not in [None, ""]
-    has_fixed = p.get("fixed_asset") not in [None, ""]
-    if not has_liquid and not has_fixed:
-        return {
-            "success": True,
-            "data_complete": False,
-            "total": 0,
-            "total_asset": 0,
-            "total_asset_text": "--",
-            "total_text": "--",
-            "today_gain_text": "--",
-            "deposit_text": "--",
-            "finance_text": "--",
-            "fund_text": "--",
-            "safe_ratio": 0,
-        }
-    liquid = float(p.get("liquid_asset") or 0)
-    fixed = float(p.get("fixed_asset") or 0)
-    debt = float(p.get("debt", 0) or 0)
-    deposit = liquid * 0.55 + fixed * 0.25
-    finance = fixed * 0.55
-    fund = liquid * 0.20 + fixed * 0.08
-    total = deposit + finance + fund - debt
-    safe_ratio = round((deposit + liquid * 0.25) / max(total,1) * 100)
-    return {
-        "success": True,
-        "total": total,
-        "total_asset": total,
-        "total_asset_text": fmt_money(total),
-        "total_text": fmt_money(total),
-        "today_gain_text": "+" + fmt_money(max(3, total * 0.00004)),
-        "deposit_text": fmt_money(deposit),
-        "finance_text": fmt_money(finance),
-        "fund_text": fmt_money(fund),
-        "safe_ratio": safe_ratio,
-    }
+    from decimal import Decimal, ROUND_HALF_UP
+    p=get_profile(user["id"])
+    known=lambda key:p.get(key) not in [None, ""]
+    money=lambda value:Decimal(str(value or 0)).quantize(Decimal('.01'),rounding=ROUND_HALF_UP)
+    liquid=money(p.get("liquid_asset"));fixed=money(p.get("fixed_asset"));debt=money(p.get("debt"))
+    complete=known("liquid_asset") or known("fixed_asset")
+    total=liquid+fixed-debt
+    with conn() as c:rows=c.execute("SELECT * FROM wealth_positions WHERE user_id=?",(user["id"],)).fetchall()
+    positions=[normalize_position(dict(r)) for r in rows]
+    profit=sum((money(x.get("profit")) for x in positions),Decimal(0))
+    return {"success":True,"data_complete":complete,"total":float(total),"total_asset":float(total),"total_asset_text":fmt_money(total) if complete else "--","total_text":fmt_money(total) if complete else "--","today_gain_text":(('+' if profit>=0 else '')+fmt_money(profit)) if positions else "--","gain_label":"持仓记录盈亏","deposit_text":fmt_money(liquid) if known("liquid_asset") else "--","finance_text":fmt_money(fixed) if known("fixed_asset") else "--","fund_text":fmt_money(debt) if known("debt") else "--","breakdown_labels":["流动资金","固定资产","负债"],"breakdown_kind":"profile_balances","safe_ratio":None,"source":"user_records","record_count":len(positions),"note":"根据您填写的资产和持仓记录计算，持仓不再重复计入总资产。"}
+
 
 @app.get("/portfolio/recommendation")
 def portfolio_recommendation(user=Depends(current_user)) -> Dict[str, Any]:
@@ -4935,8 +4913,11 @@ def wealth_positions(user=Depends(current_user)) -> Dict[str, Any]:
 
 @app.post("/wealth/positions")
 def add_wealth_position(data: WealthPositionIn, user=Depends(current_user)) -> Dict[str, Any]:
-    matches = search_product_items(data.product_name, limit=1)
-    info = matches[0] if matches else {}
+    from app.services.official_products import exact_quote
+    info = exact_quote(data.product_code) if data.product_code else None
+    if not info:
+        matches = [x for x in search_product_items(data.product_name, limit=20) if str(x.get("name", "")).strip() == data.product_name.strip()]
+        info = matches[0] if len(matches) == 1 else {}
     current = numeric_from_product(info) or data.current_net_value or data.buy_net_value or 1.0
     with conn() as c:
         c.execute(
@@ -4948,14 +4929,14 @@ def add_wealth_position(data: WealthPositionIn, user=Depends(current_user)) -> D
             """,
             (
                 user["id"],
-                data.product_name,
+                info.get("name") or data.product_name,
                 data.institution or info.get("institution", ""),
-                data.product_code or info.get("registration_code", ""),
+                data.product_code or info.get("product_code") or info.get("registration_code", ""),
                 data.buy_amount,
                 data.buy_net_value or current,
                 current,
                 data.buy_date,
-                date.today().isoformat(),
+                info.get("as_of_date") or date.today().isoformat(),
                 info.get("source", "manual_record"),
                 json.dumps(info, ensure_ascii=False),
                 now_iso(),
@@ -5017,29 +4998,22 @@ def delete_wealth_position(position_id: int, user=Depends(current_user)) -> Dict
 @app.post("/wealth/positions/{position_id}/refresh")
 def refresh_wealth_position(position_id: int, user=Depends(current_user)) -> Dict[str, Any]:
     with conn() as c:
-        row = c.execute("SELECT * FROM wealth_positions WHERE id=? AND user_id=?", (position_id, user["id"])).fetchone()
-        if not row:
-            raise HTTPException(404, detail="持仓不存在")
-        position = normalize_position(dict(row))
-        query = position.get("product_code") or position["product_name"]
-        matches = search_product_items(query, limit=1, refresh=True)
-        info = matches[0] if matches else position.get("raw_info", {})
-        current = numeric_from_product(info)
-        source = info.get("source", position.get("source", "manual_record")) if info else position.get("source", "manual_record")
-        if current is None:
-            current = position["current_net_value"] or position["buy_net_value"] or 1.0
-            note = "暂未拿到授权实时净值，已保留上次数据；请配置银行/数据服务商接口。"
-        else:
-            note = "已根据授权数据源刷新净值。"
-        c.execute(
-            "UPDATE wealth_positions SET current_net_value=?,latest_date=?,source=?,raw_info=?,updated_at=? WHERE id=? AND user_id=?",
-            (current, date.today().isoformat(), source, json.dumps(info, ensure_ascii=False), now_iso(), position_id, user["id"]),
-        )
-        c.commit()
-        refreshed = c.execute("SELECT * FROM wealth_positions WHERE id=? AND user_id=?", (position_id, user["id"])).fetchone()
-    item = normalize_position(dict(refreshed))
-    item["refresh_note"] = note
-    return {"ok": True, "item": item}
+        row=c.execute("SELECT * FROM wealth_positions WHERE id=? AND user_id=?",(position_id,user["id"])).fetchone()
+        if not row:raise HTTPException(404,detail="持仓不存在")
+        original=dict(row)
+    from app.services.official_products import exact_quote
+    code=str(original.get("product_code") or "").strip()
+    info=exact_quote(code,refresh=True) if code else None
+    if not info:
+        item=normalize_position(original);item["refresh_note"]="未匹配到相同产品代码的最新披露，原净值和日期保持不变。"
+        return {"ok":True,"refreshed":False,"item":item}
+    current=float(info["unit_net_value"])
+    with conn() as c:
+        c.execute("UPDATE wealth_positions SET current_net_value=?,latest_date=?,source=?,raw_info=?,updated_at=? WHERE id=? AND user_id=?",(current,info["as_of_date"],info["source"],json.dumps(info,ensure_ascii=False),now_iso(),position_id,user["id"]))
+        c.commit();row=c.execute("SELECT * FROM wealth_positions WHERE id=? AND user_id=?",(position_id,user["id"])).fetchone()
+    item=normalize_position(dict(row));item["refresh_note"]="已更新为银行"+info["as_of_date"]+"披露的单位净值。"
+    return {"ok":True,"refreshed":True,"item":item}
+
 
 # ------------------------- family -------------------------
 
@@ -6765,7 +6739,7 @@ def walking_route(start_latitude: float = Query(ge=-85,le=85), start_longitude: 
 
 @app.get('/app/release')
 def app_release():
-    return {'application':'yixiang-zhicai','release':'20261118-domestic-copy-r3','local_port':8004}
+    return {'application':'yixiang-zhicai','release':'20261118-complete-r1','local_port':8004}
 
 
 @app.get('/family/messages/unread')
@@ -6778,3 +6752,42 @@ def family_message_unread(user=Depends(current_user)):
             count=int(c.execute("SELECT COUNT(*) AS n FROM family_messages WHERE to_user_id=? AND from_user_id=? AND status='unread'",(user['id'],peer)).fetchone()['n'])
             if count:items.append({'peer_id':peer,'count':count});total+=count
     return {'ok':True,'count':total,'items':items}
+
+
+@app.get("/products/disclosures")
+def products_disclosures(q: str = Query(default="",max_length=80), refresh: int = 0, user=Depends(current_user)):
+    from app.services.official_products import catalogue
+    payload=catalogue(bool(refresh))
+    if q.strip():
+        needle=q.strip().casefold();payload["items"]=[x for x in payload["items"] if needle in (x["name"]+" "+x["product_code"]).casefold()]
+    return payload
+
+@app.get("/products/nav")
+def product_nav(code: str = Query(min_length=3,max_length=64), user=Depends(current_user)):
+    from app.services.official_products import exact_quote
+    quote=exact_quote(code)
+    if not quote:raise HTTPException(404,detail="当前披露记录中未找到这个产品代码")
+    return {"ok":True,"item":quote,"verification_scope":"单位净值披露，不代表登记编码或销售资格核验"}
+
+
+@app.get('/family/events')
+async def family_events(request: Request, user=Depends(current_user)):
+    """Authenticated, content-free notifications for an open desktop tab."""
+    import asyncio
+    from fastapi.responses import StreamingResponse
+    from starlette.concurrency import run_in_threadpool
+    def state():
+        direct=family_message_unread(user);group=family_group_chat_unread(user)
+        return {'message_count':int(direct.get('count',0)),'group_count':int(group.get('count',0))}
+    async def events():
+        started=time.monotonic();previous=None;ping=0
+        while time.monotonic()-started<240:
+            if await request.is_disconnected():break
+            current=await run_in_threadpool(state)
+            encoded=json.dumps(current,separators=(',',':'))
+            if encoded!=previous:
+                yield 'data: '+encoded+'\n\n';previous=encoded;ping=0
+            elif ping>=5:yield ': keepalive\n\n';ping=0
+            ping+=1
+            await asyncio.sleep(2)
+    return StreamingResponse(events(),media_type='text/event-stream',headers={'Cache-Control':'no-store','X-Accel-Buffering':'no'})

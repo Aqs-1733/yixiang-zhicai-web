@@ -54,7 +54,7 @@ body.refined-home .yx-page .bg-page{background:transparent!important}
   color:#374b3b!important;font-size:clamp(40px,3.7vw,60px)!important;
   line-height:1.22!important;letter-spacing:-1.1px!important;
   background-color:#fff2d7!important;
-  background-image:linear-gradient(102deg,#fff4dd 0%,#fff3d9 31%,rgba(255,245,222,.96) 38%,rgba(255,243,216,.6) 57%,rgba(255,243,216,.05) 80%),url('assets/cute/elderly.webp')!important;
+  background-image:linear-gradient(102deg,#fff4dd 0%,#fff3d9 31%,rgba(255,245,222,.96) 38%,rgba(255,243,216,.6) 57%,rgba(255,243,216,.05) 80%),url('assets/ui/login_bg.jpg')!important;
   background-size:cover,auto 121%!important;background-repeat:no-repeat!important;
   background-position:center,right -8px center!important;
   box-shadow:0 19px 40px -26px rgba(181,139,64,.27)!important;
@@ -189,7 +189,7 @@ body.is-auth .wechat-btn{background:#eef5e7!important;color:#58836b!important}
  .yx-page .greet-hello{
    min-height:251px!important;padding:30px 18px 78px!important;
    font-size:clamp(29px,8vw,38px)!important;letter-spacing:-.65px!important;border-radius:22px!important;
-   background-image:linear-gradient(100deg,#fff5de 0%,rgba(255,245,222,.99) 27%,rgba(255,244,216,.86) 42%,rgba(255,244,216,.12) 88%),url('assets/cute/elderly.webp')!important;
+   background-image:linear-gradient(100deg,#fff5de 0%,rgba(255,245,222,.99) 27%,rgba(255,244,216,.86) 42%,rgba(255,244,216,.12) 88%),url('assets/ui/login_bg.jpg')!important;
    background-size:cover,auto 80%!important;background-position:center,right -55px center!important
  }
  .yx-page .greet-hello::before{font-size:16px!important;max-width:180px!important;line-height:1.5!important}

@@ -355,7 +355,7 @@ Page({
     this.setData({ positionAskMessages: messages, positionAskInput: '', positionAskLoading: true })
     const context = [
       `产品名称：${item.product_name || '未识别'}`,
-      `发行机构：${item.institution || '未识别'}`,
+      `机构/渠道：${item.institution || '未识别'}`,
       `记录金额：${item.amount_text || item.amount || 0}元`,
       `风险等级：${item.risk_level || '未识别'}`,
       `收益基准：${item.benchmark || '未识别'}`,
@@ -1127,7 +1127,7 @@ Page({
     })).filter(item => item.label && item.value)
     const knownFields = [
       { key: 'product_name', label: '产品名称', value: data.product_name || product.name },
-      { key: 'issuer', label: '发行机构', value: data.issuer || product.institution },
+      { key: 'issuer', label: data.issuer ? '发行机构' : '机构/渠道', value: data.issuer || product.institution },
       { key: 'product_type', label: '产品类型', value: data.product_type || product.product_type },
       { key: 'risk_level', label: '风险等级', value: data.risk_level_label || product.risk_level },
       { key: 'benchmark', label: '收益/业绩比较基准', value: data.benchmark || product.yield_expression },
@@ -1149,7 +1149,7 @@ Page({
       valueSegments: termHelper.buildTermSegments(item.value)
     }))
     const fieldLabels = {
-      name: '产品名称', product_name: '产品名称', institution: '发行机构', issuer: '发行机构',
+      name: '产品名称', product_name: '产品名称', institution: '机构/渠道', issuer: '发行机构',
       product_type: '产品类型', type: '产品类型', risk_level: '风险等级', risk_level_label: '风险等级',
       amount: '持有金额', buy_amount: '买入金额', income: '相关收益', profit: '相关收益',
       yield: '收益率', yield_expression: '收益/业绩比较基准', benchmark: '收益/业绩比较基准',
